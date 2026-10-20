@@ -66,10 +66,9 @@ public static partial class LookTestBuilder
         Span("Ceiling", corridor, new Vector3(-2, 3, 0), new Vector3(2, 3.2f, 13.7f), ceiling);
         Span("WallLeft", corridor, new Vector3(-2.3f, 0, 0), new Vector3(-2, 3.2f, 13.7f), wallTile);
         Span("WallRight", corridor, new Vector3(2, 0, 0), new Vector3(2.3f, 3.2f, 13.7f), wallTile);
-        Span("WallBack", corridor, new Vector3(-2.3f, 0, -0.3f), new Vector3(2.3f, 3.2f, 0), wallTile);
+        // (The corridor opens at z 0 onto the stairwell up to the street: see LookTestBuilder.Street.cs.)
         Span("StripeLeft", corridor, new Vector3(-2, 2.19f, 0), new Vector3(-1.98f, 2.41f, 14), redTile, false);
         Span("StripeRight", corridor, new Vector3(1.98f, 2.19f, 0), new Vector3(2, 2.41f, 14), redTile, false);
-        Span("Door", corridor, new Vector3(-0.55f, 0, 0), new Vector3(0.55f, 2.2f, 0.06f), doorMetal);
         // Every lamp needs the area's power: dark until the fuse box is fixed (see PoweredLight).
         Lamp("Lamp_1", corridor, new Vector3(0, 2.98f, 3), 0f, tubeLit, housing);
         Lamp("Lamp_2", corridor, new Vector3(0, 2.98f, 7.5f), 0f, tubeLit, housing);
@@ -173,6 +172,9 @@ public static partial class LookTestBuilder
         // ---- the core loop: power, fuse box, pickups, staff room (LookTestBuilder.CoreLoop.cs)
         BuildCoreLoop(tubeLit, housing, concrete, ceiling, floorTile, doorMetal);
 
+        // ---- the street above, with the subway entrance and stairwell (LookTestBuilder.Street.cs)
+        BuildStreet(concrete, wallTile);
+
         // ---- world look: darkness, fog, reflections, post effects, sound
         SetupEnvironment();
         var probe = new GameObject("ReflectionProbe").AddComponent<ReflectionProbe>();
@@ -188,7 +190,9 @@ public static partial class LookTestBuilder
         drone.clip = Load<AudioClip>(AmbienceDir + "/DSGNDron_Tonal-Too Quiet_HY_SD.wav");
         drone.loop = true; drone.playOnAwake = true; drone.volume = 0.3f; drone.spatialBlend = 0f;
 
-        var player = BuildPlayer(new Vector3(0, 0.05f, 1.6f));
+        var player = BuildPlayer(PlayerStartPosition);
+        player.transform.rotation = Quaternion.Euler(0, PlayerStartYaw, 0);
+        BuildDrizzle(player.transform);
         BuildPlayerGear(player);
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
@@ -220,8 +224,8 @@ public static partial class LookTestBuilder
         var camera = cam.AddComponent<Camera>();
         camera.fieldOfView = 60f;            // vertical; about 90° across a 16:9 screen
         camera.nearClipPlane = 0.05f;
-        camera.farClipPlane = 60f;
-        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.farClipPlane = 150f;
+        camera.clearFlags = CameraClearFlags.Skybox;   // the night sky above the street
         camera.backgroundColor = Color.black;
         cam.AddComponent<AudioListener>();
         var camData = cam.AddComponent<UniversalAdditionalCameraData>();

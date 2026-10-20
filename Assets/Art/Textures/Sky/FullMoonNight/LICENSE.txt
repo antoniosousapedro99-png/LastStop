@@ -1,0 +1,10 @@
+PSX Horror Skyboxes - Free Sampler - License
+Copyright (c) 2026 LESED (lesed.itch.io)
+
+1. Use these skies in personal and commercial projects: games, videos, renders, apps and prototypes.
+2. Modify them (recolour, crop, combine) for use in your projects.
+3. Do not redistribute, resell or share the image files themselves, alone or modified, including inside other
+   asset packs, sky libraries or templates.
+4. Do not use them to train or fine-tune generative AI models, or claim them as your own original work.
+5. Credit is appreciated but not required.
+6. Provided "as is", without warranty of any kind.

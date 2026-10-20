@@ -15,5 +15,11 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | Shotgun PS1 V2.0 | see `README.txt` (to confirm) | to confirm | to confirm | Shotgun | `Models/Weapons/ShotgunPS1` |
 | PSX First Person Arms (free) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | First-person arms (black fingerless gloves) and their grab animation | `Models/Characters/PsxArms` |
 | PSX Horror Music | Svirls (TheRealSwirls) | CC BY | yes ("Svirls", composer) | Power-restored sting ("Powerbox") | `Audio/Music/Svirls` |
-
+| TheWrapper V2 | unknown (to confirm) | **no licence file — confirm before release** | to confirm | The stalker (not placed yet) | `Models/Characters/TheWrapper` |
+| Gas Station, 6twelve, VHS Shop, Laundry, Pizzeria, Buildings, Bus Stop packs | unknown (to confirm) | **no licence files — confirm before release** | to confirm | Street buildings and shopfronts (only the pieces used were extracted) | `Models/Environment/Street/*` |
+| URBAN pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Street lamps, barriers, cones, bins, graffiti, fence railings | `Models/Environment/Street/Urban` |
+| PSX Style Cars | GGBot (ggbot.itch.io) | to confirm | to confirm | Parked cars, taxi, police car, maintenance van | `Models/Environment/Street/Cars` |
+| Retro Tree Pack v1.0 | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Street trees | `Models/Environment/Street/Trees` |
+| All Bushes pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Hedges | `Models/Environment/Street/Bushes` |
+| PSX Horror Skyboxes (free) | LESED (lesed.itch.io) | Use in projects; **no redistribution**; credit appreciated (`LICENSE.txt`) | no | Full-moon night sky | `Textures/Sky/FullMoonNight` |
 Asset library on disk: `Documents/PSX horror/assets` (copy in only the files actually used).

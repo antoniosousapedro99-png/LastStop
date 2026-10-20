@@ -16,7 +16,8 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 
 ## Threat and survival
 
-- **Main stalker: BagMan** (the sack-headed killer; the only monster pack with walk/run/idle/attack animations). It hunts the player throughout the game. **BagMan is a placeholder:** the creative director will replace it later, so keep stalker code model-independent.
+- **Main stalker: The Wrapper** (`Assets/Art/Models/Characters/TheWrapper`, 6 animations: walk, run, idle, attack lunge, scream, wall-slam recover). Imported but not placed yet. BagMan is no longer used.
+- ~~Main stalker: BagMan~~ (the sack-headed killer; the only monster pack with walk/run/idle/attack animations). It hunts the player throughout the game. **BagMan is a placeholder:** the creative director will replace it later, so keep stalker code model-independent.
 - **Rare other horrors** appear only in scripted moments.
 - **Defense: a shotgun with very rare shells.** It **stuns BagMan but never kills it**. There are no other weapons.
 - **Flashlight:** the battery drains and spare batteries are scarce.
@@ -51,7 +52,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - Flashlight (**F**) works like a real torch: a narrow bright hotspot (32°, brightness 160) that throws about 60 m, plus a wide, soft spill ring (85°, brightness 30, 25 m) that lights tunnel walls and ceiling around you.
   - Platform benches face the tracks.
 - **Core loop (test area):**
-  - **Power starts off.** Only the flickering platform lamp (by the fuse box) and the red emergency lamp work. Everything else is dark, including the corridor, the vending machine and the tunnel work lamps.
+  - **Power starts off.** Only the flickering platform lamp (by the fuse box) and the red emergency lamp work. Everything else is dark, including the corridor, the vending machine and the tunnel work lamps. (The corridor's back wall is now the stairwell up to the street.)
   - **Fuse box** on the platform's west end wall. It needs **2 fuses**, one at the far end of each tunnel (on crates). Press E to insert each fuse, then E again to **pull the breaker**.
   - **Power returns:** a breaker clunk, then lamps stutter on one by one in a wave spreading from the fuse box. The flickering lamp steadies, an electrical hum fades in, and the **"Powerbox"** music sting plays.
   - **Tunnels** are about 50 m each side, with caged work lamps every 12 m.
@@ -70,6 +71,36 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **Fuse box** sits at eye level (centre 1.5 m), and a small dot marks the centre of the screen (brighter when you can use what you're looking at). Its prompt says how many fuses you carry.
   - **Controls:** WASD, Shift sprint, C crouch, Space jump, F torch, H battery, E use, Q shotgun, LMB fire, R reload.
   - Vertical field of view 60° (about 90° across a 16:9 screen).
+
+## Street level (intro area) — built 2026-10-20
+
+- **Time and weather:** about 3 a.m., light drizzle, wet road with puddles, during the blackout.
+  - Only three sodium street lamps still burn (one stutters), plus faint moonlight and a full-moon night sky.
+  - The green subway globes light the entrance.
+- **Layout:** one block of "Hollis St" (~90 m) with dead ends: an abandoned bus and concrete barriers to the west, police barriers, cones and a police car to the east.
+  - Subway entrance mid-block on the south sidewalk.
+  - 30 steps down (6 m) into the tiled corridor.
+- **Landmarks:**
+  - North side: laundromat, VHS rental, 6twelve, corner gas station.
+  - South side: pizzeria plus apartment blocks, with a skyline behind.
+  - Also: bus stop, trees, hedges, bins, dumpster, graffiti.
+- **Opening:** the player starts beside the **maintenance van** at the west end. The van radio plays dispatch's message.
+- **Wrapper lore — missing transit workers:** three Line 4 night-shift workers vanished over five weeks.
+  - **Dale Kowalski** (54), **Rosa Mendez** (31), **Theo Banks** (26).
+- **Lore drops** (all text is a draft for the creative director to rewrite):
+  - MISSING posters on two lamp posts and the bus stop.
+  - A newspaper on the bus-stop bench.
+  - A "closed nights" note on the 6twelve door.
+  - Red graffiti in the stairwell: "HE WRAPS THEM UP".
+  - A payphone answering machine with Rosa's last message.
+  - The van radio.
+  - Police tape around the gas station.
+- **Foreshadowing, hints only (no sighting):** drag marks into the entrance, and a wrapped, cocooned shape lying on the stairs.
+
+## Tunnels and trains
+
+- East tunnel (staff-room side) ~100 m, west tunnel ~85 m. Tunnel ceiling 4.3 m above the track.
+- Each ends in a **stalled subway car**: dark, doors shut, with a faint flickering cab light. An invisible barrier at its end face stops the player, so the line seems to go on.
 
 ## Open questions (ask before building what they affect)
 
