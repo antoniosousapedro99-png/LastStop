@@ -155,13 +155,20 @@ public static partial class LookTestBuilder
 
         // Desk clutter: logbook (the future save point), half-eaten pizza, soda can, cigarettes and a lighter.
         float top = Bounds(desk).max.y;
-        var logbook = Model(ArtDir + "/Props/Office/file_binder.fbx", null, room, Tex2("Props/Office/file_binder.jpg"), 1f, 0f);
-        logbook.transform.rotation = Quaternion.Euler(0, 15f, 90f) * logbook.transform.rotation;   // lying flat
-        StandOn(logbook, new Vector3(42.3f, top, 29.7f));
+        // A 90s staff PC (case with the monitor on top, keyboard in front): the future save point.
+        var pcTex = Tex2("Props/Office/computer.jpg");
+        var logbook = new GameObject("StaffPC");
+        logbook.transform.SetParent(room);
+        var pcCase = Model(ArtDir + "/Props/Office/horizontal_desktop.fbx", null, logbook.transform, pcTex, 0.75f, PcYaw);
+        StandOn(pcCase, new Vector3(42.35f, top, 29.8f));
+        var monitor = Model(ArtDir + "/Props/Office/computer_monitor.fbx", null, logbook.transform, pcTex, 0.75f, PcYaw);
+        StandOn(monitor, new Vector3(42.35f, Bounds(pcCase).max.y, 29.82f));
+        var keyboard = Model(ArtDir + "/Props/Office/computer_keyboard.fbx", null, logbook.transform, pcTex, 0.75f, PcYaw);
+        StandOn(keyboard, new Vector3(42.35f, top, 29.3f));
         AddMeshColliders(logbook);
-        logbook.AddComponent<Logbook>().pageSound = Load<AudioClip>(SfxDir + "/PaperDocument1.wav");
+        logbook.AddComponent<Logbook>().pageSound = Load<AudioClip>(SfxDir + "/SwitchButton2_On.wav");   // keyboard/power click
 
-        var pizza = Model(ArtDir + "/Props/Kitchen/pizza_quarter_eaten.fbx", null, room, null, 1f, 10f, new Dictionary<string, string>
+        var pizza = Model(ArtDir + "/Props/Kitchen/pizza_quarter_eaten.fbx", null, room, null, 1f, 165f, new Dictionary<string, string>
         {
             { "pizza", "Props/Kitchen/pizza.png" }, { "pizza box", "Props/Kitchen/Pizza box.png" },
         });
@@ -404,6 +411,8 @@ public static partial class LookTestBuilder
 
     static Vector3 ShoulderOffset = new Vector3(0f, -0.04f, 0.16f);
     static float LeftCurl = 70f;
+    static float LeftThumbCurl = 35f;   // thumb lies along the left side of the forend, not into it
+    static float PcYaw = 180f;
     static Vector3 LeftGripOffset = new Vector3(-0.08f, -0.07f, 0f);
     static Vector3 LeftElbowHint = new Vector3(-0.8f, -0.5f, 0.1f);
     static Vector3 LeftFingers = new Vector3(1f, 0.1f, 0.25f);
@@ -430,7 +439,7 @@ public static partial class LookTestBuilder
             fingersDirection = side == "R" ? new Vector3(0f, -0.6f, 0.8f) : LeftFingers,
             thumbDirection = side == "R" ? new Vector3(-0.3f, 0.9f, 0.3f) : LeftThumb,
             fingerCurl = side == "R" ? -60f : LeftCurl,
-            thumbCurl = side == "R" ? -25f : 0f,
+            thumbCurl = side == "R" ? -25f : LeftThumbCurl,
         };
     }
     // Dark, ragged dent mark for shotgun hits: a soft-edged spot drawn once by code and saved as a texture.

@@ -189,7 +189,10 @@ public static partial class LookTestBuilder
         var player = BuildPlayer(new Vector3(0, 0.05f, 1.6f));
         BuildPlayerGear(player);
 
-        foreach (var t in root.GetComponentsInChildren<Transform>()) t.gameObject.isStatic = true;
+        // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
+        // (doors, lockers) must NOT be static, or its merged copy stays frozen while the hinge turns.
+        foreach (var t in root.GetComponentsInChildren<Transform>())
+            t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>() == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 

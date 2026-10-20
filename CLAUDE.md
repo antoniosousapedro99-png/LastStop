@@ -50,6 +50,8 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
 
 ## Gameplay systems
 
+- **Anything that moves must not be static.** The builder marks level objects static (merged for speed); objects under a `HingedDoor` are excluded. A static object's hinge turns but its drawn mesh stays frozen. Test moving things with a screenshot, not just by reading their angle.
+
 - **Interaction:** `Interactor` (on the camera) casts a ray using `PlayerRay`, which skips the player's own capsule. Anything with `IInteractable` (Prompt + Interact) gets "[E] prompt".
 - **Power:** `PowerGrid` (one per area) plus `PoweredLight` on every lamp. Things that need power listen to `PowerGrid.Restored` (see `HingedDoor.needsPower`).
 - **Pickups:** `Pickup` (Fuse, Battery, Shotgun, Shell). Counts live in `PlayerInventory`.

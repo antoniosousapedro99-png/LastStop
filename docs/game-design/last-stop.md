@@ -56,7 +56,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **Power returns:** a breaker clunk, then lamps stutter on one by one in a wave spreading from the fuse box. The flickering lamp steadies, an electrical hum fades in, and the **"Powerbox"** music sting plays.
   - **Tunnels** are about 50 m each side, with caged work lamps every 12 m.
   - **Staff room** inside the east tunnel. Its electric lock is dead until power returns; then it buzzes, clicks and swings open.
-    - Inside: a desk with the **logbook** (future save point; for now it says saving comes later), a half-eaten pizza, a cola can, a placeholder cigarette pack and a Zippo, and an office chair.
+    - Inside: a desk with a **90s staff PC** (future save point; for now it says saving comes later), a half-eaten pizza, a cola can, a placeholder cigarette pack and a Zippo, and an office chair.
     - A steel **locker** (E opens it) holds the **shotgun** and **3 loose shells**.
   - **Flashlight battery:** lasts **4 minutes**, dims and stutters below 20%, dies at 0. **2 spare batteries** in the area (one by the west bench, one on a crate in the west tunnel). **H** swaps a spare in.
   - **Shotgun:**
