@@ -324,8 +324,9 @@ public static partial class LookTestBuilder
         var gripLeft = new GameObject("GripLeft").transform;
         gripLeft.SetParent(pivot, false);
         Vector3 forendLocal = pivot.InverseTransformPoint(forend.GetComponent<Renderer>().bounds.center);
-        // The left wrist sits just below the forend, so the palm-up hand supports it from underneath.
-        gripLeft.localPosition = forendLocal + new Vector3(0f, -0.05f, 0f);
+        // The left wrist sits below and to the left of the forend: the palm cups its underside,
+        // the thumb runs along its left side and the fingers wrap up the right side.
+        gripLeft.localPosition = forendLocal + LeftGripOffset;
 
 
         var shotgun = rig.gameObject.AddComponent<Shotgun>();
@@ -362,12 +363,12 @@ public static partial class LookTestBuilder
         shotgun.dryFireSound = Load<AudioClip>(SfxDir + "/SwitchButton1_Off.wav");
     }
 
-    // PSX first-person arms (black fingerless gloves). The rig has a "camera" bone the animations were
+    // PSX first-person arms (bare skin). The rig has a "camera" bone the animations were
     // made around, so the model is placed with that bone exactly on the player's camera.
     // ArmsRig bends the arms around the gun; ArmsController shows them and plays the grab animation.
     static GameObject BuildArms(Transform rig, Transform gripRight, Transform gripLeft, Shotgun shotgun)
     {
-        var arms = Model(ArtDir + "/Characters/PsxArms/PsxArms.fbx", null, rig, Tex2("Characters/PsxArms/PsxArms_Gloves.png"), 1f, 0f);
+        var arms = Model(ArtDir + "/Characters/PsxArms/PsxArms.fbx", null, rig, Tex2("Characters/PsxArms/PsxArms_Bare.png"), 1f, 0f);
         arms.name = "Arms";
         arms.transform.localRotation = Quaternion.identity;
         Transform cameraBone = null;
@@ -387,7 +388,7 @@ public static partial class LookTestBuilder
         hintRight.localPosition = new Vector3(0.55f, -0.7f, 0.0f);
         var hintLeft = new GameObject("ElbowHintLeft").transform;
         hintLeft.SetParent(rig, false);
-        hintLeft.localPosition = new Vector3(-0.25f, -0.9f, 0f);       // elbow hangs down, slightly left
+        hintLeft.localPosition = LeftElbowHint;                        // elbow angled out to the left
 
         var ik = arms.AddComponent<ArmsRig>();
         ik.right = ArmFor(arms.transform, "R", gripRight, hintRight);
@@ -402,7 +403,11 @@ public static partial class LookTestBuilder
     }
 
     static Vector3 ShoulderOffset = new Vector3(0f, -0.04f, 0.16f);
-    static float LeftCurl = 40f;    // degrees per joint the left fingers curl up around the forend
+    static float LeftCurl = 70f;
+    static Vector3 LeftGripOffset = new Vector3(-0.08f, -0.07f, 0f);
+    static Vector3 LeftElbowHint = new Vector3(-0.8f, -0.5f, 0.1f);
+    static Vector3 LeftFingers = new Vector3(1f, 0.1f, 0.25f);
+    static Vector3 LeftThumb = new Vector3(-0.2f, 0.3f, 1f);    // degrees per joint the left fingers curl up around the forend
 
     static ArmsRig.Arm ArmFor(Transform arms, string side, Transform target, Transform hint)
     {
@@ -419,9 +424,11 @@ public static partial class LookTestBuilder
             target = target, elbowHint = hint,
             fingers = fingers.ToArray(), thumb = thumb.ToArray(),
             // Right hand wraps the stock's grip (knuckles forward-down, thumb on top);
-            // left hand under the forend: palm up, fingers pointing forward along the barrel (palm up on a left hand = thumb points left).
-            fingersDirection = side == "R" ? new Vector3(0f, -0.6f, 0.8f) : new Vector3(0f, 0.1f, 1f),
-            thumbDirection = side == "R" ? new Vector3(-0.3f, 0.9f, 0.3f) : new Vector3(-1f, 0.2f, 0f),
+            // left hand: palm up under the forend, fingers pointing across it (to the right) so they can
+            // wrap up its right side; with the palm up and fingers to the right, the thumb points forward,
+            // lying along the left side of the forend.
+            fingersDirection = side == "R" ? new Vector3(0f, -0.6f, 0.8f) : LeftFingers,
+            thumbDirection = side == "R" ? new Vector3(-0.3f, 0.9f, 0.3f) : LeftThumb,
             fingerCurl = side == "R" ? -60f : LeftCurl,
             thumbCurl = side == "R" ? -25f : 0f,
         };

@@ -64,8 +64,8 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
     - Holds **2** shells; 8 pellets per shot.
     - Each shot: a muzzle flash that lights the area, recoil, and dark dent marks where pellets hit.
     - It's silent until a shotgun sound is found; it stuns the stalker later.
-  - **Arms:** PSX first-person arms in **black fingerless work gloves**.
-    - Right hand on the grip. Left hand **under the forend, palm up, thumb pointing left**, fingers curled up around it; the left elbow hangs down (not a stretched arm).
+  - **Arms:** PSX first-person arms, **bare skin** (gloves looked too tactical).
+    - Right hand on the grip. Left hand cups the forend: **palm under it, thumb along its left side, fingers wrapped up its right side**, sitting flush; the left elbow angles out to the left.
     - Arms appear only while the shotgun is up, plus a quick hand **grab** when picking something up or using things.
   - **Fuse box** sits at eye level (centre 1.5 m), and a small dot marks the centre of the screen (brighter when you can use what you're looking at). Its prompt says how many fuses you carry.
   - **Controls:** WASD, Shift sprint, C crouch, Space jump, F torch, H battery, E use, Q shotgun, LMB fire, R reload.
