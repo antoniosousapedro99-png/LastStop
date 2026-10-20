@@ -25,6 +25,14 @@ public class PlayerLook : MonoBehaviour
         cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 
+    // Kicks the view upward (used by the shotgun's recoil).
+    public void AddRecoil(float upDegrees, float sideDegrees)
+    {
+        pitch = Mathf.Clamp(pitch - upDegrees, -85f, 85f);
+        transform.Rotate(0f, sideDegrees, 0f);
+        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+    }
+
     static void LockCursor(bool locked)
     {
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;

@@ -17,7 +17,7 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
 
 - The asset library is `C:\Users\Joao.Pedro\Documents\PSX horror\assets`, mostly `.zip`/`.rar` packs.
   - Read them with `C:\Program Files\7-Zip\7z.exe`.
-  - **Folder names contain `[Free]`**: in PowerShell, always use `-LiteralPath`, because square brackets otherwise act as wildcards.
+  - **Folder names contain `[Free]`**: in PowerShell, always use `-LiteralPath`, because square brackets otherwise act as wildcards. `-Include` is ignored with `-LiteralPath`, so copy files one by one by exact name. Don't name a PowerShell function `R` (it's the built-in alias for Invoke-History).
 - **Copy in only the files that are used.** Put them in `Assets/Art`:
   - models: `Models/Characters`, `Models/Props`, `Models/Environment`, with each pack's textures beside its models;
   - sound: `Audio/SFX`, `Audio/Ambience`, `Audio/Music`.
@@ -47,6 +47,18 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
   - URP lights fade with distance squared, so high lamps need large intensities (the platform lamps use 45, the corridor lamps 16, the flashlight 20).
   - Glowing tubes use the **Unlit** shader with an HDR colour, because the Lit `_EMISSION` keyword got switched off.
   - Puddle reflections come from a reflection probe **baked at build time** (`Assets/Lighting`), because realtime probes are off in the quality settings.
+
+## Gameplay systems
+
+- **Interaction:** `Interactor` (on the camera) casts a ray using `PlayerRay`, which skips the player's own capsule. Anything with `IInteractable` (Prompt + Interact) gets "[E] prompt".
+- **Power:** `PowerGrid` (one per area) plus `PoweredLight` on every lamp. Things that need power listen to `PowerGrid.Restored` (see `HingedDoor.needsPower`).
+- **Pickups:** `Pickup` (Fuse, Battery, Shotgun, Shell). Counts live in `PlayerInventory`.
+- **Held gun and arms:**
+  - They sit on rendering layer `ViewmodelLayer` (Light Layer 1). The torch lights skip it; a faint `ViewmodelFill` light follows the torch.
+  - `ArmsRig` uses two-bone IK, sets each hand's direction (fingers/thumb in grip space), rolls the forearm with the hand (`forearmRollShare`) so the wrist doesn't tear, and curls the fingers.
+  - Tune poses with a side-view debug camera.
+- **Flashlight** softens its beam when the surface ahead is close (`fullStrengthDistance`), so it doesn't blind you up close but still reaches 60 m.
+- The test-area builder is split into `LookTestBuilder.cs` (layout) and `LookTestBuilder.CoreLoop.cs` (gameplay pieces). Model helpers: `Model`, `ModelPiece`, `StandOn`, `MakePickup`.
 
 ## Code style
 

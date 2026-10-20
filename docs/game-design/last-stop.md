@@ -16,7 +16,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 
 ## Threat and survival
 
-- **Main stalker: BagMan** (the sack-headed killer; the only monster pack with walk/run/idle/attack animations). It hunts the player throughout the game.
+- **Main stalker: BagMan** (the sack-headed killer; the only monster pack with walk/run/idle/attack animations). It hunts the player throughout the game. **BagMan is a placeholder:** the creative director will replace it later, so keep stalker code model-independent.
 - **Rare other horrors** appear only in scripted moments.
 - **Defense: a shotgun with very rare shells.** It **stuns BagMan but never kills it**. There are no other weapons.
 - **Flashlight:** the battery drains and spare batteries are scarce.
@@ -50,11 +50,28 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **Space** jumps 0.4 m: a short, heavy hop.
   - Flashlight (**F**) works like a real torch: a narrow bright hotspot (32°, brightness 160) that throws about 60 m, plus a wide, soft spill ring (85°, brightness 30, 25 m) that lights tunnel walls and ceiling around you.
   - Platform benches face the tracks.
+- **Core loop (test area):**
+  - **Power starts off.** Only the flickering platform lamp (by the fuse box) and the red emergency lamp work. Everything else is dark, including the corridor, the vending machine and the tunnel work lamps.
+  - **Fuse box** on the platform's west end wall. It needs **2 fuses**, one at the far end of each tunnel (on crates). Press E to insert each fuse, then E again to **pull the breaker**.
+  - **Power returns:** a breaker clunk, then lamps stutter on one by one in a wave spreading from the fuse box. The flickering lamp steadies, an electrical hum fades in, and the **"Powerbox"** music sting plays.
+  - **Tunnels** are about 50 m each side, with caged work lamps every 12 m.
+  - **Staff room** inside the east tunnel. Its electric lock is dead until power returns; then it buzzes, clicks and swings open.
+    - Inside: a desk with the **logbook** (future save point; for now it says saving comes later), a half-eaten pizza, a cola can, a placeholder cigarette pack and a Zippo, and an office chair.
+    - A steel **locker** (E opens it) holds the **shotgun** and **3 loose shells**.
+  - **Flashlight battery:** lasts **4 minutes**, dims and stutters below 20%, dies at 0. **2 spare batteries** in the area (one by the west bench, one on a crate in the west tunnel). **H** swaps a spare in.
+  - **Shotgun:**
+    - **Q** raises/lowers it, **left mouse** fires, **R** reloads one shell at a time.
+    - Holds **2** shells; 8 pellets per shot.
+    - Each shot: a muzzle flash that lights the area, recoil, and dark dent marks where pellets hit.
+    - It's silent until a shotgun sound is found; it stuns the stalker later.
+  - **Arms:** held in **WRAD ARMS**.
+    - Left hand on the left side of the forend with its fingers curled over it, right hand on the grip (reference: Metro Exodus).
+    - The forearm rolls with the hand so the wrist stays straight.
+  - **Controls:** WASD, Shift sprint, C crouch, Space jump, F torch, H battery, E use, Q shotgun, LMB fire, R reload.
   - Vertical field of view 60° (about 90° across a 16:9 screen).
 
 ## Open questions (ask before building what they affect)
 
-- Flashlight battery length, and how many spare batteries.
 - How many shells exist in total.
 - Safe-room look and count per station.
 - BagMan's behaviour (patrol, hearing, how long the shotgun stuns it).

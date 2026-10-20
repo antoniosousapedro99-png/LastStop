@@ -9,7 +9,8 @@ using UnityEngine.Rendering.Universal;
 // puddles, fluorescent lamps (one flickering and buzzing), dark tunnel mouths, and a walkable player.
 // Menu: Last Stop > Build Look Test. Safe to re-run: it rebuilds the scene from scratch.
 // Walls/floors are plain boxes whose textures are laid out in metres, so tiles line up across pieces.
-public static class LookTestBuilder
+// The gameplay pieces (power, fuse box, pickups, staff room, shotgun) are in LookTestBuilder.CoreLoop.cs.
+public static partial class LookTestBuilder
 {
     const string ScenePath = "Assets/Scenes/LookTest.unity";
     const string MetroDir = "Assets/Art/Models/Environment/MetroPSX";
@@ -50,7 +51,6 @@ public static class LookTestBuilder
         var doorMetal = Mat("DoorMetal", Tex("Door_01.jpg"), new Color(0.7f, 0.7f, 0.7f), 1f, 0.3f, 0.3f);
         var puddle = TransparentMat("Puddle", new Color(0.01f, 0.012f, 0.012f, 0.6f), 0.98f);
         var tubeLit = EmissiveMat("TubeLit", Fluorescent * 2.2f);
-        var tubeDead = Mat("TubeDead", null, new Color(0.25f, 0.27f, 0.25f), 1f, 0.6f);
         var redGlow = EmissiveMat("EmergencyGlow", Emergency * 3f);
 
         // Layout rule (see GeometryCheck.cs): pieces meet edge to edge and never overlap along a face,
@@ -67,9 +67,10 @@ public static class LookTestBuilder
         Span("StripeLeft", corridor, new Vector3(-2, 2.19f, 0), new Vector3(-1.98f, 2.41f, 14), redTile, false);
         Span("StripeRight", corridor, new Vector3(1.98f, 2.19f, 0), new Vector3(2, 2.41f, 14), redTile, false);
         Span("Door", corridor, new Vector3(-0.55f, 0, 0), new Vector3(0.55f, 2.2f, 0.06f), doorMetal);
-        Lamp("Lamp_1", corridor, new Vector3(0, 2.98f, 3), 0f, true, tubeLit, tubeDead, housing);
-        Lamp("Lamp_2_Dead", corridor, new Vector3(0, 2.98f, 7.5f), 0f, false, tubeLit, tubeDead, housing);
-        Lamp("Lamp_3", corridor, new Vector3(0, 2.98f, 12), 0f, true, tubeLit, tubeDead, housing);
+        // Every lamp needs the area's power: dark until the fuse box is fixed (see PoweredLight).
+        Lamp("Lamp_1", corridor, new Vector3(0, 2.98f, 3), 0f, tubeLit, housing);
+        Lamp("Lamp_2", corridor, new Vector3(0, 2.98f, 7.5f), 0f, tubeLit, housing);
+        Lamp("Lamp_3", corridor, new Vector3(0, 2.98f, 12), 0f, tubeLit, housing);
 
         // ---- platform hall: inside x -18..18, z 14..25.5, ceiling at 4.5 m; track pit z 20..25.5, 1.3 m deep
         var hall = Group("Platform");
@@ -94,19 +95,18 @@ public static class LookTestBuilder
         float[] lampX = { -12, -6, 0, 6, 12 };
         for (int i = 0; i < lampX.Length; i++)
         {
-            bool dead = i == 3;        // one dead tube breaks up the row of light
-            bool flicker = i == 1;     // one flickering, buzzing tube
-            var lamp = Lamp("HallLamp_" + (i + 1) + (dead ? "_Dead" : flicker ? "_Flicker" : ""), hall,
-                            new Vector3(lampX[i], 4.48f, 18.6f), 90f, !dead, tubeLit, tubeDead, housing);
-            if (flicker) MakeFlicker(lamp);
+            // The lamp nearest the fuse box flickers and is the only one working before the power returns.
+            bool flicker = i == 0;
+            Lamp("HallLamp_" + (i + 1) + (flicker ? "_Flicker" : ""), hall,
+                 new Vector3(lampX[i], 4.48f, 18.6f), 90f, tubeLit, housing, flicker);
         }
 
-        // ---- track pit and the two tunnels it runs into (x -40..40)
+        // ---- track pit and the two tunnels it runs into (about 50 m of tunnel each side)
         var track = Group("Track");
-        Span("PitFloor", track, new Vector3(-40, -1.5f, 20), new Vector3(40, -1.3f, 25.5f), gravel);
-        Span("TrackBed", track, new Vector3(-40, -1.3f, 21.45f), new Vector3(40, -1.29f, 24.05f), trackBed, false);
-        Span("Rail_N", track, new Vector3(-40, -1.29f, 22f), new Vector3(40, -1.18f, 22.07f), railMetal);
-        Span("Rail_S", track, new Vector3(-40, -1.29f, 23.43f), new Vector3(40, -1.18f, 23.5f), railMetal);
+        Span("PitFloor", track, new Vector3(-TunnelEnd, -1.5f, 20), new Vector3(TunnelEnd, -1.3f, 25.5f), gravel);
+        Span("TrackBed", track, new Vector3(-TunnelEnd, -1.3f, 21.45f), new Vector3(TunnelEnd, -1.29f, 24.05f), trackBed, false);
+        Span("Rail_N", track, new Vector3(-TunnelEnd, -1.29f, 22f), new Vector3(TunnelEnd, -1.18f, 22.07f), railMetal);
+        Span("Rail_S", track, new Vector3(-TunnelEnd, -1.29f, 23.43f), new Vector3(TunnelEnd, -1.18f, 23.5f), railMetal);
         // Flat decals (puddles) float 1 cm above the surface below so they never fight with it.
         Puddle("PitPuddle", track, new Vector3(3.5f, -1.28f, 22.6f), 4.5f, 2.6f, puddle);
         // Short service steps at the west end, so the player can climb back out of the pit.
@@ -120,10 +120,18 @@ public static class LookTestBuilder
             string s = side < 0 ? "W" : "E";
             var tunnel = Group("Tunnel_" + s);
             // Tunnel pieces start at x = 18.3, right where the hall's end wall and lintel stop.
-            Span("InnerWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 19.7f), side), Mirror(new Vector3(40, 2.2f, 20), side), tunnelConcrete);
-            Span("OuterWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 25.5f), side), Mirror(new Vector3(40, 2.2f, 25.8f), side), tunnelConcrete);
-            Span("Ceiling", tunnel, Mirror(new Vector3(18.3f, 2, 20), side), Mirror(new Vector3(40, 2.2f, 25.5f), side), tunnelConcrete);
-            Span("EndCap", tunnel, Mirror(new Vector3(40, -1.5f, 19.7f), side), Mirror(new Vector3(40.3f, 2.2f, 25.8f), side), tunnelConcrete);
+            Span("InnerWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 19.7f), side), Mirror(new Vector3(TunnelEnd, 2.2f, 20), side), tunnelConcrete);
+            if (side > 0)
+            {
+                // The east tunnel's outer wall has the staff room doorway in it (1 m wide, 2.2 m tall).
+                Span("OuterWall_A", tunnel, new Vector3(18.3f, -1.5f, 25.5f), new Vector3(StaffDoorX, 2.2f, 25.8f), tunnelConcrete);
+                Span("OuterWall_B", tunnel, new Vector3(StaffDoorX + 1f, -1.5f, 25.5f), new Vector3(TunnelEnd, 2.2f, 25.8f), tunnelConcrete);
+                Span("DoorLintel", tunnel, new Vector3(StaffDoorX, 0.9f, 25.5f), new Vector3(StaffDoorX + 1f, 2.2f, 25.8f), tunnelConcrete);
+                Span("DoorThreshold", tunnel, new Vector3(StaffDoorX, -1.5f, 25.5f), new Vector3(StaffDoorX + 1f, -1.3f, 25.8f), concrete);
+            }
+            else Span("OuterWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 25.5f), side), Mirror(new Vector3(TunnelEnd, 2.2f, 25.8f), side), tunnelConcrete);
+            Span("Ceiling", tunnel, Mirror(new Vector3(18.3f, 2, 20), side), Mirror(new Vector3(TunnelEnd, 2.2f, 25.5f), side), tunnelConcrete);
+            Span("EndCap", tunnel, Mirror(new Vector3(TunnelEnd, -1.5f, 19.7f), side), Mirror(new Vector3(TunnelEnd + 0.3f, 2.2f, 25.8f), side), tunnelConcrete);
         }
         // Red emergency lamp deep in the east tunnel: a distant warning colour at the edge of the fog.
         var red = Box("EmergencyLamp", root.Find("Tunnel_E"), new Vector3(31, 1.2f, 20.03f), new Vector3(0.25f, 0.18f, 0.06f), redGlow);
@@ -145,9 +153,15 @@ public static class LookTestBuilder
             var glow = AddLight(vending, LightType.Point, new Color(0.85f, 0.9f, 1f), 3f, 3.5f);
             glow.transform.position = vending.GetComponentInChildren<Renderer>().bounds.center + new Vector3(0, 0.2f, 0.9f);
             glow.shadows = LightShadows.None;
+            var vendingPower = vending.AddComponent<PoweredLight>();   // the machine is dark without power
+            vendingPower.lights = new[] { glow };
+            vendingPower.glowParts = new Renderer[0];
         }
         var map = Prop("metro_map", props, new Vector3(1.9f, 1.05f, 9f), -90f);
         if (map) { var mb = Bounds(map); map.transform.position += new Vector3(1.995f - mb.max.x, 0, 0); }
+
+        // ---- the core loop: power, fuse box, pickups, staff room (LookTestBuilder.CoreLoop.cs)
+        BuildCoreLoop(tubeLit, housing, concrete, ceiling, floorTile, doorMetal);
 
         // ---- world look: darkness, fog, reflections, post effects, sound
         SetupEnvironment();
@@ -164,7 +178,8 @@ public static class LookTestBuilder
         drone.clip = Load<AudioClip>(AmbienceDir + "/DSGNDron_Tonal-Too Quiet_HY_SD.wav");
         drone.loop = true; drone.playOnAwake = true; drone.volume = 0.3f; drone.spatialBlend = 0f;
 
-        BuildPlayer(new Vector3(0, 0.05f, 1.6f));
+        var player = BuildPlayer(new Vector3(0, 0.05f, 1.6f));
+        BuildPlayerGear(player);
 
         foreach (var t in root.GetComponentsInChildren<Transform>()) t.gameObject.isStatic = true;
 
@@ -177,7 +192,7 @@ public static class LookTestBuilder
     }
 
     // ---------------------------------------------------------------- player
-    static void BuildPlayer(Vector3 position)
+    static GameObject BuildPlayer(Vector3 position)
     {
         var player = new GameObject("Player");
         player.transform.position = position;
@@ -242,6 +257,7 @@ public static class LookTestBuilder
             Load<AudioClip>(SfxDir + "/FootstepsConcrete1.wav"), Load<AudioClip>(SfxDir + "/FootstepsConcrete2.wav"),
             Load<AudioClip>(SfxDir + "/FootstepsConcrete3.wav"), Load<AudioClip>(SfxDir + "/FootstepsConcrete4.wav"),
         };
+        return player;
     }
 
     // ---------------------------------------------------------------- environment
@@ -284,8 +300,8 @@ public static class LookTestBuilder
 
     // ---------------------------------------------------------------- lamps
     // A ceiling fluorescent fixture: dark housing, a tube, and a downward spot light that makes a pool.
-    static GameObject Lamp(string name, Transform parent, Vector3 pos, float yaw, bool lit,
-                           Material tubeLit, Material tubeDead, Material housing)
+    // It needs power (PoweredLight); the flickering one works without it and steadies once power returns.
+    static GameObject Lamp(string name, Transform parent, Vector3 pos, float yaw, Material tube, Material housing, bool flicker = false)
     {
         var lamp = new GameObject(name);
         lamp.transform.SetParent(parent);
@@ -293,23 +309,30 @@ public static class LookTestBuilder
         lamp.transform.rotation = Quaternion.Euler(0, yaw, 0);
         var body = Box("Housing", lamp.transform, Vector3.zero, new Vector3(0.28f, 0.07f, 1.45f), housing);
         body.transform.localPosition = Vector3.zero;
-        var tube = Box("Tube", lamp.transform, Vector3.zero, new Vector3(0.09f, 0.045f, 1.3f), lit ? tubeLit : tubeDead);
-        tube.transform.localPosition = new Vector3(0, -0.05f, 0);
-        Object.DestroyImmediate(tube.GetComponent<Collider>());
-        if (lit)
+        var tubeObject = Box("Tube", lamp.transform, Vector3.zero, new Vector3(0.09f, 0.045f, 1.3f), tube);
+        tubeObject.transform.localPosition = new Vector3(0, -0.05f, 0);
+        Object.DestroyImmediate(tubeObject.GetComponent<Collider>());
+
+        // Lights fade with distance squared, so the high platform lamps need more power and reach.
+        bool high = pos.y > 4f;
+        var light = AddLight(lamp, LightType.Spot, Fluorescent, high ? 45f : 16f, high ? 13f : 9f);
+        light.transform.localPosition = new Vector3(0, -0.1f, 0);
+        light.transform.rotation = Quaternion.Euler(90, 0, 0);
+        light.spotAngle = 120f; light.innerSpotAngle = 50f;
+        light.shadows = LightShadows.Soft;
+
+        var power = lamp.AddComponent<PoweredLight>();
+        power.lights = new[] { light };
+        power.glowParts = new[] { tubeObject.GetComponent<Renderer>() };
+        power.glowColour = Fluorescent * 2.2f;
+        if (flicker)
         {
-            // Lights fade with distance squared, so the high platform lamps need more power and reach.
-            bool high = pos.y > 4f;
-            var light = AddLight(lamp, LightType.Spot, Fluorescent, high ? 45f : 16f, high ? 13f : 9f);
-            light.transform.localPosition = new Vector3(0, -0.1f, 0);
-            light.transform.rotation = Quaternion.Euler(90, 0, 0);
-            light.spotAngle = 120f; light.innerSpotAngle = 50f;
-            light.shadows = LightShadows.Soft;
+            power.worksWithoutPower = true;
+            power.flicker = MakeFlicker(lamp);
         }
         return lamp;
     }
-
-    static void MakeFlicker(GameObject lamp)
+    static FlickeringLight MakeFlicker(GameObject lamp)
     {
         var buzz = lamp.AddComponent<AudioSource>();
         buzz.clip = Load<AudioClip>(AmbienceDir + "/DSGNDron_Noise-Broken Speakers_HY_SD.wav");
@@ -321,6 +344,7 @@ public static class LookTestBuilder
         flicker.tube = lamp.transform.Find("Tube").GetComponent<Renderer>();
         flicker.tubeGlow = Fluorescent * 2.2f;
         flicker.buzz = buzz;
+        return flicker;
     }
 
     static Light AddLight(GameObject owner, LightType type, Color colour, float intensity, float range)
