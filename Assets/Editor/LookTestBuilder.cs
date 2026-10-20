@@ -133,8 +133,9 @@ public static class LookTestBuilder
 
         // ---- props from the Metro PSX pack
         var props = Group("Props");
-        Prop("seats", props, new Vector3(-9f, 0, 15.0f), 90f);
-        Prop("seats", props, new Vector3(9f, 0, 15.0f), 90f);
+        // Benches stand with their backs to the wall, so sitting passengers face the tracks.
+        Prop("seats", props, new Vector3(-9f, 0, 15.0f), -90f);
+        Prop("seats", props, new Vector3(9f, 0, 15.0f), -90f);
         Prop("trash_can", props, new Vector3(3.3f, 0, 14.6f), 0f);
         var vending = Prop("Vending_machine", props, new Vector3(-15.2f, 0, 14.5f), 0f);
         if (vending)
@@ -143,7 +144,7 @@ public static class LookTestBuilder
             glow.transform.position = vending.GetComponentInChildren<Renderer>().bounds.center + new Vector3(0, 0.2f, 0.9f);
             glow.shadows = LightShadows.None;
         }
-                var map = Prop("metro_map", props, new Vector3(1.9f, 1.05f, 9f), -90f);
+        var map = Prop("metro_map", props, new Vector3(1.9f, 1.05f, 9f), -90f);
         if (map) { var mb = Bounds(map); map.transform.position += new Vector3(1.995f - mb.max.x, 0, 0); }
 
         // ---- world look: darkness, fog, reflections, post effects, sound
@@ -205,16 +206,28 @@ public static class LookTestBuilder
         var torch = new GameObject("Flashlight");
         torch.transform.SetParent(cam.transform, false);
         torch.transform.localPosition = new Vector3(0.22f, -0.18f, 0.1f);
+        // Like a real torch: a narrow, strong hotspot that throws ~50 m (casts shadows),
+        // plus a wide, soft spill ring that lights the surroundings close by (no shadows, cheaper).
+        var torchColour = new Color(1f, 0.94f, 0.82f);
         var beam = torch.AddComponent<Light>();
         beam.type = LightType.Spot;
-        beam.color = new Color(1f, 0.94f, 0.82f);
-        beam.intensity = 28f; beam.range = 35f;   // +40% after the first playtest
-        beam.spotAngle = 52f; beam.innerSpotAngle = 22f;
+        beam.color = torchColour;
+        beam.intensity = 110f; beam.range = 50f;
+        beam.spotAngle = 32f; beam.innerSpotAngle = 8f;
         beam.shadows = LightShadows.Soft;
+        var spillObject = new GameObject("Spill");
+        spillObject.transform.SetParent(torch.transform, false);
+        var spill = spillObject.AddComponent<Light>();
+        spill.type = LightType.Spot;
+        spill.color = torchColour;
+        spill.intensity = 10f; spill.range = 18f;
+        spill.spotAngle = 85f; spill.innerSpotAngle = 40f;
+        spill.shadows = LightShadows.None;
         var torchAudio = torch.AddComponent<AudioSource>();
         torchAudio.playOnAwake = false; torchAudio.spatialBlend = 0f; torchAudio.volume = 0.6f;
         var flashlight = torch.AddComponent<Flashlight>();
         flashlight.beam = beam;
+        flashlight.spill = spill;
         flashlight.clickOn = Load<AudioClip>(SfxDir + "/SwitchButton1_On.wav");
         flashlight.clickOff = Load<AudioClip>(SfxDir + "/SwitchButton1_Off.wav");
 
@@ -238,10 +251,10 @@ public static class LookTestBuilder
         RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
         RenderSettings.reflectionIntensity = 0.3f;
         RenderSettings.fog = true;
-        // Fog that thickens gradually: things are mostly gone by ~15 m, but bright lamps still glow through.
+        // Fog that thickens gradually: things are mostly gone by ~25 m, but bright lamps still glow through.
         RenderSettings.fogMode = FogMode.ExponentialSquared;
         RenderSettings.fogColor = FogColour;
-        RenderSettings.fogDensity = 0.1f;
+        RenderSettings.fogDensity = 0.06f;   // ~10% visible at 25 m (density = 1.5 / distance)
         RenderSettings.sun = null;
 
         // Post effects: soft glow on tubes, dark edges, film grain, slightly drained colour.

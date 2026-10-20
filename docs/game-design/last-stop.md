@@ -30,7 +30,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - Stations: mostly cold, greenish fluorescent tubes.
   - Street: warm sodium-orange lamps.
   - Tunnels: red emergency lights.
-- **Fog:** medium. Things fade into black over about 15 m, but bright lamps still glow through from further away.
+- **Fog:** things fade into black over about **25 m** (raised from 15 m after playtesting), but bright lamps still glow through from further away.
 
 ## Sound
 
@@ -46,7 +46,8 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - Walk 2.2 m/s, hold **Shift** to sprint at 4.2 m/s.
   - **C** toggles crouch: 1.2 m/s, body 1.1 m, eyes 0.95 m, footsteps half as loud. While crouched you can't sprint or jump, and you can't stand up under something low.
   - **Space** jumps 0.4 m: a short, heavy hop.
-  - Flashlight (**F**): brightness 28, reach 35 m (raised 40% after the first playtest).
+  - Flashlight (**F**) works like a real torch: a narrow bright hotspot (32°, brightness 110) that throws about 50 m, plus a wide, soft spill ring (85°, brightness 10) lighting the surroundings close by.
+  - Platform benches face the tracks.
   - Vertical field of view 60° (about 90° across a 16:9 screen).
 
 ## Open questions (ask before building what they affect)
