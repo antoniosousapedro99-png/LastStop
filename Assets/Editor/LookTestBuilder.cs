@@ -51,38 +51,43 @@ public static class LookTestBuilder
         var tubeDead = Mat("TubeDead", null, new Color(0.25f, 0.27f, 0.25f), 1f, 0.6f);
         var redGlow = EmissiveMat("EmergencyGlow", Emergency * 3f);
 
-        // ---- corridor: x -2..2, z 0..14, ceiling at 3 m
+        // Layout rule (see GeometryCheck.cs): pieces meet edge to edge and never overlap along a face,
+        // otherwise their surfaces fight for the same pixels and flicker. Walls run the full height,
+        // ceilings and floors fit between them. Each piece is given by its min and max corners.
+
+        // ---- corridor: inside x -2..2, z 0..13.7, ceiling at 3 m
         var corridor = Group("Corridor");
-        Slab("Floor", corridor, new Vector3(0, -0.1f, 7), new Vector3(4, 0.2f, 14), floorTile);
-        Slab("Ceiling", corridor, new Vector3(0, 3.1f, 7), new Vector3(4.6f, 0.2f, 14), ceiling);
-        Slab("WallLeft", corridor, new Vector3(-2.15f, 1.5f, 7), new Vector3(0.3f, 3, 14), wallTile);
-        Slab("WallRight", corridor, new Vector3(2.15f, 1.5f, 7), new Vector3(0.3f, 3, 14), wallTile);
-        Slab("WallBack", corridor, new Vector3(0, 1.5f, -0.15f), new Vector3(4.6f, 3, 0.3f), wallTile);
-        Slab("StripeLeft", corridor, new Vector3(-1.99f, 2.3f, 7), new Vector3(0.02f, 0.22f, 14), redTile, false);
-        Slab("StripeRight", corridor, new Vector3(1.99f, 2.3f, 7), new Vector3(0.02f, 0.22f, 14), redTile, false);
-        Slab("Door", corridor, new Vector3(0, 1.1f, 0.03f), new Vector3(1.1f, 2.2f, 0.06f), doorMetal);
+        Span("Floor", corridor, new Vector3(-2, -0.2f, 0), new Vector3(2, 0, 14), floorTile);
+        Span("Ceiling", corridor, new Vector3(-2, 3, 0), new Vector3(2, 3.2f, 13.7f), ceiling);
+        Span("WallLeft", corridor, new Vector3(-2.3f, 0, 0), new Vector3(-2, 3.2f, 13.7f), wallTile);
+        Span("WallRight", corridor, new Vector3(2, 0, 0), new Vector3(2.3f, 3.2f, 13.7f), wallTile);
+        Span("WallBack", corridor, new Vector3(-2.3f, 0, -0.3f), new Vector3(2.3f, 3.2f, 0), wallTile);
+        Span("StripeLeft", corridor, new Vector3(-2, 2.19f, 0), new Vector3(-1.98f, 2.41f, 14), redTile, false);
+        Span("StripeRight", corridor, new Vector3(1.98f, 2.19f, 0), new Vector3(2, 2.41f, 14), redTile, false);
+        Span("Door", corridor, new Vector3(-0.55f, 0, 0), new Vector3(0.55f, 2.2f, 0.06f), doorMetal);
         Lamp("Lamp_1", corridor, new Vector3(0, 2.98f, 3), 0f, true, tubeLit, tubeDead, housing);
         Lamp("Lamp_2_Dead", corridor, new Vector3(0, 2.98f, 7.5f), 0f, false, tubeLit, tubeDead, housing);
         Lamp("Lamp_3", corridor, new Vector3(0, 2.98f, 12), 0f, true, tubeLit, tubeDead, housing);
 
-        // ---- platform hall: x -18..18, z 14..26, ceiling at 4.5 m; track pit z 20..25.5, 1.3 m deep
+        // ---- platform hall: inside x -18..18, z 14..25.5, ceiling at 4.5 m; track pit z 20..25.5, 1.3 m deep
         var hall = Group("Platform");
-        Slab("PlatformFloor", hall, new Vector3(0, -0.1f, 16.7f), new Vector3(36, 0.2f, 5.4f), floorTile);
-        Slab("TactileStrip", hall, new Vector3(0, -0.1f, 19.7f), new Vector3(36, 0.2f, 0.6f), tactile);
-        Slab("PlatformEdge", hall, new Vector3(0, -0.75f, 19.9f), new Vector3(36, 1.1f, 0.2f), concrete);
-        Slab("NearWall_L", hall, new Vector3(-10, 2.25f, 13.85f), new Vector3(16, 4.5f, 0.3f), wallTile);
-        Slab("NearWall_R", hall, new Vector3(10, 2.25f, 13.85f), new Vector3(16, 4.5f, 0.3f), wallTile);
-        Slab("NearWall_Top", hall, new Vector3(0, 3.75f, 13.85f), new Vector3(4, 1.5f, 0.3f), wallTile);
-        Slab("StripeNear_L", hall, new Vector3(-10, 2.3f, 14.01f), new Vector3(16, 0.22f, 0.02f), redTile, false);
-        Slab("StripeNear_R", hall, new Vector3(10, 2.3f, 14.01f), new Vector3(16, 0.22f, 0.02f), redTile, false);
-        Slab("FarWall", hall, new Vector3(0, 1.6f, 25.65f), new Vector3(36.6f, 6.2f, 0.3f), wallTile);
-        Slab("StripeFar", hall, new Vector3(0, 2.3f, 25.49f), new Vector3(36, 0.22f, 0.02f), redTile, false);
-        Slab("HallCeiling", hall, new Vector3(0, 4.6f, 19.9f), new Vector3(36.6f, 0.2f, 12.1f), ceiling);
+        Span("PlatformFloor", hall, new Vector3(-18, -0.2f, 14), new Vector3(18, 0, 19.4f), floorTile);
+        Span("TactileStrip", hall, new Vector3(-18, -0.2f, 19.4f), new Vector3(18, 0, 20), tactile);
+        Span("PlatformEdge", hall, new Vector3(-18, -1.3f, 19.8f), new Vector3(18, -0.2f, 20), concrete);
+        Span("NearWall_L", hall, new Vector3(-18, 0, 13.7f), new Vector3(-2, 4.7f, 14), wallTile);
+        Span("NearWall_R", hall, new Vector3(2, 0, 13.7f), new Vector3(18, 4.7f, 14), wallTile);
+        Span("NearWall_Top", hall, new Vector3(-2, 3, 13.7f), new Vector3(2, 4.7f, 14), wallTile);
+        Span("StripeNear_L", hall, new Vector3(-18, 2.19f, 14), new Vector3(-2, 2.41f, 14.02f), redTile, false);
+        Span("StripeNear_R", hall, new Vector3(2, 2.19f, 14), new Vector3(18, 2.41f, 14.02f), redTile, false);
+        Span("FarWall", hall, new Vector3(-18.3f, -1.5f, 25.5f), new Vector3(18.3f, 4.7f, 25.8f), wallTile);
+        Span("StripeFar", hall, new Vector3(-18, 2.19f, 25.48f), new Vector3(18, 2.41f, 25.5f), redTile, false);
+        Span("HallCeiling", hall, new Vector3(-18, 4.5f, 14), new Vector3(18, 4.7f, 25.5f), ceiling);
         foreach (int side in new[] { -1, 1 })
         {
             string s = side < 0 ? "W" : "E";
-            Slab("EndWall_" + s, hall, new Vector3(18.15f * side, 2.2f, 16.85f), new Vector3(0.3f, 4.8f, 6.3f), wallTile);
-            Slab("TunnelLintel_" + s, hall, new Vector3(18.15f * side, 3.3f, 22.75f), new Vector3(0.3f, 2.6f, 5.8f), concrete);
+            // The end wall closes the platform side; the lintel is the beam above the tunnel mouth.
+            Span("EndWall_" + s, hall, Mirror(new Vector3(18, -1.5f, 13.7f), side), Mirror(new Vector3(18.3f, 4.7f, 20), side), wallTile);
+            Span("TunnelLintel_" + s, hall, Mirror(new Vector3(18, 2, 20), side), Mirror(new Vector3(18.3f, 4.7f, 25.5f), side), concrete);
         }
         float[] lampX = { -12, -6, 0, 6, 12 };
         for (int i = 0; i < lampX.Length; i++)
@@ -96,31 +101,35 @@ public static class LookTestBuilder
 
         // ---- track pit and the two tunnels it runs into (x -40..40)
         var track = Group("Track");
-        Slab("PitFloor", track, new Vector3(0, -1.4f, 22.75f), new Vector3(80, 0.2f, 5.5f), gravel);
-        Slab("TrackBed", track, new Vector3(0, -1.295f, 22.75f), new Vector3(80, 0.01f, 2.6f), trackBed, false);
-        Slab("Rail_N", track, new Vector3(0, -1.24f, 22.03f), new Vector3(80, 0.11f, 0.07f), railMetal);
-        Slab("Rail_S", track, new Vector3(0, -1.24f, 23.47f), new Vector3(80, 0.11f, 0.07f), railMetal);
-                Puddle("PitPuddle", track, new Vector3(3.5f, -1.285f, 22.6f), 4.5f, 2.6f, puddle);
+        Span("PitFloor", track, new Vector3(-40, -1.5f, 20), new Vector3(40, -1.3f, 25.5f), gravel);
+        Span("TrackBed", track, new Vector3(-40, -1.3f, 21.45f), new Vector3(40, -1.29f, 24.05f), trackBed, false);
+        Span("Rail_N", track, new Vector3(-40, -1.29f, 22f), new Vector3(40, -1.18f, 22.07f), railMetal);
+        Span("Rail_S", track, new Vector3(-40, -1.29f, 23.43f), new Vector3(40, -1.18f, 23.5f), railMetal);
+        // Flat decals (puddles) float 1 cm above the surface below so they never fight with it.
+        Puddle("PitPuddle", track, new Vector3(3.5f, -1.28f, 22.6f), 4.5f, 2.6f, puddle);
         // Short service steps at the west end, so the player can climb back out of the pit.
         for (int k = 0; k < 4; k++)
-            Slab("PitStep_" + (k + 1), track, new Vector3(-16.2f, -1.3f + (k + 1) * 0.15f, 20.175f + (3 - k) * 0.35f),
-                 new Vector3(1.4f, (k + 1) * 0.3f, 0.35f), concrete);
+        {
+            float zFront = 20f + (4 - k) * 0.35f;   // lowest step sticks out furthest
+            Span("PitStep_" + (k + 1), track, new Vector3(-16.9f, -1.3f, zFront - 0.35f), new Vector3(-15.5f, -1.3f + (k + 1) * 0.3f, zFront), concrete);
+        }
         foreach (int side in new[] { -1, 1 })
         {
             string s = side < 0 ? "W" : "E";
             var tunnel = Group("Tunnel_" + s);
-            Slab("InnerWall", tunnel, new Vector3(29 * side, 0.25f, 19.85f), new Vector3(22, 3.5f, 0.3f), tunnelConcrete);
-            Slab("OuterWall", tunnel, new Vector3(29 * side, 0.25f, 25.65f), new Vector3(22, 3.5f, 0.3f), tunnelConcrete);
-            Slab("Ceiling", tunnel, new Vector3(29 * side, 2.1f, 22.75f), new Vector3(22, 0.2f, 6.2f), tunnelConcrete);
-            Slab("EndCap", tunnel, new Vector3(40.15f * side, 0.3f, 22.75f), new Vector3(0.3f, 3.6f, 6.2f), tunnelConcrete);
+            // Tunnel pieces start at x = 18.3, right where the hall's end wall and lintel stop.
+            Span("InnerWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 19.7f), side), Mirror(new Vector3(40, 2.2f, 20), side), tunnelConcrete);
+            Span("OuterWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 25.5f), side), Mirror(new Vector3(40, 2.2f, 25.8f), side), tunnelConcrete);
+            Span("Ceiling", tunnel, Mirror(new Vector3(18.3f, 2, 20), side), Mirror(new Vector3(40, 2.2f, 25.5f), side), tunnelConcrete);
+            Span("EndCap", tunnel, Mirror(new Vector3(40, -1.5f, 19.7f), side), Mirror(new Vector3(40.3f, 2.2f, 25.8f), side), tunnelConcrete);
         }
         // Red emergency lamp deep in the east tunnel: a distant warning colour at the edge of the fog.
-        var red = Box("EmergencyLamp", root.Find("Tunnel_E"), new Vector3(31, 1.2f, 20.02f), new Vector3(0.25f, 0.18f, 0.06f), redGlow);
+        var red = Box("EmergencyLamp", root.Find("Tunnel_E"), new Vector3(31, 1.2f, 20.03f), new Vector3(0.25f, 0.18f, 0.06f), redGlow);
         var redLight = AddLight(red, LightType.Point, Emergency, 8f, 7f);
         redLight.transform.localPosition = new Vector3(0, 0, 0.4f);
 
         // Second puddle on the platform floor, under a working lamp.
-        Puddle("PlatformPuddle", hall, new Vector3(-0.8f, 0.004f, 17.4f), 2.6f, 1.6f, puddle);
+        Puddle("PlatformPuddle", hall, new Vector3(-0.8f, 0.01f, 17.4f), 2.6f, 1.6f, puddle);
 
         // ---- props from the Metro PSX pack
         var props = Group("Props");
@@ -155,6 +164,8 @@ public static class LookTestBuilder
         BuildPlayer(new Vector3(0, 0.05f, 1.6f));
 
         foreach (var t in root.GetComponentsInChildren<Transform>()) t.gameObject.isStatic = true;
+
+        GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 
         EditorSceneManager.SaveScene(scene, ScenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
@@ -384,6 +395,16 @@ public static class LookTestBuilder
         g.SetParent(root);
         return g;
     }
+
+    // A box given by its lowest and highest corners (easier to make pieces meet exactly).
+    static GameObject Span(string name, Transform parent, Vector3 min, Vector3 max, Material mat, bool collide = true)
+    {
+        Vector3 lo = Vector3.Min(min, max), hi = Vector3.Max(min, max);
+        return Slab(name, parent, (lo + hi) * 0.5f, hi - lo, mat, collide);
+    }
+
+    // Flips a point to the west side (x becomes -x) when side is -1.
+    static Vector3 Mirror(Vector3 p, int side) => new Vector3(p.x * side, p.y, p.z);
 
     // A solid box (with collider) whose texture repeats every N metres in world space.
     static GameObject Slab(string name, Transform parent, Vector3 center, Vector3 size, Material mat, bool collide = true)
