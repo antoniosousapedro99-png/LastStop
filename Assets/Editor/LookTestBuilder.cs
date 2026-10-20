@@ -93,7 +93,7 @@ public static partial class LookTestBuilder
             string s = side < 0 ? "W" : "E";
             // The end wall closes the platform side; the lintel is the beam above the tunnel mouth.
             Span("EndWall_" + s, hall, Mirror(new Vector3(18, -1.5f, 13.7f), side), Mirror(new Vector3(18.3f, 4.7f, 20), side), wallTile);
-            Span("TunnelLintel_" + s, hall, Mirror(new Vector3(18, 2, 20), side), Mirror(new Vector3(18.3f, 4.7f, 25.5f), side), concrete);
+            Span("TunnelLintel_" + s, hall, Mirror(new Vector3(18, TunnelTop, 20), side), Mirror(new Vector3(18.3f, 4.7f, 25.5f), side), concrete);
         }
         float[] lampX = { -12, -6, 0, 6, 12 };
         for (int i = 0; i < lampX.Length; i++)
@@ -104,17 +104,17 @@ public static partial class LookTestBuilder
                  new Vector3(lampX[i], 4.48f, 18.6f), 90f, tubeLit, housing, flicker);
         }
 
-        // ---- track pit and the two tunnels it runs into (about 50 m of tunnel each side)
+        // ---- track pit and the two tunnels it runs into: east ~100 m, west ~85 m, each ending in a stalled train
         var track = Group("Track");
-        Span("PitFloor", track, new Vector3(-TunnelEnd, -1.5f, 20), new Vector3(TunnelEnd, -1.3f, 25.5f), gravel);
+        Span("PitFloor", track, new Vector3(-TunnelEndW, -1.5f, 20), new Vector3(TunnelEndE, -1.3f, 25.5f), gravel);
         // The track texture starts exactly at the bed's edge (z 21.45), so its painted rails fall at
         // 25% and 69% of its 2.6 m width; the 3D rails sit right on top of them.
         const float bedZ = 21.45f, bedWidth = 2.6f;
         tileOrigin[trackBed] = new Vector3(0, 0, bedZ);
-        Span("TrackBed", track, new Vector3(-TunnelEnd, -1.3f, bedZ), new Vector3(TunnelEnd, -1.29f, bedZ + bedWidth), trackBed, false);
+        Span("TrackBed", track, new Vector3(-TunnelEndW, -1.3f, bedZ), new Vector3(TunnelEndE, -1.29f, bedZ + bedWidth), trackBed, false);
         float railA = bedZ + bedWidth * 0.25f, railB = bedZ + bedWidth * 0.6875f;
-        Span("Rail_N", track, new Vector3(-TunnelEnd, -1.29f, railA - 0.035f), new Vector3(TunnelEnd, -1.18f, railA + 0.035f), railMetal);
-        Span("Rail_S", track, new Vector3(-TunnelEnd, -1.29f, railB - 0.035f), new Vector3(TunnelEnd, -1.18f, railB + 0.035f), railMetal);
+        Span("Rail_N", track, new Vector3(-TunnelEndW, -1.29f, railA - 0.035f), new Vector3(TunnelEndE, -1.18f, railA + 0.035f), railMetal);
+        Span("Rail_S", track, new Vector3(-TunnelEndW, -1.29f, railB - 0.035f), new Vector3(TunnelEndE, -1.18f, railB + 0.035f), railMetal);
         // Flat decals (puddles) float 1 cm above the surface below so they never fight with it.
         Puddle("PitPuddle", track, new Vector3(3.5f, -1.28f, 22.6f), 4.5f, 2.6f, puddle);
         // Short service steps at the west end, so the player can climb back out of the pit.
@@ -127,19 +127,21 @@ public static partial class LookTestBuilder
         {
             string s = side < 0 ? "W" : "E";
             var tunnel = Group("Tunnel_" + s);
+            float end = side > 0 ? TunnelEndE : TunnelEndW;
+            float top = TunnelTop + 0.2f;   // walls run up to the top of the ceiling slab
             // Tunnel pieces start at x = 18.3, right where the hall's end wall and lintel stop.
-            Span("InnerWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 19.7f), side), Mirror(new Vector3(TunnelEnd, 2.2f, 20), side), tunnelConcrete);
+            Span("InnerWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 19.7f), side), Mirror(new Vector3(end, top, 20), side), tunnelConcrete);
             if (side > 0)
             {
                 // The east tunnel's outer wall has the staff room doorway in it (1 m wide, 2.2 m tall).
-                Span("OuterWall_A", tunnel, new Vector3(18.3f, -1.5f, 25.5f), new Vector3(StaffDoorX, 2.2f, 25.8f), tunnelConcrete);
-                Span("OuterWall_B", tunnel, new Vector3(StaffDoorX + 1f, -1.5f, 25.5f), new Vector3(TunnelEnd, 2.2f, 25.8f), tunnelConcrete);
-                Span("DoorLintel", tunnel, new Vector3(StaffDoorX, 0.9f, 25.5f), new Vector3(StaffDoorX + 1f, 2.2f, 25.8f), tunnelConcrete);
+                Span("OuterWall_A", tunnel, new Vector3(18.3f, -1.5f, 25.5f), new Vector3(StaffDoorX, top, 25.8f), tunnelConcrete);
+                Span("OuterWall_B", tunnel, new Vector3(StaffDoorX + 1f, -1.5f, 25.5f), new Vector3(end, top, 25.8f), tunnelConcrete);
+                Span("DoorLintel", tunnel, new Vector3(StaffDoorX, 0.9f, 25.5f), new Vector3(StaffDoorX + 1f, top, 25.8f), tunnelConcrete);
                 Span("DoorThreshold", tunnel, new Vector3(StaffDoorX, -1.5f, 25.5f), new Vector3(StaffDoorX + 1f, -1.3f, 25.8f), concrete);
             }
-            else Span("OuterWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 25.5f), side), Mirror(new Vector3(TunnelEnd, 2.2f, 25.8f), side), tunnelConcrete);
-            Span("Ceiling", tunnel, Mirror(new Vector3(18.3f, 2, 20), side), Mirror(new Vector3(TunnelEnd, 2.2f, 25.5f), side), tunnelConcrete);
-            Span("EndCap", tunnel, Mirror(new Vector3(TunnelEnd, -1.5f, 19.7f), side), Mirror(new Vector3(TunnelEnd + 0.3f, 2.2f, 25.8f), side), tunnelConcrete);
+            else Span("OuterWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 25.5f), side), Mirror(new Vector3(end, top, 25.8f), side), tunnelConcrete);
+            Span("Ceiling", tunnel, Mirror(new Vector3(18.3f, TunnelTop, 20), side), Mirror(new Vector3(end, top, 25.5f), side), tunnelConcrete);
+            Span("EndCap", tunnel, Mirror(new Vector3(end, -1.5f, 19.7f), side), Mirror(new Vector3(end + 0.3f, top, 25.8f), side), tunnelConcrete);
         }
         // Red emergency lamp deep in the east tunnel: a distant warning colour at the edge of the fog.
         var red = Box("EmergencyLamp", root.Find("Tunnel_E"), new Vector3(31, 1.2f, 20.03f), new Vector3(0.25f, 0.18f, 0.06f), redGlow);

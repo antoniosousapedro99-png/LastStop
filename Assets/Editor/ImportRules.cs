@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 2;
+    public override uint GetVersion() => 3;
 
     void OnPreprocessTexture()
     {
@@ -22,7 +22,7 @@ public class ImportRules : AssetPostprocessor
     // simple Animation component play a clip by name, e.g. a quick grab when picking something up.
     void OnPreprocessModel()
     {
-        if (!assetPath.Contains("/Characters/PsxArms/")) return;
+        if (!assetPath.Contains("/Characters/PsxArms/") && !assetPath.Contains("/Characters/TheWrapper/")) return;
         var importer = (ModelImporter)assetImporter;
         importer.animationType = ModelImporterAnimationType.Legacy;
         importer.importAnimation = true;

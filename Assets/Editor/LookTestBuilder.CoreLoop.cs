@@ -8,7 +8,9 @@ using UnityEngine.Rendering;
 // and the player's gear (inventory, interaction, flashlight battery, shotgun with WRAD ARMS).
 public static partial class LookTestBuilder
 {
-    const float TunnelEnd = 68.3f;     // each tunnel runs from x = 18.3 to here (about 50 m)
+    const float TunnelEndE = 118.3f;   // east tunnel (staff room side) runs from x = 18.3 to here (~100 m)
+    const float TunnelEndW = 103.3f;   // west tunnel runs from x = -18.3 to minus this (~85 m)
+    const float TunnelTop = 3.0f;      // tunnel ceiling height (4.3 m above the track bed), room for a train
     const float StaffDoorX = 42.5f;    // west edge of the staff room doorway in the east tunnel
 
     const string ArtDir = "Assets/Art/Models";
@@ -41,17 +43,18 @@ public static partial class LookTestBuilder
         // ---- tunnel work lamps: caged bulbs on the inner wall, dark until the power returns
         var lamps = Group("TunnelLamps");
         foreach (int side in new[] { -1, 1 })
-            foreach (float x in new[] { 24f, 36f, 48f, 60f })
+            foreach (float x in new[] { 24f, 36f, 48f, 60f, 72f, 84f, 96f })
+                if (x < (side > 0 ? TunnelEndE : TunnelEndW) - 20f)   // none hidden behind the train
                 WorkLamp(lamps, new Vector3(x * side, 1.4f, 20f), housing, bulb);
 
         // ---- fuses (one per tunnel) and spare batteries, on crates and the floor
         var items = Group("Pickups");
-        var fuseCrateW = Span("Crate_FuseW", items, new Vector3(-60.5f, -1.3f, 24.7f), new Vector3(-59.9f, -0.7f, 25.3f), crate);
+        var fuseCrateW = Span("Crate_FuseW", items, new Vector3(-80.5f, -1.3f, 24.7f), new Vector3(-79.9f, -0.7f, 25.3f), crate);
         MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
-               Top(fuseCrateW, -60.2f, 25.0f), 30f, "PlasticBox1");
-        var fuseCrateE = Span("Crate_FuseE", items, new Vector3(61.7f, -1.3f, 20.2f), new Vector3(62.3f, -0.7f, 20.8f), crate);
+               Top(fuseCrateW, -80.2f, 25.0f), 30f, "PlasticBox1");
+        var fuseCrateE = Span("Crate_FuseE", items, new Vector3(95.7f, -1.3f, 20.2f), new Vector3(96.3f, -0.7f, 20.8f), crate);
         MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
-               Top(fuseCrateE, 62f, 20.5f), -60f, "PlasticBox1");
+               Top(fuseCrateE, 96f, 20.5f), -60f, "PlasticBox1");
         MakePickup(ModelPiece(SurvivalFbx, "Battery", items, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
                new Vector3(-13.2f, 0f, 14.8f), 70f, "PlasticBox1", lieDown: true);   // clear of the bench, so it can be looked at
         var batteryCrate = Span("Crate_Battery", items, new Vector3(-36.3f, -1.3f, 20.2f), new Vector3(-35.7f, -0.7f, 20.8f), crate);
@@ -59,6 +62,39 @@ public static partial class LookTestBuilder
                Top(batteryCrate, -36f, 20.5f), 15f, "PlasticBox1", lieDown: true);
 
         BuildStaffRoom(tubeLit, housing, concrete, ceiling, floorTile, doorMetal);
+
+        // ---- a stalled train at the end of each tunnel: dark, doors shut, filling the tunnel so the
+        // line seems to carry on beyond it. A dim cab light flickers on the end facing the player.
+        StalledTrain(1, TunnelEndE);
+        StalledTrain(-1, TunnelEndW);
+    }
+
+    static void StalledTrain(int side, float tunnelEnd)
+    {
+        var car = Prop("subway_car", root.Find(side > 0 ? "Tunnel_E" : "Tunnel_W"), Vector3.zero, 90f);
+        car.name = "StalledTrain";
+        car.transform.localScale *= 0.75f;                          // 4 m tall, 17.5 m long
+        var b = Bounds(car);
+        float nearX = side > 0 ? tunnelEnd - 1f - b.size.x : -(tunnelEnd - 1f - b.size.x);
+        float centreX = nearX + side * b.size.x * 0.5f;
+        StandOn(car, new Vector3(centreX, -1.3f, 22.75f));          // on the rails, centred on the track
+        b = Bounds(car);
+        float faceX = side > 0 ? b.min.x : b.max.x;                 // the end the player walks up to
+        var cab = new GameObject("CabLight");
+        cab.transform.SetParent(car.transform, true);
+        cab.transform.position = new Vector3(faceX - side * 0.4f, b.min.y + b.size.y * 0.55f, 22.75f);
+        var light = cab.AddComponent<Light>();
+        light.type = LightType.Point; light.color = new Color(1f, 0.55f, 0.3f);
+        light.intensity = 3f; light.range = 5f; light.shadows = LightShadows.None;
+        // Invisible wall across the tunnel at the train's end: the gaps beside the car are too dark
+        // to read as a way through, and this stops anyone squeezing past to find the tunnel ends.
+        var block = new GameObject("TrainBlocker").AddComponent<BoxCollider>();
+        block.transform.SetParent(car.transform.parent, true);
+        block.transform.position = new Vector3(faceX - side * 0.1f, 0.85f, 22.75f);
+        block.size = new Vector3(0.2f, 4.3f, 5.5f);
+        var flicker = cab.AddComponent<FlickeringLight>();
+        flicker.lamp = light;
+        flicker.minCalm = 3f; flicker.maxCalm = 9f;
     }
 
     // ---------------------------------------------------------------- fuse box
