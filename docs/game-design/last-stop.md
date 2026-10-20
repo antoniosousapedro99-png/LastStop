@@ -25,6 +25,8 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 
 ## Look
 
+- **Surface brightness:** concrete and gravel tints stay around 0.5–0.6. Near-black surfaces made the flashlight look useless in the tunnels.
+
 - **Cleaner PS1:** low-poly PSX models with crunchy pixel-sharp textures, at **full resolution**, with no vertex wobble and no pixelation filter.
 - **Lighting:** pools of light with near-black darkness between them.
   - Stations: mostly cold, greenish fluorescent tubes.
@@ -46,7 +48,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - Walk 2.2 m/s, hold **Shift** to sprint at 4.2 m/s.
   - **C** toggles crouch: 1.2 m/s, body 1.1 m, eyes 0.95 m, footsteps half as loud. While crouched you can't sprint or jump, and you can't stand up under something low.
   - **Space** jumps 0.4 m: a short, heavy hop.
-  - Flashlight (**F**) works like a real torch: a narrow bright hotspot (32°, brightness 110) that throws about 50 m, plus a wide, soft spill ring (85°, brightness 10) lighting the surroundings close by.
+  - Flashlight (**F**) works like a real torch: a narrow bright hotspot (32°, brightness 160) that throws about 60 m, plus a wide, soft spill ring (85°, brightness 30, 25 m) that lights tunnel walls and ceiling around you.
   - Platform benches face the tracks.
   - Vertical field of view 60° (about 90° across a 16:9 screen).
 

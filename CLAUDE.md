@@ -43,6 +43,7 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
   - Flat decals (puddles, signs) sit at least 1 cm off the surface behind them.
   - Every builder must call `GeometryCheck.Find(root)` before saving and end with **0** warnings. It can also be run from **Last Stop → Check Geometry**.
 - **Lighting rules:**
+  - **Keep surfaces reasonably light** (concrete and gravel tints about 0.5–0.6). Darkness should come from missing light, not from black textures, or the flashlight has nothing to show.
   - URP lights fade with distance squared, so high lamps need large intensities (the platform lamps use 45, the corridor lamps 16, the flashlight 20).
   - Glowing tubes use the **Unlit** shader with an HDR colour, because the Lit `_EMISSION` keyword got switched off.
   - Puddle reflections come from a reflection probe **baked at build time** (`Assets/Lighting`), because realtime probes are off in the quality settings.

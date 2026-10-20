@@ -38,11 +38,13 @@ public static class LookTestBuilder
         var redTile = Mat("WallTileRed", Tex("tile_tile.jpg"), new Color(0.48f, 0.10f, 0.09f), 1.6f, 0.35f);
         var floorTile = Mat("FloorTile", Tex("Tiles.png"), Color.white, 1.2f, 0.25f);
         var tactile = Mat("TactileStrip", Tex("TactilePaving.png"), Color.white, 0.6f, 0.2f);
-        var concrete = Mat("Concrete", Tex("ConcreteBare.png"), new Color(0.45f, 0.45f, 0.43f), 2f, 0.1f);
-        var tunnelConcrete = Mat("TunnelConcrete", Tex("ConcreteBare.png"), new Color(0.25f, 0.24f, 0.23f), 2f, 0.1f);
-        var ceiling = Mat("Ceiling", Tex("ConcreteBare.png"), new Color(0.22f, 0.22f, 0.21f), 2.5f, 0.05f);
-        var gravel = Mat("PitGravel", Tex("Floor.png"), new Color(0.35f, 0.33f, 0.30f), 1.5f, 0.05f);
-        var trackBed = Mat("TrackBed", Tex("road_rails.jpg"), new Color(0.6f, 0.58f, 0.55f), 2.6f, 0.1f);
+        // Surface brightness: real concrete reflects roughly a third of the light that hits it.
+        // Tinting it much darker makes the flashlight look useless, so keep tints around 0.5-0.6.
+        var concrete = Mat("Concrete", Tex("ConcreteBare.png"), new Color(0.6f, 0.6f, 0.58f), 2f, 0.1f);
+        var tunnelConcrete = Mat("TunnelConcrete", Tex("ConcreteBare.png"), new Color(0.55f, 0.53f, 0.5f), 2f, 0.1f);
+        var ceiling = Mat("Ceiling", Tex("ConcreteBare.png"), new Color(0.4f, 0.4f, 0.38f), 2.5f, 0.05f);
+        var gravel = Mat("PitGravel", Tex("Floor.png"), new Color(0.6f, 0.57f, 0.52f), 1.5f, 0.05f);
+        var trackBed = Mat("TrackBed", Tex("road_rails.jpg"), new Color(0.8f, 0.78f, 0.74f), 2.6f, 0.1f);
         var railMetal = Mat("RailMetal", Tex("metal_02.png"), new Color(0.55f, 0.52f, 0.5f), 1f, 0.6f, 0.8f);
         var housing = Mat("LampHousing", null, new Color(0.12f, 0.12f, 0.12f), 1f, 0.3f, 0.5f);
         var doorMetal = Mat("DoorMetal", Tex("Door_01.jpg"), new Color(0.7f, 0.7f, 0.7f), 1f, 0.3f, 0.3f);
@@ -212,7 +214,7 @@ public static class LookTestBuilder
         var beam = torch.AddComponent<Light>();
         beam.type = LightType.Spot;
         beam.color = torchColour;
-        beam.intensity = 110f; beam.range = 50f;
+        beam.intensity = 160f; beam.range = 60f;
         beam.spotAngle = 32f; beam.innerSpotAngle = 8f;
         beam.shadows = LightShadows.Soft;
         var spillObject = new GameObject("Spill");
@@ -220,7 +222,7 @@ public static class LookTestBuilder
         var spill = spillObject.AddComponent<Light>();
         spill.type = LightType.Spot;
         spill.color = torchColour;
-        spill.intensity = 10f; spill.range = 18f;
+        spill.intensity = 30f; spill.range = 25f;
         spill.spotAngle = 85f; spill.innerSpotAngle = 40f;
         spill.shadows = LightShadows.None;
         var torchAudio = torch.AddComponent<AudioSource>();
