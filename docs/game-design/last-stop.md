@@ -43,7 +43,10 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 ## Built so far
 
 - **Look test** (`Assets/Scenes/LookTest.unity`, rebuilt by **Last Stop → Build Look Test**). A white-tiled corridor opens onto a platform with track pit, puddles, lamps (one dead, one flickering and buzzing), tunnel mouths (red emergency lamp in the east tunnel), and a player with flashlight and footsteps.
-  - Walk speed 2.2 m/s, Shift for 4 m/s.
+  - Walk 2.2 m/s, hold **Shift** to sprint at 4.2 m/s.
+  - **C** toggles crouch: 1.2 m/s, body 1.1 m, eyes 0.95 m, footsteps half as loud. While crouched you can't sprint or jump, and you can't stand up under something low.
+  - **Space** jumps 0.4 m: a short, heavy hop.
+  - Flashlight (**F**): brightness 28, reach 35 m (raised 40% after the first playtest).
   - Vertical field of view 60° (about 90° across a 16:9 screen).
 
 ## Open questions (ask before building what they affect)

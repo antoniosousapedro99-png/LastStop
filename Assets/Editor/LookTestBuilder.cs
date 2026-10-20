@@ -199,6 +199,8 @@ public static class LookTestBuilder
 
         var look = player.AddComponent<PlayerLook>();
         look.cameraPivot = cam.transform;
+        var crouch = player.AddComponent<PlayerCrouch>();
+        crouch.cameraPivot = cam.transform;
 
         var torch = new GameObject("Flashlight");
         torch.transform.SetParent(cam.transform, false);
@@ -206,7 +208,7 @@ public static class LookTestBuilder
         var beam = torch.AddComponent<Light>();
         beam.type = LightType.Spot;
         beam.color = new Color(1f, 0.94f, 0.82f);
-        beam.intensity = 20f; beam.range = 25f;
+        beam.intensity = 28f; beam.range = 35f;   // +40% after the first playtest
         beam.spotAngle = 52f; beam.innerSpotAngle = 22f;
         beam.shadows = LightShadows.Soft;
         var torchAudio = torch.AddComponent<AudioSource>();

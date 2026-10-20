@@ -64,7 +64,12 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
 - Eval files are method bodies with fully qualified names. Put them in the project's `Temp/` folder and delete them afterwards.
 - **Any Play-mode eval must start with `if (!UnityEngine.Application.isPlaying) return ...;`**.
 - After `editor_play`, set `Application.runInBackground = true` so Play mode keeps running when Unity isn't focused. Afterwards, in edit mode, set `PlayerSettings.runInBackground = false` and check `ProjectSettings.asset` still says `runInBackground: 0`.
-- Input can be simulated with `InputSystem.QueueStateEvent(Keyboard.current, new KeyboardState(Key.W))`. Release keys afterwards with an empty `KeyboardState`.
+- **Simulating keys while Unity is in the background** (real keyboards are ignored then). In each new Play session, do this in order:
+  1. Set `InputSystem.settings.backgroundBehavior = IgnoreFocus` and `editorInputBehaviorInPlayMode = AllDeviceInputAlwaysGoesToGameView`, then assign `InputSystem.settings = s`.
+  2. Add a fresh `InputSystem.AddDevice<Keyboard>("TestKeyboard")` and call `.MakeCurrent()`.
+  3. `QueueStateEvent(Keyboard.current, new KeyboardState(Key.W, ...))` presses keys; an empty `KeyboardState` releases them.
+  - A device added before step 1 stays deaf. The settings are in memory only and reset with Play mode.
+  - Game time runs on several seconds between evals, so measure with a recorder hooked to `InputSystem.onAfterUpdate` (store max speed/height on a temporary GameObject), not by reading positions later.
 - The real mouse moves the camera while Play mode runs (cursor locked), so set the view right before each capture.
 - `capture_game_view --save_path` only accepts paths inside the project and lands in `Assets/Temp`. Delete that with `AssetDatabase.DeleteAsset("Assets/Temp")` when done.
 - Exit Play mode (`editor_stop`) when testing is done.

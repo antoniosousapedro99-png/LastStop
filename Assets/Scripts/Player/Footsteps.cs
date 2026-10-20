@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Plays a random footstep sound every time the player has walked a stride.
-// Running makes strides come faster simply because the distance is covered sooner.
+// Running makes strides come faster simply because the distance is covered sooner; crouching is quieter.
 public class Footsteps : MonoBehaviour
 {
     public PlayerMovement movement;
@@ -27,6 +27,7 @@ public class Footsteps : MonoBehaviour
         if (steps.Length > 1 && index == lastIndex) index = (index + 1) % steps.Length;
         lastIndex = index;
         audioSource.pitch = Random.Range(0.92f, 1.06f);
-        audioSource.PlayOneShot(steps[index], volume);
+        // Crouched steps are softer: you're placing your feet carefully.
+        audioSource.PlayOneShot(steps[index], movement.IsCrouched ? volume * 0.5f : volume);
     }
 }
