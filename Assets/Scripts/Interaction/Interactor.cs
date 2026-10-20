@@ -5,10 +5,13 @@ using UnityEngine.InputSystem;
 // if it hits something interactable, the prompt is shown and E uses it.
 public class Interactor : MonoBehaviour
 {
-    public float reach = 2.2f;              // metres: arm's length plus a step
+    public float reach = 2.5f;              // metres: arm's length plus a step
     public PlayerInventory inventory;
 
     public IInteractable Target { get; private set; }
+
+    // Fired whenever the player uses something (the arms play a quick grab).
+    public static event System.Action Interacted;
 
     void Update()
     {
@@ -21,7 +24,10 @@ public class Interactor : MonoBehaviour
 
         var keyboard = Keyboard.current;
         if (Target != null && keyboard != null && keyboard.eKey.wasPressedThisFrame)
+        {
             Target.Interact(this);
+            Interacted?.Invoke();
+        }
 
         Hud.SetPrompt(Target != null ? "[E] " + Target.Prompt : null);
     }

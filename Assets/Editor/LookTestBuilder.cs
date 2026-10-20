@@ -25,11 +25,14 @@ public static partial class LookTestBuilder
 
     static Transform root;
     static readonly Dictionary<Material, float> tileSize = new Dictionary<Material, float>();
+    // Where a material's texture grid starts (default: the world origin). Used to line a texture up with a piece.
+    static readonly Dictionary<Material, Vector3> tileOrigin = new Dictionary<Material, Vector3>();
 
     [MenuItem("Last Stop/Build Look Test")]
     public static void Build()
     {
         tileSize.Clear();
+        tileOrigin.Clear();
         EnsureFolder(MatDir);
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         root = new GameObject("Level").transform;
@@ -104,9 +107,14 @@ public static partial class LookTestBuilder
         // ---- track pit and the two tunnels it runs into (about 50 m of tunnel each side)
         var track = Group("Track");
         Span("PitFloor", track, new Vector3(-TunnelEnd, -1.5f, 20), new Vector3(TunnelEnd, -1.3f, 25.5f), gravel);
-        Span("TrackBed", track, new Vector3(-TunnelEnd, -1.3f, 21.45f), new Vector3(TunnelEnd, -1.29f, 24.05f), trackBed, false);
-        Span("Rail_N", track, new Vector3(-TunnelEnd, -1.29f, 22f), new Vector3(TunnelEnd, -1.18f, 22.07f), railMetal);
-        Span("Rail_S", track, new Vector3(-TunnelEnd, -1.29f, 23.43f), new Vector3(TunnelEnd, -1.18f, 23.5f), railMetal);
+        // The track texture starts exactly at the bed's edge (z 21.45), so its painted rails fall at
+        // 25% and 69% of its 2.6 m width; the 3D rails sit right on top of them.
+        const float bedZ = 21.45f, bedWidth = 2.6f;
+        tileOrigin[trackBed] = new Vector3(0, 0, bedZ);
+        Span("TrackBed", track, new Vector3(-TunnelEnd, -1.3f, bedZ), new Vector3(TunnelEnd, -1.29f, bedZ + bedWidth), trackBed, false);
+        float railA = bedZ + bedWidth * 0.25f, railB = bedZ + bedWidth * 0.6875f;
+        Span("Rail_N", track, new Vector3(-TunnelEnd, -1.29f, railA - 0.035f), new Vector3(TunnelEnd, -1.18f, railA + 0.035f), railMetal);
+        Span("Rail_S", track, new Vector3(-TunnelEnd, -1.29f, railB - 0.035f), new Vector3(TunnelEnd, -1.18f, railB + 0.035f), railMetal);
         // Flat decals (puddles) float 1 cm above the surface below so they never fight with it.
         Puddle("PitPuddle", track, new Vector3(3.5f, -1.28f, 22.6f), 4.5f, 2.6f, puddle);
         // Short service steps at the west end, so the player can climb back out of the pit.
@@ -461,7 +469,8 @@ public static partial class LookTestBuilder
         go.transform.SetParent(parent, false);
         go.transform.position = center; // centres are given in world space
         float tile = tileSize.TryGetValue(mat, out var t) ? t : 1f;
-        go.AddComponent<MeshFilter>().sharedMesh = BoxMesh(center, size, tile, name);
+        Vector3 origin = tileOrigin.TryGetValue(mat, out var o) ? o : Vector3.zero;
+        go.AddComponent<MeshFilter>().sharedMesh = BoxMesh(center - origin, size, tile, name);
         go.AddComponent<MeshRenderer>().sharedMaterial = mat;
         var col = go.AddComponent<BoxCollider>();
         col.size = size;

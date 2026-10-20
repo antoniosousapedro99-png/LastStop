@@ -55,6 +55,8 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
 - **Pickups:** `Pickup` (Fuse, Battery, Shotgun, Shell). Counts live in `PlayerInventory`.
 - **Held gun and arms:**
   - They sit on rendering layer `ViewmodelLayer` (Light Layer 1). The torch lights skip it; a faint `ViewmodelFill` light follows the torch.
+  - Arms model: `PsxArms` (imported as Legacy animation; `ArmsController` plays `ArmsRig|grab.R` on `Interactor.Interacted`). Placed by its `camera` bone on the player camera, plus `ShoulderOffset` so the elbows can bend.
+  - **Hand-pose lesson:** a left hand palm-up with fingers forward has its thumb pointing LEFT; finger curl is positive toward the palm. If the target is beyond arm reach (upper + lower length) the arm goes straight: check the distance first.
   - `ArmsRig` uses two-bone IK, sets each hand's direction (fingers/thumb in grip space), rolls the forearm with the hand (`forearmRollShare`) so the wrist doesn't tear, and curls the fingers.
   - Tune poses with a side-view debug camera.
 - **Flashlight** softens its beam when the surface ahead is close (`fullStrengthDistance`), so it doesn't blind you up close but still reaches 60 m.

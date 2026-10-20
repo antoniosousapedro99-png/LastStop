@@ -16,7 +16,7 @@ public class Shotgun : MonoBehaviour
     public Transform muzzle;               // tip of the barrels
     public Light muzzleLight;
     public Renderer muzzleFlash;           // glowing blob shown for a split second
-    public GameObject[] showWhenRaised;    // gun + arms renderers' roots
+    public GameObject[] showWhenRaised;    // the gun model (the arms are handled by ArmsController)
     public Material impactMaterial;
     public AudioClip raiseSound, lowerSound, reloadSound, dryFireSound;
 
@@ -35,6 +35,7 @@ public class Shotgun : MonoBehaviour
     public Vector3 loweredTilt = new Vector3(35f, -20f, 0f);
 
     public bool Raised { get; private set; }
+    public float RaiseAmount => raise;    // 0 = lowered and hidden, 1 = up (the arms follow this)
     public bool Reloading { get; private set; }
 
     float raise;         // 0 = lowered and hidden, 1 = up and ready

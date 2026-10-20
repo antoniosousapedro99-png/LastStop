@@ -9,6 +9,16 @@ public class FuseBox : MonoBehaviour, IInteractable
     public AudioClip insertSound;
 
     int installed;
+    PlayerInventory inventory;
+
+    int Carried
+    {
+        get
+        {
+            if (!inventory) inventory = FindAnyObjectByType<PlayerInventory>();
+            return inventory ? inventory.fuses : 0;
+        }
+    }
 
     int Required => fuseSlots.Length;
 
@@ -23,7 +33,10 @@ public class FuseBox : MonoBehaviour, IInteractable
         {
             if (grid.IsOn) return null;
             if (installed >= Required) return "Pull the breaker";
-            return "Insert fuse (" + installed + "/" + Required + ")";
+            // Say how many fuses the player carries, so it's clear whether E will do anything.
+            int carried = Carried;
+            if (carried == 0) return "Fuse box (" + installed + "/" + Required + " fuses) - find fuses";
+            return "Insert fuse (" + installed + "/" + Required + ", carrying " + carried + ")";
         }
     }
 

@@ -35,8 +35,18 @@ public class ArmsRig : MonoBehaviour
     public Arm right, left;
     [Range(0, 1)] public float forearmRollShare = 0.75f;   // how much of the hand's roll the forearm takes
 
+    Transform[] allBones;
+    Quaternion[] allRest;
+    Vector3[] allRestPos;
+
     void Awake()
     {
+        // Remember every bone's rest pose, so poses left over from an animation (e.g. a grab)
+        // are wiped before the arms are bent around the gun.
+        allBones = GetComponentsInChildren<Transform>();
+        allRest = new Quaternion[allBones.Length];
+        allRestPos = new Vector3[allBones.Length];
+        for (int i = 0; i < allBones.Length; i++) { allRest[i] = allBones[i].localRotation; allRestPos[i] = allBones[i].localPosition; }
         Init(right);
         Init(left);
     }
@@ -64,6 +74,11 @@ public class ArmsRig : MonoBehaviour
 
     void LateUpdate()
     {
+        for (int i = 1; i < allBones.Length; i++)   // [0] is this object itself
+        {
+            allBones[i].localRotation = allRest[i];
+            allBones[i].localPosition = allRestPos[i];
+        }
         Solve(right);
         Solve(left);
     }

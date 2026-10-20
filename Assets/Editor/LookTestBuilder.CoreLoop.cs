@@ -35,7 +35,8 @@ public static partial class LookTestBuilder
         grid.hum = hum;
 
         // ---- fuse box on the platform's west end wall, in the flickering lamp's light
-        BuildFuseBox(new Vector3(-18f, 1.35f, 17f));
+        // At eye level (centre 1.5 m) and a good size, so it's easy to look at and hard to miss.
+        BuildFuseBox(new Vector3(-18f, 1.5f, 17f));
 
         // ---- tunnel work lamps: caged bulbs on the inner wall, dark until the power returns
         var lamps = Group("TunnelLamps");
@@ -52,7 +53,7 @@ public static partial class LookTestBuilder
         MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
                Top(fuseCrateE, 62f, 20.5f), -60f, "PlasticBox1");
         MakePickup(ModelPiece(SurvivalFbx, "Battery", items, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
-               new Vector3(-10.4f, 0f, 14.55f), 70f, "PlasticBox1", lieDown: true);
+               new Vector3(-13.2f, 0f, 14.8f), 70f, "PlasticBox1", lieDown: true);   // clear of the bench, so it can be looked at
         var batteryCrate = Span("Crate_Battery", items, new Vector3(-36.3f, -1.3f, 20.2f), new Vector3(-35.7f, -0.7f, 20.8f), crate);
         MakePickup(ModelPiece(SurvivalFbx, "Battery", items, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
                Top(batteryCrate, -36f, 20.5f), 15f, "PlasticBox1", lieDown: true);
@@ -66,7 +67,7 @@ public static partial class LookTestBuilder
         var box = new GameObject("FuseBox");
         box.transform.SetParent(root);
         // The breaker model's front faces -X; turn it around so it faces into the platform (+X).
-        var model = Model(BreakerFbx, null, box.transform, Tex2("Props/Plumbing/FuseBox.png"), 1.6f, 180f);
+        var model = Model(BreakerFbx, null, box.transform, Tex2("Props/Plumbing/FuseBox.png"), 2.2f, 180f);
         var b = Bounds(model);
         model.transform.position += wallPoint + new Vector3(0.002f, 0, 0) - new Vector3(b.min.x, b.center.y, b.center.z);
 
@@ -323,10 +324,12 @@ public static partial class LookTestBuilder
         var gripLeft = new GameObject("GripLeft").transform;
         gripLeft.SetParent(pivot, false);
         Vector3 forendLocal = pivot.InverseTransformPoint(forend.GetComponent<Renderer>().bounds.center);
-        // The left wrist sits a little left, below and behind the forend, so the palm ends up under it.
-        gripLeft.localPosition = forendLocal + new Vector3(-0.07f, -0.09f, 0f);
+        // The left wrist sits just below the forend, so the palm-up hand supports it from underneath.
+        gripLeft.localPosition = forendLocal + new Vector3(0f, -0.05f, 0f);
 
-        var arms = BuildArms(rig, gripRight, gripLeft);
+
+        var shotgun = rig.gameObject.AddComponent<Shotgun>();
+        var arms = BuildArms(rig, gripRight, gripLeft, shotgun);
 
         // Light layers: the torch skips the held gun and arms (it would blast them white at 30 cm);
         // station lamps still light them, plus a faint fill light that follows the torch.
@@ -344,7 +347,6 @@ public static partial class LookTestBuilder
         SetLightLayers(fill, ViewmodelLayer);
         flashlightScript.viewmodelFill = fill;
 
-        var shotgun = rig.gameObject.AddComponent<Shotgun>();
         shotgun.raisedPosition = new Vector3(0.12f, -0.16f, 0.22f);
         shotgun.inventory = inventory;
         shotgun.look = player.GetComponent<PlayerLook>();
@@ -352,7 +354,7 @@ public static partial class LookTestBuilder
         shotgun.muzzle = muzzle;
         shotgun.muzzleLight = flashLight;
         shotgun.muzzleFlash = flash.GetComponent<Renderer>();
-        shotgun.showWhenRaised = new[] { gun, arms };
+        shotgun.showWhenRaised = new[] { gun };
         shotgun.impactMaterial = ImpactMaterial();
         shotgun.raiseSound = Load<AudioClip>(SfxDir + "/DesignedGunSoundHandling1.wav");
         shotgun.lowerSound = Load<AudioClip>(SfxDir + "/DesignedGunSoundHandling2.wav");
@@ -360,14 +362,20 @@ public static partial class LookTestBuilder
         shotgun.dryFireSound = Load<AudioClip>(SfxDir + "/SwitchButton1_Off.wav");
     }
 
-    // WRAD ARMS: shoulders just below and behind the camera, hands placed on the gun by ArmsRig.
-    static GameObject BuildArms(Transform rig, Transform gripRight, Transform gripLeft)
+    // PSX first-person arms (black fingerless gloves). The rig has a "camera" bone the animations were
+    // made around, so the model is placed with that bone exactly on the player's camera.
+    // ArmsRig bends the arms around the gun; ArmsController shows them and plays the grab animation.
+    static GameObject BuildArms(Transform rig, Transform gripRight, Transform gripLeft, Shotgun shotgun)
     {
-        // The model faces -Z, so it is turned 180 degrees to face forward.
-        var arms = Model(ArtDir + "/Characters/WradArms/WradArms.fbx", null, rig, Tex2("Characters/WradArms/arm_albedo_pale.png"), 1f, 180f);
+        var arms = Model(ArtDir + "/Characters/PsxArms/PsxArms.fbx", null, rig, Tex2("Characters/PsxArms/PsxArms_Gloves.png"), 1f, 0f);
         arms.name = "Arms";
-        arms.transform.localPosition = new Vector3(0.02f, -0.2f, -0.06f);
-        arms.transform.localScale = Vector3.one * 0.12f;               // ~0.65 m from shoulder to wrist
+        arms.transform.localRotation = Quaternion.identity;
+        Transform cameraBone = null;
+        foreach (var t in arms.GetComponentsInChildren<Transform>()) if (t.name == "camera") cameraBone = t;
+        arms.transform.localPosition = -rig.InverseTransformPoint(cameraBone.position);
+        // Shoulders sit a bit forward of the camera, so the hands reach the gun with the elbows
+        // bent down (a fully stretched arm looks stiff and robotic).
+        arms.transform.localPosition += ShoulderOffset;
         foreach (var r in arms.GetComponentsInChildren<SkinnedMeshRenderer>())
         {
             r.updateWhenOffscreen = true;
@@ -379,13 +387,22 @@ public static partial class LookTestBuilder
         hintRight.localPosition = new Vector3(0.55f, -0.7f, 0.0f);
         var hintLeft = new GameObject("ElbowHintLeft").transform;
         hintLeft.SetParent(rig, false);
-        hintLeft.localPosition = new Vector3(-1.0f, -0.45f, 0.25f);   // elbow out to the left: forearm comes in diagonally
+        hintLeft.localPosition = new Vector3(-0.25f, -0.9f, 0f);       // elbow hangs down, slightly left
 
         var ik = arms.AddComponent<ArmsRig>();
-        ik.right = ArmFor(arms.transform, "r", gripRight, hintRight);
-        ik.left = ArmFor(arms.transform, "l", gripLeft, hintLeft);
+        ik.right = ArmFor(arms.transform, "R", gripRight, hintRight);
+        ik.left = ArmFor(arms.transform, "L", gripLeft, hintLeft);
+
+        var controller = rig.gameObject.AddComponent<ArmsController>();
+        controller.shotgun = shotgun;
+        controller.rig = ik;
+        controller.clips = arms.GetComponent<Animation>();
+        controller.visuals = arms;
         return arms;
     }
+
+    static Vector3 ShoulderOffset = new Vector3(0f, -0.04f, 0.16f);
+    static float LeftCurl = 40f;    // degrees per joint the left fingers curl up around the forend
 
     static ArmsRig.Arm ArmFor(Transform arms, string side, Transform target, Transform hint)
     {
@@ -394,23 +411,21 @@ public static partial class LookTestBuilder
         var fingers = new List<Transform>();
         var thumb = new List<Transform>();
         foreach (var name in new[] { "index", "middle", "ring", "pinky" })
-            for (int i = 1; i <= 3; i++) fingers.Add(bones["finger_" + name + i + "." + side]);
-        for (int i = 1; i <= 3; i++) thumb.Add(bones["finger_thumb" + i + "." + side]);
+            for (int i = 1; i <= 3; i++) fingers.Add(bones["f_" + name + ".0" + i + "." + side]);
+        for (int i = 1; i <= 3; i++) thumb.Add(bones["thumb.0" + i + "." + side]);
         return new ArmsRig.Arm
         {
-            upper = bones["bicep." + side], lower = bones["forearm." + side], hand = bones["wrist." + side],
-            twist0 = bones["forearm.Twist0." + side], twist1 = bones["forearm.Twist1." + side],
+            upper = bones["upper_arm." + side], lower = bones["forearm." + side], hand = bones["hand." + side],
             target = target, elbowHint = hint,
             fingers = fingers.ToArray(), thumb = thumb.ToArray(),
             // Right hand wraps the stock's grip (knuckles forward-down, thumb on top);
-            // left hand holds the forend's left side from below, fingers curling up over it (like the reference).
-            fingersDirection = side == "r" ? new Vector3(0f, -0.6f, 0.8f) : new Vector3(0.3f, 0.6f, 0.75f),
-            thumbDirection = side == "r" ? new Vector3(-0.3f, 0.9f, 0.3f) : new Vector3(0f, -0.8f, 0.6f),
-            fingerCurl = side == "r" ? -60f : -70f,
-            thumbCurl = side == "r" ? -25f : 70f,
+            // left hand under the forend: palm up, fingers pointing forward along the barrel (palm up on a left hand = thumb points left).
+            fingersDirection = side == "R" ? new Vector3(0f, -0.6f, 0.8f) : new Vector3(0f, 0.1f, 1f),
+            thumbDirection = side == "R" ? new Vector3(-0.3f, 0.9f, 0.3f) : new Vector3(-1f, 0.2f, 0f),
+            fingerCurl = side == "R" ? -60f : LeftCurl,
+            thumbCurl = side == "R" ? -25f : 0f,
         };
     }
-
     // Dark, ragged dent mark for shotgun hits: a soft-edged spot drawn once by code and saved as a texture.
     static Material ImpactMaterial()
     {

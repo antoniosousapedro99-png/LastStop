@@ -13,7 +13,7 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | Survival pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Flashlight battery, Zippo | `Models/Props/Survival` |
 | 3D Retro Plumbing & Wiring | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Fuse box and fuses (converted from .blend) | `Models/Props/Plumbing` |
 | Shotgun PS1 V2.0 | see `README.txt` (to confirm) | to confirm | to confirm | Shotgun | `Models/Weapons/ShotgunPS1` |
-| WRAD ARMS | wriks | CC0 (`LICENSE.txt`); attribution optional: "WRAD ARMS by wriks" | optional | First-person arms | `Models/Characters/WradArms` |
+| PSX First Person Arms (free) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | First-person arms (black fingerless gloves) and their grab animation | `Models/Characters/PsxArms` |
 | PSX Horror Music | Svirls (TheRealSwirls) | CC BY | yes ("Svirls", composer) | Power-restored sting ("Powerbox") | `Audio/Music/Svirls` |
 
 Asset library on disk: `Documents/PSX horror/assets` (copy in only the files actually used).

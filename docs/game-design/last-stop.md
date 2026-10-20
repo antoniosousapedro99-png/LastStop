@@ -64,9 +64,10 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
     - Holds **2** shells; 8 pellets per shot.
     - Each shot: a muzzle flash that lights the area, recoil, and dark dent marks where pellets hit.
     - It's silent until a shotgun sound is found; it stuns the stalker later.
-  - **Arms:** held in **WRAD ARMS**.
-    - Left hand on the left side of the forend with its fingers curled over it, right hand on the grip (reference: Metro Exodus).
-    - The forearm rolls with the hand so the wrist stays straight.
+  - **Arms:** PSX first-person arms in **black fingerless work gloves**.
+    - Right hand on the grip. Left hand **under the forend, palm up, thumb pointing left**, fingers curled up around it; the left elbow hangs down (not a stretched arm).
+    - Arms appear only while the shotgun is up, plus a quick hand **grab** when picking something up or using things.
+  - **Fuse box** sits at eye level (centre 1.5 m), and a small dot marks the centre of the screen (brighter when you can use what you're looking at). Its prompt says how many fuses you carry.
   - **Controls:** WASD, Shift sprint, C crouch, Space jump, F torch, H battery, E use, Q shotgun, LMB fire, R reload.
   - Vertical field of view 60° (about 90° across a 16:9 screen).
 

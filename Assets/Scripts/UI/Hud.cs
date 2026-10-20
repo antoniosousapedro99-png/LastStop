@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// Minimal on-screen text: the interaction prompt (bottom centre) and short notices
+// Minimal on-screen text: a small dot in the centre of the screen (brighter when you're looking at
+// something you can use), the interaction prompt (bottom centre) and short notices
 // such as "Fuse (1 carried)" that fade out after a few seconds. Placeholder look until the UI pass.
 public class Hud : MonoBehaviour
 {
@@ -24,7 +25,15 @@ public class Hud : MonoBehaviour
         float scale = Screen.height / 1080f;   // same size at any resolution
         style.fontSize = Mathf.RoundToInt(26 * scale);
 
-        if (!string.IsNullOrEmpty(prompt))
+        // Centre dot: shows exactly where the 'look at' ray points.
+        bool onTarget = !string.IsNullOrEmpty(prompt);
+        float dot = Mathf.Max(2f, (onTarget ? 6f : 3f) * scale);
+        var old = GUI.color;
+        GUI.color = new Color(0.92f, 0.9f, 0.85f, onTarget ? 0.9f : 0.35f);
+        GUI.DrawTexture(new Rect(Screen.width * 0.5f - dot * 0.5f, Screen.height * 0.5f - dot * 0.5f, dot, dot), Texture2D.whiteTexture);
+        GUI.color = old;
+
+        if (onTarget)
             Shadowed(new Rect(0, Screen.height * 0.78f, Screen.width, 44 * scale), prompt, 1f);
 
         if (!string.IsNullOrEmpty(notice) && Time.time < noticeUntil)

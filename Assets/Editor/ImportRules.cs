@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 1;
+    public override uint GetVersion() => 2;
 
     void OnPreprocessTexture()
     {
@@ -16,6 +16,16 @@ public class ImportRules : AssetPostprocessor
         importer.filterMode = FilterMode.Point;
         importer.anisoLevel = 0;
         importer.mipmapEnabled = true; // keeps far-away tiles from shimmering
+    }
+
+    // The first-person arms come with animations (grab, push, idle...). "Legacy" animation lets a
+    // simple Animation component play a clip by name, e.g. a quick grab when picking something up.
+    void OnPreprocessModel()
+    {
+        if (!assetPath.Contains("/Characters/PsxArms/")) return;
+        var importer = (ModelImporter)assetImporter;
+        importer.animationType = ModelImporterAnimationType.Legacy;
+        importer.importAnimation = true;
     }
 
     void OnPreprocessAudio()
