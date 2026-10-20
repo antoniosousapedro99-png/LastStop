@@ -1,0 +1,38 @@
+using UnityEditor;
+using UnityEngine;
+
+// Sets import settings automatically whenever a texture or sound lands in Assets/Art.
+// - Textures: "point" filtering gives the crunchy, pixel-sharp PS1 look (no blur up close).
+// - Long ambience files (drones, music) stream from disk and loop; short effects load into memory.
+// Bump the version number if these rules change so Unity re-imports everything.
+public class ImportRules : AssetPostprocessor
+{
+    public override uint GetVersion() => 1;
+
+    void OnPreprocessTexture()
+    {
+        if (!assetPath.StartsWith("Assets/Art/")) return;
+        var importer = (TextureImporter)assetImporter;
+        importer.filterMode = FilterMode.Point;
+        importer.anisoLevel = 0;
+        importer.mipmapEnabled = true; // keeps far-away tiles from shimmering
+    }
+
+    void OnPreprocessAudio()
+    {
+        if (!assetPath.StartsWith("Assets/Art/Audio/")) return;
+        var importer = (AudioImporter)assetImporter;
+        bool isLong = assetPath.Contains("/Ambience/") || assetPath.Contains("/Music/");
+
+        var settings = importer.defaultSampleSettings;
+        settings.compressionFormat = AudioCompressionFormat.Vorbis;
+        settings.quality = isLong ? 0.6f : 0.8f;
+        settings.loadType = isLong ? AudioClipLoadType.Streaming : AudioClipLoadType.DecompressOnLoad;
+        settings.sampleRateSetting = AudioSampleRateSetting.OverrideSampleRate;
+        settings.sampleRateOverride = 48000; // the drones come at 96 kHz, which is wasted space
+        importer.defaultSampleSettings = settings;
+
+        // Short effects play as 3D sounds in the world, which only works properly in mono.
+        importer.forceToMono = !isLong;
+    }
+}
