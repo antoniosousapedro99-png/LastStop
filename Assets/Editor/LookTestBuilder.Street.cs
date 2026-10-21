@@ -10,8 +10,8 @@ using UnityEngine.Rendering;
 //   south sidewalk z -16..-2 (subway entrance at x 0), road z -26..-16, north sidewalk z -30..-26,
 //   shops behind each sidewalk. Both ends of the road are blocked (bus + barriers / police).
 // Lore (all text is a draft for the creative director to rewrite): missing-worker posters, a
-// newspaper, a shop note, graffiti, the van radio and a payphone answering machine. The monster is
-// only hinted at (drag marks, a wrapped shape on the stairs), never seen here.
+// newspaper, a shop note, the van radio and a payphone answering machine. The monster is
+// only hinted at (blood dripping down the stairs to a wrapped shape), never seen here.
 public static partial class LookTestBuilder
 {
     const float StreetY = 6f;
@@ -20,6 +20,7 @@ public static partial class LookTestBuilder
 
     static readonly Color Sodium = new Color(1f, 0.58f, 0.25f);
     static Transform street;
+    static AreaBoundary boundary;   // the player is assigned once the player exists
 
     public static Vector3 PlayerStartPosition => new Vector3(-37f, StreetY + 0.05f, -13.5f);
     public const float PlayerStartYaw = 90f;   // facing east, toward the subway entrance
@@ -61,6 +62,12 @@ public static partial class LookTestBuilder
         BuildCars();
         BuildLore();
         BuildOutdoorLighting();
+        BuildCityBeyond(asphalt, pavement, lot);
+
+        // "I should turn around..." near the invisible walls (the player is linked in Build()).
+        boundary = street.gameObject.AddComponent<AreaBoundary>();
+        boundary.min = new Vector2(-48f, -60f);
+        boundary.max = new Vector2(48f, 30f);
 
         // Everything up here is lit by the moon (rendering layer), the station below is not.
         foreach (var r in street.GetComponentsInChildren<Renderer>()) r.renderingLayerMask |= OutdoorLayer;
@@ -115,12 +122,15 @@ public static partial class LookTestBuilder
     {
         var shops = StreetGroup("Shops");
         // North side, facing the road (south). Yaw turns each model so its shopfront faces the street.
-        Place(StreetDir + "/Laundry/Laundry.fbx", shops, new Vector3(-38f, StreetY, -40f), LaundryYaw);
-        Place(StreetDir + "/VhsShop/VhsShop.fbx", shops, new Vector3(-20f, StreetY, -39f), VhsYaw);
-        Place(StreetDir + "/SixTwelve/SixTwelve.fbx", shops, new Vector3(2f, StreetY, -43f), SixTwelveYaw);
-        Place(StreetDir + "/GasStation/GasStation.fbx", shops, new Vector3(30f, StreetY, -52f), GasYaw);
+        Anchor(Place(StreetDir + "/Laundry/Laundry.fbx", shops, new Vector3(-38f, StreetY, -40f), LaundryYaw), "Laundry_building");
+        Anchor(Place(StreetDir + "/VhsShop/VhsShop.fbx", shops, new Vector3(-20f, StreetY, -39f), VhsYaw), "Shop_VHS");
+        var sixTwelve = Place(StreetDir + "/SixTwelve/SixTwelve.fbx", shops, new Vector3(2f, StreetY, -43f), SixTwelveYaw);
+        Anchor(sixTwelve, "6twelve");
+        // Its doormats belonged on a raised shop floor that wasn't brought in; without it they'd hover.
+        foreach (var r in sixTwelve.GetComponentsInChildren<Renderer>()) if (r.name.StartsWith("Rug")) Object.DestroyImmediate(r.gameObject);
+        Anchor(Place(StreetDir + "/GasStation/GasStation.fbx", shops, new Vector3(30f, StreetY, -52f), GasYaw), "Sidewalk");
         // South side, behind the entrance sidewalk.
-        Place(StreetDir + "/Pizzeria/Pizzeria.fbx", shops, new Vector3(24f, StreetY, 9f), PizzeriaYaw);
+        Anchor(Place(StreetDir + "/Pizzeria/Pizzeria.fbx", shops, new Vector3(24f, StreetY, 9f), PizzeriaYaw), "building_01.001");
         string blds = StreetDir + "/Buildings/Buildings.fbx";
         PlacePiece(blds, "Building", shops, new Vector3(-36f, StreetY, 9f), 180f);
         PlacePiece(blds, "Building_08", shops, new Vector3(-14f, StreetY, 6f), 180f);
@@ -171,9 +181,7 @@ public static partial class LookTestBuilder
         for (int i = 0; i < 4; i++) Place(u + (i % 2 == 0 ? "Jersey_barrier_dirty.fbx" : "Jersey_barrier_broken_edge_dirty.fbx"), f, new Vector3(-41.5f, StreetY - 0.15f, -24.5f + i * 2.6f), 90f + i * 4f);
         for (int i = 0; i < 4; i++) Place(u + (i == 2 ? "Type_3_barrier_broken_planks.fbx" : "Type_3_barrier_3_planks.fbx"), f, new Vector3(45f, StreetY - 0.15f, -24.6f + i * 2.5f), 90f);
         for (int i = 0; i < 5; i++) Place(u + "Traffic_cone_round.fbx", f, new Vector3(42.5f, StreetY - 0.15f, -24f + i * 1.9f), i * 25f);
-        // Graffiti on the walls near the entrance and the shops.
-        Place(u + "graffiti_Alt.fbx", f, new Vector3(-2.31f, StreetY - 1.4f, -8f), -90f);
-        Place(u + "graffiti.fbx", f, new Vector3(-13f, StreetY + 0.8f, -31.95f), 0f);
+
     }
 
     // ---------------------------------------------------------------- cars
@@ -210,13 +218,15 @@ public static partial class LookTestBuilder
         car.name = name;
         var b = Bounds(car);
         float wheelY = b.min.y + 0.32f;
-        // Wheels sit at 30% from each end, just inside the sides (in the car's own directions).
-        Vector3 fwd = Quaternion.Euler(0, yaw, 0) * Vector3.forward, right = Quaternion.Euler(0, yaw, 0) * Vector3.right;
+        // Wheels go near each end of the car's LONG side (worked out from its size, since the car
+        // models don't all point the same way), just inside its width, axles across the car.
+        bool alongX = b.size.x > b.size.z;
+        Vector3 fwd = alongX ? Vector3.right : Vector3.forward, right = alongX ? Vector3.forward : Vector3.right;
         float halfLen = Mathf.Max(b.size.x, b.size.z) * 0.5f, halfWid = Mathf.Min(b.size.x, b.size.z) * 0.5f;
         foreach (int f in new[] { -1, 1 })
             foreach (int s in new[] { -1, 1 })
             {
-                var wheel = Place(StreetDir + "/Cars/Wheel.fbx", car.transform, Vector3.zero, yaw + (s > 0 ? 0f : 180f), scale);
+                var wheel = Place(StreetDir + "/Cars/Wheel.fbx", car.transform, Vector3.zero, (alongX ? 90f : 0f) + (s > 0 ? 0f : 180f), scale);
                 Vector3 c = new Vector3(b.center.x, wheelY, b.center.z) + fwd * (f * halfLen * 0.62f) + right * (s * (halfWid - 0.12f));
                 var wb = Bounds(wheel);
                 wheel.transform.position += c - wb.center;
@@ -231,48 +241,38 @@ public static partial class LookTestBuilder
         var paper = Mat("PosterPaper", null, new Color(0.86f, 0.84f, 0.78f), 1f, 0.15f);
         var page = Load<AudioClip>(SfxDir + "/PaperDocument1.wav");
 
-        // MISSING posters for the three night-shift workers, on lamp posts and the bus stop.
+        // MISSING posters for the three night-shift workers, stuck flat onto two lamp posts and the
+        // bus shelter (found by casting rays at them). Look at one to read it.
+        Physics.SyncTransforms();
+        var posterMat = Mat("MissingPoster", PosterTexture(), Color.white, 1f, 0.1f);
         string[] names = { "DALE KOWALSKI", "ROSA MENDEZ", "THEO BANKS" };
         string[] ages = { "54", "31", "26" };
-        Vector3[] spots = { new Vector3(-23.85f, StreetY + 1.6f, -15.3f), new Vector3(-12f, StreetY + 1.5f, -14.0f), new Vector3(8.15f, StreetY + 1.6f, -15.3f) };
+        var furniture = street.Find("Furniture");
+        GameObject[] holders = { furniture.Find("StreetLight_S_1").gameObject, furniture.Find("Bus_stop").gameObject, furniture.Find("StreetLight_S_3").gameObject };
         for (int i = 0; i < 3; i++)
         {
-            var poster = Prim(PrimitiveType.Cube, "MissingPoster_" + (i + 1), lore, spots[i], new Vector3(0.42f, 0.56f, 0.01f), paper);
-            poster.transform.rotation = Quaternion.Euler(0, 180f, Random.Range(-4f, 4f));
-            Label(poster.transform, "MISSING\n\n" + names[i] + "\nage " + ages[i] + "\n\nLINE 4 NIGHT SHIFT", new Vector3(0, 0.05f, -0.6f), 0.045f, new Color(0.1f, 0.08f, 0.07f), 0f);
-            var note = poster.AddComponent<ReadableNote>();
-            note.title = "poster";
-            note.sound = page;
-            note.text = "MISSING: " + names[i] + ", " + ages[i] + ". Metro Transit maintenance, Line 4 night shift. Last seen entering Hollis St station after midnight. If you have any information call the MTA hotline.";
+            var poster = Prim(PrimitiveType.Quad, "MissingPoster_" + (i + 1), lore, Vector3.zero, new Vector3(0.3f, 0.42f, 1f), posterMat);
+            Object.DestroyImmediate(poster.GetComponent<Collider>());
+            poster.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
+            if (!StickTo(poster, holders[i], StreetY + 1.55f, Vector3.forward))   // seen from the road (north)
+                Debug.LogWarning("Poster " + i + " found nothing to stick to");
+            poster.transform.rotation *= Quaternion.Euler(0, 0, Random.Range(-5f, 5f));
+            poster.AddComponent<ReadableNote>().text = "MISSING\n" + names[i] + ", age " + ages[i] + "\nMetro Transit maintenance, Line 4 night shift.\nLast seen entering Hollis St station after midnight.\nIf you have any information call the MTA hotline.";
         }
 
-        // A soaked newspaper on the bus stop bench.
-        var paperProp = Prim(PrimitiveType.Cube, "Newspaper", lore, new Vector3(-10.3f, StreetY + 0.5f, -14.2f), new Vector3(0.5f, 0.02f, 0.35f), paper);
-        paperProp.transform.rotation = Quaternion.Euler(0, 20f, 0);
-        var news = paperProp.AddComponent<ReadableNote>();
-        news.title = "newspaper";
-        news.sound = page;
-        news.text = "THIRD TRANSIT WORKER VANISHES ON LINE 4. Rosa Mendez, 31, is the third maintenance worker in five weeks to disappear during a night shift. MTA officials dismissed staff reports of 'something wrapped up in the tunnels' as stress.";
+        // A soaked newspaper lying on the bus shelter's bench.
+        var newspaper = Prim(PrimitiveType.Cube, "Newspaper", lore, Vector3.zero, new Vector3(0.5f, 0.012f, 0.35f), Mat("Newsprint", PosterTexture(), new Color(0.8f, 0.8f, 0.78f), 1f, 0.2f));
+        newspaper.transform.rotation = Quaternion.Euler(0, 20f, 0);
+        if (Physics.Raycast(new Vector3(-10.3f, StreetY + 3f, -14.4f), Vector3.down, out var benchHit, 4f))
+            newspaper.transform.position = benchHit.point + Vector3.up * 0.006f;
+        newspaper.AddComponent<ReadableNote>().text = "THIRD TRANSIT WORKER VANISHES ON LINE 4\nRosa Mendez, 31, is the third maintenance worker in five weeks to disappear during a night shift. MTA officials dismissed staff reports of 'something wrapped up in the tunnels' as stress.";
 
-        // A note taped to the 6twelve door.
-        var shopNote = Prim(PrimitiveType.Cube, "ShopDoorNote", lore, new Vector3(2f, StreetY + 1.5f, -31.9f), new Vector3(0.25f, 0.32f, 0.01f), paper);
-        var sn = shopNote.AddComponent<ReadableNote>();
-        sn.title = "note on the door";
-        sn.sound = page;
-        sn.text = "CLOSED NIGHTS until further notice. Staff will not work past dark while the station stays open. Sorry for the inconvenience. - Management";
-
-        // Graffiti scrawled by the stairs: the monster's name, written by someone who saw it.
-        var scrawl = new GameObject("Graffiti_Warning");
-        scrawl.transform.SetParent(lore);
-        scrawl.transform.position = new Vector3(2.29f, StreetY - 1.9f, -7f);
-        scrawl.transform.rotation = Quaternion.Euler(0, 90f, -6f);   // text faces into the stairwell (west)
-        Label(scrawl.transform, "HE WRAPS THEM UP", Vector3.zero, 0.12f, new Color(0.55f, 0.06f, 0.05f), 0f);
-        var gr = scrawl.AddComponent<BoxCollider>();
-        gr.isTrigger = true; gr.size = new Vector3(3.2f, 0.6f, 0.2f);
-        var gn = scrawl.AddComponent<ReadableNote>();
-        gn.title = "graffiti";
-        gn.text = "Red spray paint: HE WRAPS THEM UP. Underneath, smaller: they're still alive in there";
-
+        // A note taped to the 6twelve's door.
+        var shopNote = Prim(PrimitiveType.Quad, "ShopDoorNote", lore, Vector3.zero, new Vector3(0.22f, 0.3f, 1f), Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f));
+        Object.DestroyImmediate(shopNote.GetComponent<Collider>());
+        shopNote.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
+        StickTo(shopNote, street.Find("Shops/SixTwelve").gameObject, StreetY + 1.5f, Vector3.back, 1.5f);   // shop is north of the road
+        shopNote.AddComponent<ReadableNote>().text = "CLOSED NIGHTS until further notice.\nStaff will not work past dark while the station stays open.\nSorry for the inconvenience. - Management";
         // Payphone with an answering-machine message (placeholder shape until a model is found).
         var phone = Prim(PrimitiveType.Cube, "Payphone", lore, new Vector3(-16.5f, StreetY + 1.2f, -14.9f), new Vector3(0.45f, 0.75f, 0.3f), Mat("Payphone", null, new Color(0.25f, 0.27f, 0.3f), 1f, 0.5f, 0.6f));
         Prim(PrimitiveType.Cylinder, "PayphonePole", lore, new Vector3(-16.5f, StreetY + 0.4f, -14.9f), new Vector3(0.08f, 0.4f, 0.08f), Mat("GlobePost", null, new Color(0.1f, 0.18f, 0.12f), 1f, 0.5f, 0.6f));
@@ -290,13 +290,16 @@ public static partial class LookTestBuilder
         Tape(lore, tape, new Vector3(18f, StreetY + 0.95f, -30.6f), new Vector3(40f, StreetY + 0.95f, -30.6f));
         Tape(lore, tape, new Vector3(18f, StreetY + 0.9f, -30.6f), new Vector3(18f, StreetY + 0.9f, -40f));
 
-        // Hints of the monster: drag marks leading to the stairs, and something wrapped on the steps.
-        var drag = TransparentMat("DragMarks", new Color(0.12f, 0.08f, 0.07f, 0.45f), 0.6f);   // wet smears, not black lines
-        for (int i = 0; i < 2; i++)
+        // Hints of the monster: blood dripping down the stairs to something wrapped on the steps.
+        string[] drops = { "BloodDrop01", "BloodDrop02", "BloodDrop20" };
+        int[] steps = { 26, 24, 23, 21, 18, 16, 15 };
+        for (int k = 0; k < steps.Length; k++)
         {
-            var mark = Prim(PrimitiveType.Cube, "DragMark_" + i, lore, new Vector3(-0.35f + i * 0.7f, StreetY + 0.012f, -14.2f), new Vector3(0.28f, 0.004f, 3.6f), drag);
-            mark.transform.rotation = Quaternion.Euler(0, -8f + i * 5f, 0);
+            int i = steps[k];
+            float zMid = -1f - 0.3f * i + 0.15f;   // middle of step i's tread
+            var drop = Decal("BloodDrip_" + k, lore, drops[k % 3], new Vector3(0.2f + 0.35f * Mathf.Sin(k * 1.7f), 0.2f * i + 0.004f, zMid), 0.28f + 0.08f * (k % 2), k * 53f);
         }
+        Decal("BloodPool", lore, "BloodSpatter02", new Vector3(0.9f, 0.2f * 20 + 0.004f, -1f - 0.3f * 20 + 0.15f), 0.9f, 30f);
         var wrapped = new GameObject("WrappedShape");
         wrapped.transform.SetParent(lore);
         wrapped.transform.position = new Vector3(1.1f, 2.3f, -7.1f);    // lying across the steps, halfway down
@@ -352,8 +355,14 @@ public static partial class LookTestBuilder
         moon.shadows = LightShadows.Soft;
         SetLightLayers(moon, OutdoorLayer);
 
-        // Blackout: only two sodium lamps still burn (backup power), one of them stuttering.
+        // Blackout: only a few sodium lamps still burn on backup power, two of them stuttering.
         LampHead("StreetLight_S_1", false);
+        LampHead("StreetLight_S_4", false);
+        LampHead("StreetLight_N_0", true);
+        LampHead("StreetLight_N_4", false);
+        // A cold, failing tube under the gas station canopy and a dim light left on in the laundromat.
+        ShopLight("Shops/GasStation", "The_ceiling", new Color(0.8f, 0.95f, 1f), 18f, 12f, true, -1.0f);
+        ShopLight("Shops/Laundry", "Laundry_building", new Color(1f, 0.85f, 0.6f), 6f, 9f, false, -2.0f);
         LampHead("StreetLight_S_0", false);     // by the van, so the opening is not pitch black
         LampHead("StreetLight_N_2", true);
 
@@ -370,6 +379,26 @@ public static partial class LookTestBuilder
         skyMat.SetFloat("_Exposure", 0.8f);
         EditorUtility.SetDirty(skyMat);
         RenderSettings.skybox = skyMat;
+    }
+
+    // A light hung just under the top of a shop piece (canopy, ceiling).
+    static void ShopLight(string path, string piece, Color colour, float intensity, float range, bool flicker, float belowTop)
+    {
+        var root = street.Find(path);
+        if (root == null) return;
+        foreach (var r in root.GetComponentsInChildren<Renderer>())
+        {
+            if (r.name != piece) continue;
+            var go = new GameObject(piece + "_Light");
+            go.transform.SetParent(root, true);
+            go.transform.position = new Vector3(r.bounds.center.x, r.bounds.max.y + belowTop, r.bounds.center.z);
+            go.transform.rotation = Quaternion.Euler(90f, 0, 0);
+            var l = go.AddComponent<Light>();
+            l.type = LightType.Spot; l.color = colour; l.intensity = intensity; l.range = range;
+            l.spotAngle = 140f; l.innerSpotAngle = 60f; l.shadows = LightShadows.Soft;
+            if (flicker) { var f = go.AddComponent<FlickeringLight>(); f.lamp = l; f.minCalm = 1f; f.maxCalm = 4f; }
+            return;
+        }
     }
 
     static void LampHead(string lampName, bool flicker)
@@ -411,6 +440,63 @@ public static partial class LookTestBuilder
         r.renderMode = ParticleSystemRenderMode.Stretch; r.lengthScale = 4f; r.velocityScale = 0.02f;
         r.sharedMaterial = TransparentMat("Raindrop", new Color(0.75f, 0.8f, 0.9f, 0.35f), 0.5f);
         go.AddComponent<Drizzle>().player = player;
+    }
+
+    // ---------------------------------------------------------------- the city beyond the walls
+    // The road, sidewalks and buildings carry on past the invisible walls for two more blocks each
+    // way, with a skyline behind, so the street feels like part of a city. None of it can be reached.
+    // Each building has an LOD group that stops drawing it once it's tiny on screen.
+    static void BuildCityBeyond(Material asphalt, Material pavement, Material lot)
+    {
+        var city = StreetGroup("CityBeyond");
+        float y0 = StreetY - 0.4f, y1 = StreetY;
+        foreach (int side in new[] { -1, 1 })
+        {
+            string s = side < 0 ? "W" : "E";
+            Span("Road_" + s, city, Mirror(new Vector3(50, y0, -26), side), Mirror(new Vector3(150, y1 - 0.15f, -16), side), asphalt);
+            Span("SidewalkS_" + s, city, Mirror(new Vector3(50, y0, -16), side), Mirror(new Vector3(150, y1, -2), side), pavement);
+            Span("SidewalkN_" + s, city, Mirror(new Vector3(50, y0, -30), side), Mirror(new Vector3(150, y1, -26), side), pavement);
+            Span("GroundS_" + s, city, Mirror(new Vector3(50, y0, -2), side), Mirror(new Vector3(150, y1, 35), side), lot);
+            Span("GroundN_" + s, city, Mirror(new Vector3(50, y0, -85), side), Mirror(new Vector3(150, y1, -30), side), lot);
+        }
+        string blds = StreetDir + "/Buildings/Buildings.fbx";
+        string[] kinds = { "Building_03", "Building_04", "Building_05", "Building_06", "Building", "Building_08", "Building_01", "Building_09", "Building_07" };
+        int k = 0;
+        foreach (int side in new[] { -1, 1 })
+            for (float x = 64f; x < 150f; x += 24f)
+            {
+                // Facades along both sides of the road, plus a second row behind them as skyline.
+                Lod(PlacePiece(blds, kinds[k++ % kinds.Length], city, new Vector3(x * side, StreetY, 12f), 180f));
+                Lod(PlacePiece(blds, kinds[k++ % kinds.Length], city, new Vector3(x * side, StreetY, -44f), 0f));
+                Lod(PlacePiece(blds, kinds[k++ % kinds.Length], city, new Vector3((x + 12f) * side, StreetY, -78f), 0f));
+            }
+        for (float x = -60f; x <= 60f; x += 30f)
+            Lod(PlacePiece(blds, kinds[k++ % kinds.Length], city, new Vector3(x, StreetY, -110f), 0f, 1.4f));
+
+        // Dead street lamps, parked cars and a crashed car down the road on both sides.
+        string u = StreetDir + "/Urban/", c = StreetDir + "/Cars/";
+        foreach (int side in new[] { -1, 1 })
+        {
+            for (float x = 56f; x < 150f; x += 16f)
+            {
+                Lod(Place(u + "street_light.fbx", city, new Vector3(x * side, StreetY, -15.3f), 90f));
+                Lod(Place(u + "street_light_clean.fbx", city, new Vector3((x + 8f) * side, StreetY, -26.7f), -90f));
+            }
+            Lod(Car(city, c + (side < 0 ? "Car4.fbx" : "Car7.fbx"), new Vector2(62f * side, -17.5f), 90f, "FarCar_" + side));
+            Lod(Car(city, c + (side < 0 ? "Car2.fbx" : "Car3.fbx"), new Vector2(88f * side, -24.5f), -88f, "FarCar2_" + side));
+            Lod(Car(city, c + "Car6.fbx", new Vector2(110f * side, -21f), 90f + 35f * side, "CrashedCar_" + side));
+        }
+        // Nothing out here needs to collide: the player can't reach it.
+        foreach (var col in city.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(col);
+    }
+
+    // One-level LOD group: the object is simply not drawn once it covers under 1.5% of the screen height.
+    static GameObject Lod(GameObject go)
+    {
+        var group = go.AddComponent<LODGroup>();
+        group.SetLODs(new[] { new LOD(0.015f, go.GetComponentsInChildren<Renderer>()) });
+        group.RecalculateBounds();
+        return go;
     }
 
     // ---------------------------------------------------------------- helpers
@@ -472,6 +558,82 @@ public static partial class LookTestBuilder
         tm.color = colour;
         tm.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         go.GetComponent<MeshRenderer>().sharedMaterial = tm.font.material;
+    }
+
+    // Moves a placed model up or down so its named main piece (the shop building) sits on the ground,
+    // instead of its lowest part (which may be an underground floor or a pack's own terrain).
+    static void Anchor(GameObject placed, string piece)
+    {
+        foreach (var r in placed.GetComponentsInChildren<Renderer>())
+            if (r.name == piece) { placed.transform.position += Vector3.up * (StreetY - r.bounds.min.y); return; }
+        Debug.LogWarning("Anchor piece not found: " + piece + " in " + placed.name);
+    }
+
+    // Sticks a flat quad onto the surface of 'target': rays are cast toward it from 'fromSide' at
+    // height y, sweeping across its width; the nearest hit gives the spot and the surface direction.
+    static bool StickTo(GameObject quad, GameObject target, float y, Vector3 fromSide, float within = 99f)
+    {
+        var b = Bounds(target);
+        Vector3 across = Vector3.Cross(Vector3.up, fromSide).normalized;
+        float best = float.MaxValue; RaycastHit bestHit = default;
+        Vector3 centre = new Vector3(b.center.x, y, b.center.z);
+        float half = Mathf.Min(Vector3.Scale(b.extents, new Vector3(Mathf.Abs(across.x), 0, Mathf.Abs(across.z))).magnitude, within);
+        for (float t = -half; t <= half; t += 0.02f)
+        {
+            Vector3 start = centre + across * t - fromSide * (b.extents.magnitude + 2f);
+            foreach (var h in Physics.RaycastAll(start, fromSide, b.extents.magnitude * 2f + 4f))
+                if (h.collider.transform.IsChildOf(target.transform) && h.distance < best) { best = h.distance; bestHit = h; }
+        }
+        if (best == float.MaxValue) return false;
+        quad.transform.position = bestHit.point + bestHit.normal * 0.006f;
+        quad.transform.rotation = Quaternion.LookRotation(-bestHit.normal, Vector3.up);   // a quad shows its front along -Z
+        return true;
+    }
+
+    // A flat blood decal lying on a surface (texture with transparency), turned by 'spin' degrees.
+    static GameObject Decal(string name, Transform parent, string texture, Vector3 pos, float size, float spin)
+    {
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(MatDir + "/M_Decal_" + texture + ".mat");
+        if (mat == null)
+        {
+            mat = TransparentMat("Decal_" + texture, new Color(0.55f, 0.55f, 0.55f, 1f), 0.6f);
+            mat.SetFloat("_BlendModePreserveSpecular", 0f);
+            mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        }
+        mat.SetTexture("_BaseMap", Load<Texture2D>("Assets/Art/Textures/Blood/" + texture + ".png"));
+        var q = Prim(PrimitiveType.Quad, name, parent, pos, new Vector3(size, size, 1f), mat);
+        Object.DestroyImmediate(q.GetComponent<Collider>());
+        q.transform.rotation = Quaternion.Euler(90f, spin, 0f);   // lying flat, facing up
+        q.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+        return q;
+    }
+
+    // A simple MISSING poster drawn by code: red header band, a grey photo box, lines of "text".
+    static Texture2D PosterTexture()
+    {
+        const string path = "Assets/Art/Textures/Generated/MissingPoster.png";
+        EnsureFolder("Assets/Art/Textures/Generated");
+        if (!System.IO.File.Exists(path))
+        {
+            const int w = 64, h = 90;
+            var tex = new Texture2D(w, h);
+            var rng = new System.Random(3);
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    Color c = new Color(0.86f, 0.84f, 0.76f);                                  // paper
+                    if (y > 74 && y < 86 && x > 4 && x < 59) c = new Color(0.62f, 0.08f, 0.07f); // MISSING band
+                    else if (y > 40 && y < 72 && x > 16 && x < 47) c = new Color(0.32f, 0.31f, 0.3f); // photo
+                    else if (y < 36 && y > 6 && y % 5 < 2 && x > 6 && x < 57 - (y * 7 % 13)) c = new Color(0.2f, 0.18f, 0.17f); // text lines
+                    c *= 0.9f + (float)rng.NextDouble() * 0.12f;                              // grubby
+                    c.a = 1f;
+                    tex.SetPixel(x, y, c);
+                }
+            System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+            AssetDatabase.ImportAsset(path);
+        }
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
     }
 
     static Transform StreetGroup(string name)

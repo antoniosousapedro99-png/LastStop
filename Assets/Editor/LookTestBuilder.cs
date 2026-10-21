@@ -193,6 +193,8 @@ public static partial class LookTestBuilder
         var player = BuildPlayer(PlayerStartPosition);
         player.transform.rotation = Quaternion.Euler(0, PlayerStartYaw, 0);
         BuildDrizzle(player.transform);
+        boundary.player = player.transform;
+        EnsurePsxFilter();
         BuildPlayerGear(player);
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
@@ -280,7 +282,6 @@ public static partial class LookTestBuilder
     // ---------------------------------------------------------------- environment
     static void SetupEnvironment()
     {
-        RenderSettings.skybox = null;
         RenderSettings.ambientMode = AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.045f, 0.052f, 0.05f);
         RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;

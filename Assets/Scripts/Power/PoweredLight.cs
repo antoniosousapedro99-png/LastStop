@@ -12,6 +12,8 @@ public class PoweredLight : MonoBehaviour
     public Color offColour = new Color(0.22f, 0.24f, 0.22f);
     public bool worksWithoutPower;
     public FlickeringLight flicker;        // optional: stopped once the power is back
+    public float poweredReach = 1.5f;      // with the grid back on, lamps throw light further (range x this)
+    public float poweredWiden = 15f;       // ...and spot lamps open wider by this many degrees
 
     float[] baseIntensity;
     MaterialPropertyBlock block;
@@ -25,7 +27,16 @@ public class PoweredLight : MonoBehaviour
         if (!worksWithoutPower) SetLevel(0f);
     }
 
-    public void PowerOn() => StartCoroutine(worksWithoutPower ? Steady() : StutterOn());
+    public void PowerOn()
+    {
+        // Full mains power: bigger pools of light than the weak backup state.
+        foreach (var l in lights)
+        {
+            l.range *= poweredReach;
+            if (l.type == LightType.Spot) { l.spotAngle = Mathf.Min(170f, l.spotAngle + poweredWiden); l.innerSpotAngle = Mathf.Min(l.spotAngle - 5f, l.innerSpotAngle + poweredWiden); }
+        }
+        StartCoroutine(worksWithoutPower ? Steady() : StutterOn());
+    }
 
     IEnumerator StutterOn()
     {

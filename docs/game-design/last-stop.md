@@ -69,7 +69,11 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
     - Right hand on the grip. Left hand cups the forend: **palm under it, thumb along its left side, fingers wrapped up its right side**, sitting flush; the left elbow angles out to the left.
     - Arms appear only while the shotgun is up, plus a quick hand **grab** when picking something up or using things.
   - **Fuse box** sits at eye level (centre 1.5 m), and a small dot marks the centre of the screen (brighter when you can use what you're looking at). Its prompt says how many fuses you carry.
-  - **Controls:** WASD, Shift sprint, C crouch, Space jump, F torch, H battery, E use, Q shotgun, LMB fire, R reload.
+  - **Controls (2026-10-21):** WASD, Shift sprint, C crouch (toggle), Space jump, **Q / E lean** (hold), **LMB use** (Amnesia-style), F torch, H battery, **hold RMB aim shotgun**, LMB fire while aiming, R reload. Notes and posters show their text just by looking at them.
+  - Speeds: walk 2.3, sprint 4.3, crouch 1.3 m/s. Battery lasts 5 minutes; the worker starts with 1 spare.
+  - **Cabinet key puzzle:** the west train can be climbed into via a rubble pile; it's blocked by collapsed seats halfway. A key lies on a bench (blood spatter above it) and opens the blue cabinet on the platform's east wall: second fuse, a battery and a shotgun shell.
+  - Station lamps throw light 50% further (and wider) once mains power is back.
+  - Screen: PS1 filter at 9% (slight pixelation, colour banding, dither).
   - Vertical field of view 60° (about 90° across a 16:9 screen).
 
 ## Street level (intro area) — built 2026-10-20
@@ -95,7 +99,17 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - A payphone answering machine with Rosa's last message.
   - The van radio.
   - Police tape around the gas station.
-- **Foreshadowing, hints only (no sighting):** drag marks into the entrance, and a wrapped, cocooned shape lying on the stairs.
+- **Foreshadowing, hints only (no sighting):** blood drips down the subway stairs to a wrapped, cocooned shape lying on the steps. (Graffiti and drag marks were removed.)
+- Lore text appears on screen when you look at a poster, newspaper or note.
+- The street is boxed in by invisible walls; walking up to one shows "I should turn around...". Beyond them the road, buildings, dead lamps and cars carry on for two blocks each way, plus a skyline, drawn only when big enough on screen (LOD).
+- Lit: four sodium street lamps (two stuttering), a failing tube under the gas station canopy, a light left on in the laundromat, the subway globes.
+
+## Big reveal (world-building only, NOT to implement yet)
+
+- The truth behind the Wrapper: a **giant spider** lives under Line 4 and is the final 'boss'.
+- The 'wrapped' creatures that stalk the tunnels are **spider-zombies**: the missing workers from the posters (Dale Kowalski, Rosa Mendez, Theo Banks...), cocooned and turned. Exactly how is still undecided.
+- Players should slowly realise the monsters are the people on the posters, and that they might be next.
+- Needed: **cobweb / web models** (the creative director will source them). Keep cocoon and web imagery growing deeper underground.
 
 ## Tunnels and trains
 

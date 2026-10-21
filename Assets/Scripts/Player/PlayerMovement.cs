@@ -8,9 +8,9 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    public float walkSpeed = 2.2f;     // metres per second, a slow cautious walk
-    public float runSpeed = 4.2f;
-    public float crouchSpeed = 1.2f;
+    public float walkSpeed = 2.3f;     // metres per second, a slow cautious walk
+    public float runSpeed = 4.3f;
+    public float crouchSpeed = 1.3f;
     public float jumpHeight = 0.4f;    // metres: a short, heavy hop, not a platformer leap
     public float gravity = -15f;
 

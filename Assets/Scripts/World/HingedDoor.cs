@@ -5,14 +5,15 @@ using UnityEngine;
 // which sits exactly on the hinge line.
 // - Powered doors (the staff room) stay locked until the PowerGrid comes back on, then buzz, click
 //   and swing open by themselves.
-// - Other doors (the locker) open when you press E.
+// - Other doors (the locker, the platform cabinet) open with a left click; some need the cabinet key.
 public class HingedDoor : MonoBehaviour, IInteractable
 {
     public float openAngle = 95f;          // degrees around the hinge (sign picks the direction)
     public float openTime = 1.2f;
-    public PowerGrid needsPower;           // leave empty for a door that just opens with E
+    public PowerGrid needsPower;           // leave empty for a door that just opens when used
     public AudioClip unlockSound, openSound;
     public string doorName = "door";
+    public bool needsCabinetKey;           // stays locked until the player has the cabinet key
 
     bool open, moving;
     Quaternion closedRotation;
@@ -30,6 +31,8 @@ public class HingedDoor : MonoBehaviour, IInteractable
         {
             if (open || moving) return null;
             if (needsPower && !needsPower.IsOn) return "Locked - no power";
+            if (needsCabinetKey && !HasKey()) return "Locked - needs a key";
+            if (needsCabinetKey) return "Unlock " + doorName;
             return "Open " + doorName;
         }
     }
@@ -37,7 +40,14 @@ public class HingedDoor : MonoBehaviour, IInteractable
     public void Interact(Interactor player)
     {
         if (needsPower && !needsPower.IsOn) { Hud.Notice("The electric lock is dead."); return; }
+        if (needsCabinetKey && !HasKey()) { Hud.Notice("It's locked. There must be a key somewhere."); return; }
         if (!open && !moving) StartCoroutine(Swing(0f));
+    }
+
+    static bool HasKey()
+    {
+        var inv = FindAnyObjectByType<PlayerInventory>();
+        return inv && inv.hasCabinetKey;
     }
 
     void OnPowerRestored()

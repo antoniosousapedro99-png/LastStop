@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // The double-barrel shotgun, held in first person.
-// Q raises/lowers it, left mouse fires, R reloads one shell at a time (it holds 2).
+// Hold right mouse to raise and aim it, left mouse fires, R reloads one shell at a time (it holds 2).
 // Each shot: a bright muzzle flash that lights the area for a moment, a hard kick of the view and
 // the gun, and dark dent marks where the pellets hit. (It will stun the stalker later; there is no
 // shot sound until a real shotgun sound is found.)
@@ -35,6 +35,9 @@ public class Shotgun : MonoBehaviour
     public Vector3 loweredTilt = new Vector3(35f, -20f, 0f);
 
     public bool Raised { get; private set; }
+    // True while the gun is up: left mouse fires instead of using things (see Interactor).
+    public static bool IsAiming { get; private set; }
+    void OnDisable() => IsAiming = false;
     public float RaiseAmount => raise;    // 0 = lowered and hidden, 1 = up (the arms follow this)
     public bool Reloading { get; private set; }
 
@@ -55,13 +58,16 @@ public class Shotgun : MonoBehaviour
     {
         var keyboard = Keyboard.current;
         var mouse = Mouse.current;
-        if (!inventory.hasShotgun) return;
+        if (!inventory.hasShotgun) { IsAiming = false; return; }
 
-        if (keyboard != null && keyboard.qKey.wasPressedThisFrame && !Reloading)
+        // Hold the right mouse button to raise and aim; let go to lower (a reload finishes first).
+        bool wantUp = mouse != null && mouse.rightButton.isPressed && Cursor.lockState == CursorLockMode.Locked;
+        if (wantUp != Raised && !Reloading)
         {
-            Raised = !Raised;
+            Raised = wantUp;
             Play(Raised ? raiseSound : lowerSound);
         }
+        IsAiming = Raised;
 
         if (Raised && raise > 0.9f && !Reloading)
         {

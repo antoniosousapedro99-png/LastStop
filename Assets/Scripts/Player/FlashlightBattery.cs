@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// The flashlight's battery. It drains while the torch is on (a full battery lasts 4 minutes),
+// The flashlight's battery. It drains while the torch is on (a full battery lasts 5 minutes),
 // dims and stutters in its last 20%, and dies at zero. Press H to swap in a spare battery.
 public class FlashlightBattery : MonoBehaviour
 {
-    public float lifetime = 240f;          // seconds of light from a full battery
+    public float lifetime = 300f;          // seconds of light from a full battery (5 minutes)
     public float lowThreshold = 0.2f;      // below this the light dims and flickers
     public PlayerInventory inventory;
     public AudioClip swapSound;

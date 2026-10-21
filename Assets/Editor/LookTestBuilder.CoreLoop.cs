@@ -52,9 +52,8 @@ public static partial class LookTestBuilder
         var fuseCrateW = Span("Crate_FuseW", items, new Vector3(-80.5f, -1.3f, 24.7f), new Vector3(-79.9f, -0.7f, 25.3f), crate);
         MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
                Top(fuseCrateW, -80.2f, 25.0f), 30f, "PlasticBox1");
-        var fuseCrateE = Span("Crate_FuseE", items, new Vector3(95.7f, -1.3f, 20.2f), new Vector3(96.3f, -0.7f, 20.8f), crate);
-        MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
-               Top(fuseCrateE, 96f, 20.5f), -60f, "PlasticBox1");
+        // (The second fuse is locked in the blue platform cabinet; its key is inside the west train.)
+
         MakePickup(ModelPiece(SurvivalFbx, "Battery", items, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
                new Vector3(-13.2f, 0f, 14.8f), 70f, "PlasticBox1", lieDown: true);   // clear of the bench, so it can be looked at
         var batteryCrate = Span("Crate_Battery", items, new Vector3(-36.3f, -1.3f, 20.2f), new Vector3(-35.7f, -0.7f, 20.8f), crate);
@@ -66,7 +65,8 @@ public static partial class LookTestBuilder
         // ---- a stalled train at the end of each tunnel: dark, doors shut, filling the tunnel so the
         // line seems to carry on beyond it. A dim cab light flickers on the end facing the player.
         StalledTrain(1, TunnelEndE);
-        StalledTrain(-1, TunnelEndW);
+        OpenTrain(TunnelEndW, crate);
+        BuildPlatformCabinet();
     }
 
     static void StalledTrain(int side, float tunnelEnd)
@@ -95,6 +95,222 @@ public static partial class LookTestBuilder
         var flicker = cab.AddComponent<FlickeringLight>();
         flicker.lamp = light;
         flicker.minCalm = 3f; flicker.maxCalm = 9f;
+    }
+
+    // ---------------------------------------------------------------- the open train (west tunnel)
+    // Same stalled car, but its end door is gone (cut out in Blender: SubwayCarOpen.fbx). A pile of
+    // bricks and crates lets the player climb up into it; halfway down the car, collapsed seats and
+    // debris block the way. The cabinet key lies on one of the benches, by a blood spatter.
+    static void OpenTrain(float tunnelEnd, Material crate)
+    {
+        var tunnel = root.Find("Tunnel_W");
+        var car = Place("Assets/Art/Models/Environment/MetroPSX/SubwayCarOpen.fbx", tunnel, Vector3.zero, 0f);
+        car.name = "OpenTrain";
+        foreach (var r in car.GetComponentsInChildren<Renderer>())
+        {
+            var mats = r.sharedMaterials;
+            for (int i = 0; i < mats.Length; i++) if (mats[i]) mats[i] = PropMat(mats[i].name);
+            r.sharedMaterials = mats;
+        }
+        var b = Bounds(car);
+        if (b.size.z > b.size.x) { car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation; b = Bounds(car); }
+        car.transform.localScale *= 17.5f / b.size.x;                // same size as the other stalled car
+        b = Bounds(car);
+        float centreX = -(tunnelEnd - 1f - b.size.x * 0.5f);
+        StandOn(car, new Vector3(centreX, -1.3f, 22.75f));
+        b = Bounds(car);
+        float faceX = b.max.x;                                       // the end facing the platform (east)
+        Physics.SyncTransforms();
+
+        // Find the car's floor and inner walls with rays from inside it.
+        float floorY = -0.25f, wallN = 21.6f, wallS = 23.9f;
+        Vector3 inside = new Vector3(faceX - 3f, b.min.y + b.size.y * 0.6f, 22.75f);
+        if (Physics.Raycast(inside, Vector3.down, out var fh, 4f)) floorY = fh.point.y;
+        // The car's side walls don't answer rays from inside, so use its outer size minus the wall thickness.
+        wallN = b.min.z + 0.13f; wallS = b.max.z - 0.13f;
+        // Solid inner walls along the reachable half, so nothing slips through the thin car sides.
+        foreach (var w in new[] { wallN - 0.05f, wallS + 0.05f })
+        {
+            var inner = new GameObject("TrainInnerWall").AddComponent<BoxCollider>();
+            inner.transform.SetParent(tunnel, true);
+            inner.transform.position = new Vector3((faceX + centreX) * 0.5f, floorY + 1.2f, w);
+            inner.size = new Vector3(faceX - centreX, 2.4f, 0.1f);
+        }
+
+        // Rubble steps up to the door: bricks and crates, each step at most 30 cm higher.
+        var brick = Mat("Bricks", Load<Texture2D>(StreetDir + "/Urban/brick_wall.jpg"), new Color(0.6f, 0.5f, 0.45f), 1f, 0.15f);
+        int n = Mathf.CeilToInt((floorY + 1.3f) / 0.3f);
+        float rise = (floorY + 1.3f) / n;
+        var climb = new GameObject("RubbleSteps").transform;
+        climb.SetParent(tunnel);
+        for (int k = 1; k <= n; k++)
+        {
+            float x0 = faceX + (n - k) * 0.45f, x1 = x0 + 0.45f;
+            Span("Rubble_" + k, climb, new Vector3(x0, -1.29f, 22.15f), new Vector3(x1, -1.3f + k * rise, 23.35f), k % 2 == 0 ? crate : brick);
+        }
+        // Loose bricks scattered around the pile (decoration only).
+        var rng = new System.Random(11);
+        for (int i = 0; i < 9; i++)
+        {
+            var loose = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            loose.name = "LooseBrick"; loose.transform.SetParent(climb, false);
+            loose.transform.localScale = new Vector3(0.22f, 0.07f, 0.11f);
+            loose.transform.position = new Vector3(faceX + 0.3f + (float)rng.NextDouble() * 2.4f, -1.26f, 21.5f + (float)rng.NextDouble() * 2.5f);
+            loose.transform.rotation = Quaternion.Euler(0, (float)rng.NextDouble() * 180f, 0);
+            loose.GetComponent<Renderer>().sharedMaterial = brick;
+            Object.DestroyImmediate(loose.GetComponent<Collider>());
+        }
+
+        // Invisible walls in the gaps beside the car, so the only way on is through the door.
+        foreach (var gap in new[] { (20f, b.min.z), (b.max.z, 25.5f) })
+        {
+            var g = new GameObject("TrainSideBlocker").AddComponent<BoxCollider>();
+            g.transform.SetParent(tunnel, true);
+            g.transform.position = new Vector3(faceX + 0.1f, 0.85f, (gap.Item1 + gap.Item2) * 0.5f);
+            g.size = new Vector3(0.2f, 4.3f, Mathf.Max(0.05f, gap.Item2 - gap.Item1));
+        }
+
+        // Halfway down the car: collapsed seats and debris, and an invisible wall behind them.
+        float midX = centreX;
+        var block = new GameObject("TrainInteriorBlocker").AddComponent<BoxCollider>();
+        block.transform.SetParent(car.transform, true);
+        block.transform.position = new Vector3(midX, floorY + 1.2f, 22.75f);
+        block.size = new Vector3(0.3f, 2.4f, 4f);
+        for (int i = 0; i < 6; i++)
+        {
+            var junk = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            junk.name = "Debris"; junk.transform.SetParent(car.transform, true);
+            junk.transform.localScale = Vector3.one; // world-size below
+            junk.transform.SetParent(tunnel, true);
+            junk.transform.localScale = new Vector3(0.5f + (float)rng.NextDouble() * 0.6f, 0.3f + (float)rng.NextDouble() * 0.7f, 0.4f + (float)rng.NextDouble() * 0.9f);
+            junk.transform.position = new Vector3(midX + 0.2f + (float)rng.NextDouble() * 0.6f, floorY + junk.transform.localScale.y * 0.5f + (i > 3 ? 0.5f : 0f), wallN + 0.3f + (float)rng.NextDouble() * (wallS - wallN - 0.6f));
+            junk.transform.rotation = Quaternion.Euler((float)rng.NextDouble() * 25f, (float)rng.NextDouble() * 60f, (float)rng.NextDouble() * 25f);
+            junk.GetComponent<Renderer>().sharedMaterial = i % 2 == 0 ? crate : brick;
+        }
+        var fallen = Prop("seats", tunnel, new Vector3(midX + 1.2f, floorY, 22.75f), 25f);
+        if (fallen) fallen.transform.rotation = Quaternion.Euler(0, 0, 70f) * fallen.transform.rotation;
+
+        // Benches along both walls in the reachable half; the key lies on the north one.
+        float benchX = (faceX + midX) * 0.5f + 0.6f;
+        var benchN = Prop("seats", tunnel, new Vector3(benchX, floorY, wallN + 0.33f), -90f);
+        Prop("seats", tunnel, new Vector3(benchX, floorY, wallS - 0.33f), 90f);
+        var key = BuildKey(tunnel);
+        Vector3 keySpot = new Vector3(benchX + 0.6f, floorY + 0.5f, wallN + 0.4f);
+        Physics.SyncTransforms();   // find the seat cushion under the key
+        foreach (var h in Physics.RaycastAll(new Vector3(benchX + 0.6f, floorY + 2f, wallN + 0.4f), Vector3.down, 3f))
+            if (benchN && h.collider.transform.IsChildOf(benchN.transform)) { keySpot = h.point; break; }
+        MakePickup(key, global::Pickup.Kind.Key, keySpot, 40f, "MetalCabinet1");
+
+        // Blood sprayed on the wall above the bench.
+        var spatter = Decal("TrainBloodSpatter", tunnel, "BloodFabricSpatter01", Vector3.zero, 1.3f, 0f);
+        spatter.transform.position = new Vector3(benchX + 0.3f, floorY + 1.35f, wallN + 0.02f);
+        spatter.transform.rotation = Quaternion.LookRotation(Vector3.back);   // facing into the car
+
+        // The same faint, flickering cab light at the open end.
+        var cab = new GameObject("CabLight");
+        cab.transform.SetParent(car.transform, true);
+        cab.transform.position = new Vector3(faceX - 0.6f, floorY + 2f, 22.75f);
+        var light = cab.AddComponent<Light>();
+        light.type = LightType.Point; light.color = new Color(1f, 0.55f, 0.3f);
+        light.intensity = 2.5f; light.range = 6f; light.shadows = LightShadows.Soft;
+        var flicker = cab.AddComponent<FlickeringLight>();
+        flicker.lamp = light; flicker.minCalm = 3f; flicker.maxCalm = 9f;
+    }
+
+    // A small brass key with a paper tag (simple shapes until a key model is found).
+    static GameObject BuildKey(Transform parent)
+    {
+        var key = new GameObject("CabinetKey");
+        key.transform.SetParent(parent);
+        var brass = Mat("KeyBrass", null, new Color(0.78f, 0.62f, 0.28f), 1f, 0.75f, 0.9f);
+        var shaft = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        shaft.transform.SetParent(key.transform, false); shaft.transform.localScale = new Vector3(0.07f, 0.006f, 0.012f);
+        shaft.GetComponent<Renderer>().sharedMaterial = brass;
+        var bow = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        bow.transform.SetParent(key.transform, false); bow.transform.localScale = new Vector3(0.035f, 0.003f, 0.035f);
+        bow.transform.localPosition = new Vector3(-0.045f, 0, 0);
+        bow.GetComponent<Renderer>().sharedMaterial = brass;
+        var tag = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        tag.transform.SetParent(key.transform, false); tag.transform.localScale = new Vector3(0.04f, 0.002f, 0.025f);
+        tag.transform.localPosition = new Vector3(-0.08f, 0, 0.01f);
+        tag.GetComponent<Renderer>().sharedMaterial = Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f);
+        foreach (var col in key.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(col);
+        key.transform.localScale = Vector3.one * 1.5f;   // big enough to spot on the seat
+        return key;
+    }
+
+    // ---------------------------------------------------------------- platform cabinet
+    // A blue steel cabinet on the platform's east end wall, locked until the player has the key.
+    // Inside: the second fuse, a spare battery and a shotgun shell.
+    static void BuildPlatformCabinet()
+    {
+        var blue = Mat("CabinetBlue", Tex("metal_04.png"), new Color(0.25f, 0.38f, 0.62f), 1f, 0.45f, 0.5f);
+        var cab = new GameObject("PlatformCabinet").transform;
+        cab.SetParent(root);
+        float x0 = 17.55f, x1 = 18f, z0 = 15.6f, z1 = 16.6f, y0 = 0.8f, y1 = 1.95f, t = 0.03f;
+        Span("Back", cab, new Vector3(x1 - t, y0, z0), new Vector3(x1, y1, z1), blue);
+        Span("SideA", cab, new Vector3(x0, y0, z0), new Vector3(x1 - t, y1, z0 + t), blue);
+        Span("SideB", cab, new Vector3(x0, y0, z1 - t), new Vector3(x1 - t, y1, z1), blue);
+        Span("Bottom", cab, new Vector3(x0, y0, z0 + t), new Vector3(x1 - t, y0 + t, z1 - t), blue);
+        Span("Top", cab, new Vector3(x0, y1 - t, z0 + t), new Vector3(x1 - t, y1, z1 - t), blue);
+        float shelf = y0 + 0.55f;
+        Span("Shelf", cab, new Vector3(x0, shelf - 0.02f, z0 + t), new Vector3(x1 - t, shelf, z1 - t), blue);
+
+        var hinge = new GameObject("CabinetDoor");
+        hinge.transform.SetParent(cab);
+        hinge.transform.position = new Vector3(x0 - 0.015f, y0, z0);
+        Box("Door", hinge.transform, new Vector3(x0 - 0.015f, (y0 + y1) * 0.5f, (z0 + z1) * 0.5f), new Vector3(0.025f, y1 - y0 - 0.01f, z1 - z0 - 0.01f), blue);
+        var door = hinge.AddComponent<HingedDoor>();
+        door.openAngle = -110f;
+        door.openTime = 0.8f;
+        door.doorName = "cabinet";
+        door.needsCabinetKey = true;
+        door.unlockSound = Load<AudioClip>(SfxDir + "/SwitchButton2_On.wav");
+        door.openSound = Load<AudioClip>(SfxDir + "/MetalCabinet1.wav");
+
+        float midZ = (z0 + z1) * 0.5f, inX = (x0 + x1) * 0.5f;
+        MakePickup(ModelPiece(BreakerFbx, "Fuse", cab, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
+                   new Vector3(inX, shelf, midZ - 0.2f), 0f, "PlasticBox1");
+        MakePickup(ModelPiece(SurvivalFbx, "Battery", cab, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
+                   new Vector3(inX, shelf, midZ + 0.25f), 80f, "PlasticBox1", lieDown: true);
+        var shell = Shell(cab);
+        shell.transform.rotation = Quaternion.Euler(0, 30f, 90f);
+        StandOn(shell, new Vector3(inX, y0 + t, midZ));
+        MakePickup(shell, global::Pickup.Kind.Shell, shell.transform.position, null, "DesignedGunSoundReload1", keepPlace: true);
+    }
+
+    // ---------------------------------------------------------------- PSX screen filter
+    // Adds the full-screen PS1 effect (Assets/Shaders/PSXScreen.shader, 9% strength) to the PC
+    // renderer once, as a "Full Screen Pass" that runs after the other post effects.
+    static void EnsurePsxFilter()
+    {
+        const string matPath = "Assets/Art/Materials/PSXScreen.mat";
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+        if (mat == null) { mat = new Material(Shader.Find("LastStop/PSXScreen")); AssetDatabase.CreateAsset(mat, matPath); }
+        mat.SetFloat("_Strength", 0.09f);
+        mat.SetFloat("_PixelSize", 3f);
+        mat.SetFloat("_ColorSteps", 32f);
+        EditorUtility.SetDirty(mat);
+
+        var data = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.Universal.UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
+        foreach (var f in data.rendererFeatures) if (f is UnityEngine.Rendering.Universal.FullScreenPassRendererFeature fs && fs.name == "PSXScreen") { fs.passMaterial = mat; EditorUtility.SetDirty(fs); return; }
+        var feature = ScriptableObject.CreateInstance<UnityEngine.Rendering.Universal.FullScreenPassRendererFeature>();
+        feature.name = "PSXScreen";
+        feature.passMaterial = mat;
+        feature.injectionPoint = UnityEngine.Rendering.Universal.FullScreenPassRendererFeature.InjectionPoint.AfterRenderingPostProcessing;
+        feature.fetchColorBuffer = true;
+        AssetDatabase.AddObjectToAsset(feature, data);
+        AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out string _, out long localId);
+        var so = new SerializedObject(data);
+        var list = so.FindProperty("m_RendererFeatures");
+        list.arraySize++;
+        list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = feature;
+        var map = so.FindProperty("m_RendererFeatureMap");
+        map.arraySize++;
+        map.GetArrayElementAtIndex(map.arraySize - 1).longValue = localId;
+        so.ApplyModifiedProperties();
+        EditorUtility.SetDirty(data);
+        AssetDatabase.SaveAssets();
     }
 
     // ---------------------------------------------------------------- fuse box
@@ -320,7 +536,11 @@ public static partial class LookTestBuilder
     {
         var cam = player.transform.Find("Main Camera");
         var inventory = player.AddComponent<PlayerInventory>();
+        inventory.spareBatteries = 1;                       // the worker brings one spare battery
         player.AddComponent<Hud>();
+        var lean = player.AddComponent<PlayerLean>();       // Q / E to peek round corners
+        lean.cameraPivot = cam;
+        lean.look = player.GetComponent<PlayerLook>();
         var interactor = cam.gameObject.AddComponent<Interactor>();
         interactor.inventory = inventory;
 
