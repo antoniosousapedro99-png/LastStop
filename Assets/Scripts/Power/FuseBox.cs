@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // The fuse box that brings the area's power back. Press E to slot in fuses you carry (one per press);
-// when every slot is filled, press E again to pull the breaker and restore the PowerGrid.
+// when every slot is filled, click it again to pull the breaker and restore the PowerGrid.
 public class FuseBox : MonoBehaviour, IInteractable
 {
     public PowerGrid grid;
@@ -58,6 +58,6 @@ public class FuseBox : MonoBehaviour, IInteractable
         installed++;
         if (insertSound) AudioSource.PlayClipAtPoint(insertSound, transform.position, 1f);
         Hud.Notice(installed < Required ? "Fuse inserted (" + installed + "/" + Required + ")"
-                                        : "All fuses in place   [E] pull the breaker");
+                                        : "All fuses in place   [LMB] pull the breaker");
     }
 }

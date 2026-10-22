@@ -20,6 +20,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - ~~Main stalker: BagMan~~ (the sack-headed killer; the only monster pack with walk/run/idle/attack animations). It hunts the player throughout the game. **BagMan is a placeholder:** the creative director will replace it later, so keep stalker code model-independent.
 - **Rare other horrors** appear only in scripted moments.
 - **Defense: a shotgun with very rare shells.** It **stuns BagMan but never kills it**. There are no other weapons.
+  - **Shotgun on hold (2026-10-22):** the shotgun and shells are switched off (`ShotgunEnabled = false` in `LookTestBuilder.CoreLoop.cs`) because they are hard to balance for this kind of game. The code stays; the locker and cabinet are simply empty of them. The creative director wants more useful consumables and collectibles instead.
 - **Flashlight:** the battery drains and spare batteries are scarce.
 - **Saving:** only in **safe rooms** (e.g. a staff break room with a working lamp).
 - **No sanity mechanic.**
@@ -36,6 +37,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **Fog:** things fade into black over about **25 m** (raised from 15 m after playtesting), but bright lamps still glow through from further away.
 
 ## Sound
+- **Sound pass (2026-10-22):** each area has its own background sound, crossfading as you walk (`AreaAmbience`): street = rain loop + quiet "Tube Wind" drone (the rain muffles down the stairs and dies out along the corridor); station = "Too Quiet"; tunnels = "Always Observing". Underground, a distant noise (rockfall, gravel, metal scrape, door creak) plays every 60-120 s from 15-30 m away (`DistantNoises`). A leaking pipe loops above the track puddle. Footsteps: wet gravel on the tracks, splashes in puddles, concrete elsewhere. Notes and posters rustle when you start reading them; fuses clink, the key rattles.
 
 - **Ambience, tension and machine hums:** Helton Yan's Surreal Drones (53-second loops).
 - **One-shot effects:** Darkworld Audio – Survival Effects (footsteps, doors, switches, water, breathing, gun handling).

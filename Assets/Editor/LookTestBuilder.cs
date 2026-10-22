@@ -105,7 +105,7 @@ public static partial class LookTestBuilder
 
         // ---- track pit and the two tunnels it runs into: east ~100 m, west ~85 m, each ending in a stalled train
         var track = Group("Track");
-        Span("PitFloor", track, new Vector3(-TunnelEndW, -1.5f, 20), new Vector3(TunnelEndE, -1.3f, 25.5f), gravel);
+        var pitFloor = Span("PitFloor", track, new Vector3(-TunnelEndW, -1.5f, 20), new Vector3(TunnelEndE, -1.3f, 25.5f), gravel);
         // The track texture starts exactly at the bed's edge (z 21.45), so its painted rails fall at
         // 25% and 69% of its 2.6 m width; the 3D rails sit right on top of them.
         const float bedZ = 21.45f, bedWidth = 2.6f;
@@ -114,6 +114,14 @@ public static partial class LookTestBuilder
         float railA = bedZ + bedWidth * 0.25f, railB = bedZ + bedWidth * 0.6875f;
         Span("Rail_N", track, new Vector3(-TunnelEndW, -1.29f, railA - 0.035f), new Vector3(TunnelEndE, -1.18f, railA + 0.035f), railMetal);
         Span("Rail_S", track, new Vector3(-TunnelEndW, -1.29f, railB - 0.035f), new Vector3(TunnelEndE, -1.18f, railB + 0.035f), railMetal);
+        // Wet gravel underfoot anywhere down on the tracks (the rails too: you can't tell them apart walking).
+        var gravelSteps = new[]
+        {
+            Load<AudioClip>(SfxDir + "/FootstepsWetGravelStones1.wav"), Load<AudioClip>(SfxDir + "/FootstepsWetGravelStones2.wav"),
+            Load<AudioClip>(SfxDir + "/FootstepsWetGravelStones3.wav"), Load<AudioClip>(SfxDir + "/FootstepsWetGravelStones4.wav"),
+        };
+        foreach (var floor in new[] { pitFloor, track.Find("Rail_N").gameObject, track.Find("Rail_S").gameObject })
+            floor.AddComponent<FootstepSurface>().steps = gravelSteps;
         // Flat decals (puddles) float 1 cm above the surface below so they never fight with it.
         Puddle("PitPuddle", track, new Vector3(3.5f, -1.28f, 22.6f), 4.5f, 2.6f, puddle);
         // Short service steps at the west end, so the player can climb back out of the pit.
@@ -186,12 +194,10 @@ public static partial class LookTestBuilder
         probe.resolution = 128;
         BakeReflection(probe);
 
-        var drone = new GameObject("AmbientDrone").AddComponent<AudioSource>();
-        drone.clip = Load<AudioClip>(AmbienceDir + "/DSGNDron_Tonal-Too Quiet_HY_SD.wav");
-        drone.loop = true; drone.playOnAwake = true; drone.volume = 0.3f; drone.spatialBlend = 0f;
 
         var player = BuildPlayer(PlayerStartPosition);
         player.transform.rotation = Quaternion.Euler(0, PlayerStartYaw, 0);
+        BuildSoundscape(player.transform);
         BuildDrizzle(player.transform);
         boundary.player = player.transform;
         EnsurePsxFilter();
@@ -276,6 +282,7 @@ public static partial class LookTestBuilder
             Load<AudioClip>(SfxDir + "/FootstepsConcrete1.wav"), Load<AudioClip>(SfxDir + "/FootstepsConcrete2.wav"),
             Load<AudioClip>(SfxDir + "/FootstepsConcrete3.wav"), Load<AudioClip>(SfxDir + "/FootstepsConcrete4.wav"),
         };
+        steps.splashes = new[] { Load<AudioClip>(SfxDir + "/WaterSplash1.wav"), Load<AudioClip>(SfxDir + "/WaterSplash2.wav") };
         return player;
     }
 
@@ -439,6 +446,9 @@ public static partial class LookTestBuilder
         group.position = center;
         Oval(group, "Main", Vector3.zero, new Vector3(length * 0.8f, 0.002f, width), 8f, mat);
         Oval(group, "Splash", new Vector3(length * 0.58f, 0, width * 0.25f), new Vector3(length * 0.22f, 0.002f, width * 0.35f), -25f, mat);
+        // Footsteps check this oval (the big one) to splash.
+        var water = group.gameObject.AddComponent<WaterPuddle>();
+        water.halfLength = length * 0.4f; water.halfWidth = width * 0.5f;
     }
 
     static void Oval(Transform parent, string name, Vector3 localPos, Vector3 scale, float yaw, Material mat)

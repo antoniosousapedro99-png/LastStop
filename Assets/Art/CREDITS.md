@@ -6,8 +6,8 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | Pack | Author | Licence | Credit needed | Used for | Folder |
 |---|---|---|---|---|---|
 | Metro PSX | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Station textures (tiles, tactile strip, rails), bench seats, trash can, vending machine, metro map | `Models/Environment/MetroPSX` (its film posters were left out on purpose) |
-| Darkworld Audio – Survival Effects [Free] | Darkworld Audio | Royalty-free; no attribution needed; don't sell the raw sounds (`LICENSE.pdf`) | no | Concrete footsteps, flashlight click | `Audio/SFX/Darkworld` |
-| Helton Yan's Surreal Drones | Helton Yan | **no licence file — confirm before release** | yes (credit "Helton Yan") | Ambient drone, lamp buzz | `Audio/Ambience/HeltonYan` |
+| Darkworld Audio – Survival Effects [Free] | Darkworld Audio | Royalty-free; no attribution needed; don't sell the raw sounds (`LICENSE.pdf`) | no | Footsteps (concrete, wet gravel on the tracks, puddle splashes), switches, doors, cabinets, paper rustles, pickups, distant rockfalls and scrapes, leaking pipe | `Audio/SFX/Darkworld` |
+| Helton Yan's Surreal Drones | Helton Yan | **no licence file — confirm before release** | yes (credit "Helton Yan") | Area drones (station, tunnels, street wind), lamp buzz, power hum | `Audio/Ambience/HeltonYan` |
 | PSX Kitchen Props Pack | Nicowlas | Use in projects; **no redistribution** (LICENSE.txt) | no | Half-eaten pizza, cola can | `Models/Props/Kitchen` |
 | OFFICE pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Desk, office chair, logbook binder | `Models/Props/Office` |
 | Survival pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Flashlight battery, Zippo | `Models/Props/Survival` |
@@ -24,4 +24,5 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | PSX Horror Skyboxes (free) | LESED (lesed.itch.io) | Use in projects; **no redistribution**; credit appreciated (`LICENSE.txt`) | no | Full-moon night sky | `Textures/Sky/FullMoonNight` |
 | Rain Particles | Game Seed Assets (Unity Asset Store) | Unity Asset Store EULA (use in games; no redistribution of the raw files) | no | Street drizzle and splashes (materials switched to URP) | `Particles/RainParticles` (demo scenes removed) |
 | Industrial exterior v1 | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Wooden crates (the climb onto the west train) | `Models/Props/Crates` |
+| Rain sound (soundreality-rain-sound-550289) | SoundReality (Pixabay) | Pixabay Content Licence: free to use, no credit needed (to confirm on the download page) | no | Street rain loop | `Audio/Ambience/Rain` |
 Asset library on disk: `Documents/PSX horror/assets` (copy in only the files actually used).

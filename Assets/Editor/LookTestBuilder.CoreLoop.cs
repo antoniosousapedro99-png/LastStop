@@ -19,6 +19,10 @@ public static partial class LookTestBuilder
 
     static PowerGrid grid;
 
+    // The shotgun and its shells are switched off for now (2026-10-22): hard to balance for this
+    // kind of game. All the code stays; set this back to true to place them in the level again.
+    static readonly bool ShotgunEnabled = false;
+
     static void BuildCoreLoop(Material tubeLit, Material housing, Material concrete, Material ceiling,
                               Material floorTile, Material doorMetal)
     {
@@ -51,7 +55,7 @@ public static partial class LookTestBuilder
         var items = Group("Pickups");
         var fuseCrateW = Span("Crate_FuseW", items, new Vector3(-80.5f, -1.3f, 24.7f), new Vector3(-79.9f, -0.7f, 25.3f), crate);
         MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
-               Top(fuseCrateW, -80.2f, 25.0f), 30f, "PlasticBox1");
+               Top(fuseCrateW, -80.2f, 25.0f), 30f, "SmallGlassBottles1");   // glass fuse clinking
         // (The second fuse is locked in the blue platform cabinet; its key is inside the west train.)
 
         MakePickup(ModelPiece(SurvivalFbx, "Battery", items, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
@@ -206,7 +210,7 @@ public static partial class LookTestBuilder
         Physics.SyncTransforms();   // find the seat cushion under the key
         foreach (var h in Physics.RaycastAll(new Vector3(benchX + 0.6f, floorY + 2f, wallN + 0.4f), Vector3.down, 3f))
             if (benchN && h.collider.transform.IsChildOf(benchN.transform)) { keySpot = h.point; break; }
-        MakePickup(key, global::Pickup.Kind.Key, keySpot, 40f, "MetalCabinet1");
+        MakePickup(key, global::Pickup.Kind.Key, keySpot, 40f, "GateWoodChain1");   // metal rattle
 
         // Blood sprayed on the wall above the bench.
         var spatter = Decal("TrainBloodSpatter", tunnel, "BloodFabricSpatter01", Vector3.zero, 1.3f, 0f);
@@ -277,9 +281,10 @@ public static partial class LookTestBuilder
 
         float midZ = (z0 + z1) * 0.5f, inX = (x0 + x1) * 0.5f;
         MakePickup(ModelPiece(BreakerFbx, "Fuse", cab, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
-                   new Vector3(inX, shelf, midZ - 0.2f), 0f, "PlasticBox1");
+                   new Vector3(inX, shelf, midZ - 0.2f), 0f, "SmallGlassBottles1");
         MakePickup(ModelPiece(SurvivalFbx, "Battery", cab, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
                    new Vector3(inX, shelf, midZ + 0.25f), 80f, "PlasticBox1", lieDown: true);
+        if (!ShotgunEnabled) return;
         var shell = Shell(cab);
         shell.transform.rotation = Quaternion.Euler(0, 30f, 90f);
         StandOn(shell, new Vector3(inX, y0 + t, midZ));
@@ -494,6 +499,7 @@ public static partial class LookTestBuilder
         lockerDoor.doorName = "locker";
         lockerDoor.openSound = Load<AudioClip>(SfxDir + "/MetalCabinet1.wav");
 
+        if (!ShotgunEnabled) return;   // the locker stays, empty
         // The shotgun stands upright inside, barrels up, leaning on the back wall.
         var gun = ShotgunModel(locker);
         gun.transform.rotation = Quaternion.Euler(-82f, 90f, 0f) * gun.transform.rotation;   // barrels up
@@ -550,6 +556,10 @@ public static partial class LookTestBuilder
         lean.look = player.GetComponent<PlayerLook>();
         var interactor = cam.gameObject.AddComponent<Interactor>();
         interactor.inventory = inventory;
+        interactor.paperSounds = new[]
+        {
+            Load<AudioClip>(SfxDir + "/PaperDocument1.wav"), Load<AudioClip>(SfxDir + "/PaperDocument2.wav"), Load<AudioClip>(SfxDir + "/PaperDocument3.wav"),
+        };
 
         var torch = cam.Find("Flashlight");
         var battery = torch.gameObject.AddComponent<FlashlightBattery>();
