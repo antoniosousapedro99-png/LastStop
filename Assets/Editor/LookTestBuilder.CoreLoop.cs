@@ -137,17 +137,24 @@ public static partial class LookTestBuilder
             inner.size = new Vector3(faceX - centreX, 2.4f, 0.1f);
         }
 
-        // Rubble steps up to the door: bricks and crates, each step at most 30 cm higher.
+        // A wooden crate pushed against the door: jump onto it from the track, then up into the car
+        // (two hops of about half a metre each; the player's jump is 0.6 m).
         var brick = Mat("Bricks", Load<Texture2D>(StreetDir + "/Urban/brick_wall.jpg"), new Color(0.6f, 0.5f, 0.45f), 1f, 0.15f);
-        int n = Mathf.CeilToInt((floorY + 1.3f) / 0.3f);
-        float rise = (floorY + 1.3f) / n;
-        var climb = new GameObject("RubbleSteps").transform;
+        var climb = new GameObject("ClimbCrates").transform;
         climb.SetParent(tunnel);
-        for (int k = 1; k <= n; k++)
-        {
-            float x0 = faceX + (n - k) * 0.45f, x1 = x0 + 0.45f;
-            Span("Rubble_" + k, climb, new Vector3(x0, -1.29f, 22.15f), new Vector3(x1, -1.3f + k * rise, 23.35f), k % 2 == 0 ? crate : brick);
-        }
+        var step = Place("Assets/Art/Models/Props/Crates/WideCrate.fbx", climb, Vector3.zero, 0f);
+        step.name = "StepCrate";
+        // Lay it on its long side, so it's low (about 0.57 m) and long enough to land on easily.
+        var sb = Bounds(step);
+        if (sb.size.y > sb.size.z) step.transform.rotation = Quaternion.Euler(90f, 0, 0) * step.transform.rotation;
+        sb = Bounds(step);
+        step.transform.localScale *= 0.57f / sb.size.y;
+        sb = Bounds(step);
+        if (sb.size.x < sb.size.z) { step.transform.rotation = Quaternion.Euler(0, 90f, 0) * step.transform.rotation; sb = Bounds(step); }
+        StandOn(step, new Vector3(faceX + sb.size.x * 0.5f + 0.02f, -1.3f, 22.75f));
+        // A smaller crate beside it, just for looks.
+        var extra = Place("Assets/Art/Models/Props/Crates/Crate.fbx", climb, Vector3.zero, 25f, 0.7f);
+        StandOn(extra, new Vector3(faceX + 1.6f, -1.3f, 21.2f));
         // Loose bricks scattered around the pile (decoration only).
         var rng = new System.Random(11);
         for (int i = 0; i < 9; i++)
@@ -828,6 +835,7 @@ public static partial class LookTestBuilder
         var s = go.transform.lossyScale;
         col.size = new Vector3(size.x / Mathf.Abs(s.x), size.y / Mathf.Abs(s.y), size.z / Mathf.Abs(s.z));
         var pickup = go.AddComponent<global::Pickup>();
+        if (kind != global::Pickup.Kind.Shotgun) go.AddComponent<ItemGlow>();   // faint Amnesia-style glow
         pickup.kind = kind;
         pickup.pickupSound = Load<AudioClip>(SfxDir + "/" + soundName + ".wav");
     }

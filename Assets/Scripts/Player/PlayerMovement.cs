@@ -11,7 +11,7 @@ public class PlayerMovement : MonoBehaviour
     public float walkSpeed = 2.3f;     // metres per second, a slow cautious walk
     public float runSpeed = 4.3f;
     public float crouchSpeed = 1.3f;
-    public float jumpHeight = 0.4f;    // metres: a short, heavy hop, not a platformer leap
+    public float jumpHeight = 0.6f;    // metres: a short, heavy hop (enough for a crate), not a platformer leap
     public float gravity = -15f;
 
     CharacterController controller;

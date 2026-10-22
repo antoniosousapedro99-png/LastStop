@@ -48,7 +48,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **Look test** (`Assets/Scenes/LookTest.unity`, rebuilt by **Last Stop → Build Look Test**). A white-tiled corridor opens onto a platform with track pit, puddles, lamps (one dead, one flickering and buzzing), tunnel mouths (red emergency lamp in the east tunnel), and a player with flashlight and footsteps.
   - Walk 2.2 m/s, hold **Shift** to sprint at 4.2 m/s.
   - **C** toggles crouch: 1.2 m/s, body 1.1 m, eyes 0.95 m, footsteps half as loud. While crouched you can't sprint or jump, and you can't stand up under something low.
-  - **Space** jumps 0.4 m: a short, heavy hop.
+  - **Space** jumps 0.6 m: a short, heavy hop (raised from 0.4 m on 2026-10-22 so you can get onto crates).
   - Flashlight (**F**) works like a real torch: a narrow bright hotspot (32°, brightness 160) that throws about 60 m, plus a wide, soft spill ring (85°, brightness 30, 25 m) that lights tunnel walls and ceiling around you.
   - Platform benches face the tracks.
 - **Core loop (test area):**
@@ -71,7 +71,9 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **Fuse box** sits at eye level (centre 1.5 m), and a small dot marks the centre of the screen (brighter when you can use what you're looking at). Its prompt says how many fuses you carry.
   - **Controls (2026-10-21):** WASD, Shift sprint, C crouch (toggle), Space jump, **Q / E lean** (hold), **LMB use** (Amnesia-style), F torch, H battery, **hold RMB aim shotgun**, LMB fire while aiming, R reload. Notes and posters show their text just by looking at them.
   - Speeds: walk 2.3, sprint 4.3, crouch 1.3 m/s. Battery lasts 5 minutes; the worker starts with 1 spare.
-  - **Cabinet key puzzle:** the west train can be climbed into via a rubble pile; it's blocked by collapsed seats halfway. A key lies on a bench (blood spatter above it) and opens the blue cabinet on the platform's east wall: second fuse, a battery and a shotgun shell.
+  - **Cabinet key puzzle:** the west train can be climbed into by jumping onto a wooden crate beside the track; it's blocked by collapsed seats halfway. A key lies on a bench (blood spatter above it) and opens the blue cabinet on the platform's east wall: second fuse, a battery and a shotgun shell.
+  - **Item glow (2026-10-22):** fuses, batteries, shells and keys give off a faint, slowly breathing warm glow (Amnesia-style) so they can be spotted in the dark. On by default; `GameSettings.ItemGlow` is the switch a future settings menu will show.
+  - **Rain (2026-10-22):** a light drizzle from the "Rain Particles" pack (Game Seed Assets) with small splashes; it follows the player on the street and stops underground.
   - Station lamps throw light 50% further (and wider) once mains power is back.
   - Screen: PS1 filter at 9% (slight pixelation, colour banding, dither).
   - Vertical field of view 60° (about 90° across a 16:9 screen).

@@ -22,4 +22,6 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | Retro Tree Pack v1.0 | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Street trees | `Models/Environment/Street/Trees` |
 | All Bushes pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Hedges | `Models/Environment/Street/Bushes` |
 | PSX Horror Skyboxes (free) | LESED (lesed.itch.io) | Use in projects; **no redistribution**; credit appreciated (`LICENSE.txt`) | no | Full-moon night sky | `Textures/Sky/FullMoonNight` |
+| Rain Particles | Game Seed Assets (Unity Asset Store) | Unity Asset Store EULA (use in games; no redistribution of the raw files) | no | Street drizzle and splashes (materials switched to URP) | `Particles/RainParticles` (demo scenes removed) |
+| Industrial exterior v1 | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Wooden crates (the climb onto the west train) | `Models/Props/Crates` |
 Asset library on disk: `Documents/PSX horror/assets` (copy in only the files actually used).

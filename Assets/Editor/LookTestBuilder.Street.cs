@@ -424,9 +424,39 @@ public static partial class LookTestBuilder
         }
     }
 
-    // Light drizzle: thin streaks falling around the player while they're outdoors.
+    // Light drizzle around the player while they're outdoors. Uses the "Rain Particles" pack (Game Seed
+    // Assets: falling streaks plus little splashes where drops hit the ground) when it's in the project,
+    // otherwise a simple built-in particle rain.
+    const string RainPrefab = "Assets/Art/Particles/RainParticles/Prefabs/Rain Particles.prefab";
+
     static void BuildDrizzle(Transform player)
     {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RainPrefab);
+        if (prefab != null)
+        {
+            var rain = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            rain.name = "Drizzle";
+            foreach (var pr in rain.GetComponentsInChildren<ParticleSystemRenderer>())
+                foreach (var m in pr.sharedMaterials) UpgradeParticleMaterial(m);
+            // Drops fall in the world, so walking doesn't drag the rain along with you.
+            foreach (var system in rain.GetComponentsInChildren<ParticleSystem>()) { var sysMain = system.main; sysMain.simulationSpace = ParticleSystemSimulationSpace.World; }
+            // The pack's emitter is a flat box shooting along its local Z; tip it so drops fall straight down,
+            // and thin it out from a downpour to a drizzle.
+            rain.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+            var mainRain = rain.GetComponent<ParticleSystem>();
+            if (mainRain) { var rainRate = mainRain.emission; rainRate.rateOverTime = 300f; }
+            // The ripple rings left where drops land are 0.7 m wide and solid white in the pack;
+            // make them small, dim and see-through so they read as faint splashes.
+            var rings = rain.transform.Find("Water Ring Drops");
+            if (rings && rings.TryGetComponent(out ParticleSystem ringSystem))
+            {
+                var ringMain = ringSystem.main;
+                ringMain.startSize = 0.25f;
+                ringMain.startColor = new Color(0.65f, 0.7f, 0.8f, 0.2f);
+            }
+            rain.AddComponent<Drizzle>().player = player;
+            return;
+        }
         var go = new GameObject("Drizzle");
         var ps = go.AddComponent<ParticleSystem>();
         var main = ps.main;
@@ -440,6 +470,26 @@ public static partial class LookTestBuilder
         r.renderMode = ParticleSystemRenderMode.Stretch; r.lengthScale = 4f; r.velocityScale = 0.02f;
         r.sharedMaterial = TransparentMat("Raindrop", new Color(0.75f, 0.8f, 0.9f, 0.35f), 0.5f);
         go.AddComponent<Drizzle>().player = player;
+    }
+
+    // Asset-store particle materials often use the old built-in shaders, which show pink in URP.
+    // Swap them to URP's unlit particle shader, keeping the texture and colour.
+    static void UpgradeParticleMaterial(Material m)
+    {
+        if (m == null || m.shader.name.StartsWith("Universal Render Pipeline")) return;
+        var tex = m.HasProperty("_MainTex") ? m.GetTexture("_MainTex") : null;
+        var col = m.HasProperty("_TintColor") ? m.GetColor("_TintColor") : m.HasProperty("_Color") ? m.GetColor("_Color") : Color.white;
+        m.shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+        m.SetTexture("_BaseMap", tex);
+        m.SetColor("_BaseColor", col);
+        m.SetFloat("_Surface", 1f);                 // transparent
+        m.SetFloat("_Blend", 0f);                   // alpha blending
+        m.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+        m.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+        m.SetFloat("_ZWrite", 0f);
+        m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        m.renderQueue = (int)RenderQueue.Transparent;
+        EditorUtility.SetDirty(m);
     }
 
     // ---------------------------------------------------------------- the city beyond the walls

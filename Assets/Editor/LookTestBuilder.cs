@@ -156,7 +156,7 @@ public static partial class LookTestBuilder
         Prop("seats", props, new Vector3(-9f, 0, 15.0f), -90f);
         Prop("seats", props, new Vector3(9f, 0, 15.0f), -90f);
         Prop("trash_can", props, new Vector3(3.3f, 0, 14.6f), 0f);
-        var vending = Prop("Vending_machine", props, new Vector3(-15.2f, 0, 14.5f), 0f);
+        var vending = Prop("Vending_machine", props, new Vector3(-15.2f, 0, 14.5f), 180f);   // front faces the platform
         if (vending)
         {
             var glow = AddLight(vending, LightType.Point, new Color(0.85f, 0.9f, 1f), 3f, 3.5f);
