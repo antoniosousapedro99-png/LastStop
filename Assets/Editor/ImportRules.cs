@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 4;
+    public override uint GetVersion() => 5;
 
     void OnPreprocessTexture()
     {
@@ -18,6 +18,9 @@ public class ImportRules : AssetPostprocessor
         importer.mipmapEnabled = true; // keeps far-away tiles from shimmering
         // The blood decals come as huge photos (up to 4K); 512 px is plenty for a PS1-style game.
         if (assetPath.Contains("/Textures/Blood/")) { importer.maxTextureSize = 512; importer.alphaIsTransparency = true; importer.wrapMode = TextureWrapMode.Clamp; }
+        // Graffiti tags: the see-through background is stored as white, which would bleed into the black
+        // letters when the picture is shrunk for distance; this setting fills it with the letters' colour.
+        if (assetPath.Contains("/Textures/Graffiti/")) { importer.alphaIsTransparency = true; importer.wrapMode = TextureWrapMode.Clamp; }
     }
 
     // The first-person arms come with animations (grab, push, idle...). "Legacy" animation lets a

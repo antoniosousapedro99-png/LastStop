@@ -104,7 +104,8 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - A payphone answering machine with Rosa's last message.
   - The van radio.
   - Police tape around the gas station.
-- **Foreshadowing, hints only (no sighting):** blood drips down the subway stairs to a wrapped, cocooned shape lying on the steps. (Graffiti and drag marks were removed.)
+- **Foreshadowing, hints only (no sighting):** blood drips down the subway stairs to a wrapped, cocooned shape lying on the steps. (The old graffiti and drag marks were removed.)
+- **Grime (2026-10-23), very sparing:** four black, worn graffiti tags (one on an apartment block on the street, two on the stairwell walls, one beside the platform vending machine), plus three small blood marks: a smear dragged down the east tunnel wall, drops outside the staff room door, and a dried stain under the east platform bench (`LookTestBuilder.Grime.cs`).
 - Lore text appears on screen when you look at a poster, newspaper or note.
 - The street is boxed in by invisible walls; walking up to one shows "I should turn around...". Beyond them the road, buildings, dead lamps and cars carry on for two blocks each way, plus a skyline, drawn only when big enough on screen (LOD).
 - Lit: four sodium street lamps (two stuttering), a failing tube under the gas station canopy, a light left on in the laundromat, the subway globes.

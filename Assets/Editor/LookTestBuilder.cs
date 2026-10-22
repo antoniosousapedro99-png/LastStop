@@ -198,6 +198,7 @@ public static partial class LookTestBuilder
         var player = BuildPlayer(PlayerStartPosition);
         player.transform.rotation = Quaternion.Euler(0, PlayerStartYaw, 0);
         BuildSoundscape(player.transform);
+        BuildGrime();
         BuildDrizzle(player.transform);
         boundary.player = player.transform;
         EnsurePsxFilter();
