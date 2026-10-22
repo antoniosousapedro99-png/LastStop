@@ -294,7 +294,7 @@ public static partial class LookTestBuilder
         const string matPath = "Assets/Art/Materials/PSXScreen.mat";
         var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
         if (mat == null) { mat = new Material(Shader.Find("LastStop/PSXScreen")); AssetDatabase.CreateAsset(mat, matPath); }
-        mat.SetFloat("_Strength", 0.09f);
+        mat.SetFloat("_Strength", 0.15f);   // 15%
         mat.SetFloat("_PixelSize", 3f);
         mat.SetFloat("_ColorSteps", 32f);
         EditorUtility.SetDirty(mat);

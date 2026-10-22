@@ -99,7 +99,7 @@ public static partial class LookTestBuilder
         }
         Span("Wall_Front", well, new Vector3(-2.3f, -0.2f, -12.3f), new Vector3(2.3f, StreetY - 0.4f, -12), wallTile);
 
-        // Railings around the opening, globe lamps and the SUBWAY sign at the top of the stairs.
+        // Railings around the opening and globe lamps at the top of the stairs.
         var rail = StreetDir + "/Urban/metalfence_one_side_topbar.fbx";
         foreach (int side in new[] { -1, 1 })
             for (int k = 0; k < 3; k++)
@@ -113,8 +113,6 @@ public static partial class LookTestBuilder
             var gl = AddLight(globe, LightType.Point, new Color(0.45f, 1f, 0.5f), 2.5f, 6f);
             gl.transform.localPosition = Vector3.zero;
         }
-        var sign = Prim(PrimitiveType.Cube, "SubwaySign", well, new Vector3(0, StreetY + 2.6f, -12.4f), new Vector3(4.6f, 0.55f, 0.12f), Mat("SignBoard", null, new Color(0.08f, 0.1f, 0.09f), 1f, 0.3f));
-        Label(sign.transform, "SUBWAY   HOLLIS ST   LINE 4", new Vector3(0, 0, -0.07f), 0.09f, Color.white, 180f);   // faces the street (north)
     }
 
     // ---------------------------------------------------------------- shops and buildings

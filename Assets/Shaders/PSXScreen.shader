@@ -1,12 +1,12 @@
 // Full-screen PS1 look, drawn after all other effects: the picture is made slightly chunky
 // (pixelated), its colours are reduced to fewer steps, and a fine 4x4 checker pattern ("dither")
 // hides the banding between steps, like the PlayStation did. The result is blended over the normal
-// image by _Strength (0.09 = 9%), so it adds texture without hiding detail.
+// image by _Strength (0.15 = 15%), so it adds texture without hiding detail.
 Shader "LastStop/PSXScreen"
 {
     Properties
     {
-        _Strength ("Strength", Range(0, 1)) = 0.09
+        _Strength ("Strength", Range(0, 1)) = 0.15
         _PixelSize ("Pixel size (screen pixels per PS1 pixel)", Float) = 3
         _ColorSteps ("Colour steps per channel", Float) = 32
     }

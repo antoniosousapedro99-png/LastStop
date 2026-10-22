@@ -4,13 +4,15 @@ using UnityEngine;
 // The glowing tube and the buzzing sound follow the light, so all three die out together.
 public class FlickeringLight : MonoBehaviour
 {
-    public Light lamp;
+    public Light lamp;                 // the light to flicker; left empty, every light in the fixture flickers
     public Renderer tube;              // the glowing tube mesh (its colour is dimmed with the light)
     public AudioSource buzz;           // electrical hum that cuts out when the light does
     public Color tubeGlow = Color.white;
     public float minCalm = 1.5f, maxCalm = 6f;   // seconds of steady light between fits
 
-    float baseIntensity, baseBuzz;
+    Light[] lamps;
+    float[] baseIntensity;
+    float baseBuzz;
     float calmTimer, fitTimer, nextToggle;
     bool on = true;
     MaterialPropertyBlock block;
@@ -18,7 +20,8 @@ public class FlickeringLight : MonoBehaviour
 
     void Awake()
     {
-        baseIntensity = lamp.intensity;
+        lamps = lamp ? new[] { lamp } : GetComponentsInChildren<Light>();
+        baseIntensity = System.Array.ConvertAll(lamps, l => l.intensity);
         baseBuzz = buzz ? buzz.volume : 0f;
         block = new MaterialPropertyBlock();
         calmTimer = Random.Range(minCalm, maxCalm);
@@ -49,7 +52,7 @@ public class FlickeringLight : MonoBehaviour
 
     void Apply(float level)
     {
-        lamp.intensity = baseIntensity * level;
+        for (int i = 0; i < lamps.Length; i++) lamps[i].intensity = baseIntensity[i] * level;
         if (buzz) buzz.volume = baseBuzz * (level > 0.1f ? 1f : 0.15f);
         if (tube)
         {

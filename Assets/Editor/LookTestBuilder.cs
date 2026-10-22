@@ -336,11 +336,16 @@ public static partial class LookTestBuilder
         var light = AddLight(lamp, LightType.Spot, Fluorescent, high ? 45f : 16f, high ? 13f : 9f);
         light.transform.localPosition = new Vector3(0, -0.1f, 0);
         light.transform.rotation = Quaternion.Euler(90, 0, 0);
-        light.spotAngle = 120f; light.innerSpotAngle = 50f;
+        // A wide cone whose full-strength centre is small, so the pool fades out gently at its edge.
+        light.spotAngle = 150f; light.innerSpotAngle = 25f;
         light.shadows = LightShadows.Soft;
+        // Real tubes light all around them, not just downward: a weak glow (no shadows) that also
+        // reaches the ceiling and the tops of the walls, so they don't drop straight into black.
+        var fill = AddLight(lamp, LightType.Point, Fluorescent, light.intensity * 0.12f, light.range * 0.8f);
+        fill.transform.localPosition = new Vector3(0, -0.15f, 0);
 
         var power = lamp.AddComponent<PoweredLight>();
-        power.lights = new[] { light };
+        power.lights = new[] { light, fill };
         power.glowParts = new[] { tubeObject.GetComponent<Renderer>() };
         power.glowColour = Fluorescent * 2.2f;
         if (flicker)
@@ -358,7 +363,6 @@ public static partial class LookTestBuilder
         buzz.spatialBlend = 1f; buzz.rolloffMode = AudioRolloffMode.Linear;
         buzz.minDistance = 1f; buzz.maxDistance = 12f;
         var flicker = lamp.AddComponent<FlickeringLight>();
-        flicker.lamp = lamp.GetComponentInChildren<Light>();
         flicker.tube = lamp.transform.Find("Tube").GetComponent<Renderer>();
         flicker.tubeGlow = Fluorescent * 2.2f;
         flicker.buzz = buzz;

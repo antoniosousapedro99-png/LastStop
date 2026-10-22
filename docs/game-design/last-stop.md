@@ -72,10 +72,11 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **Controls (2026-10-21):** WASD, Shift sprint, C crouch (toggle), Space jump, **Q / E lean** (hold), **LMB use** (Amnesia-style), F torch, H battery, **hold RMB aim shotgun**, LMB fire while aiming, R reload. Notes and posters show their text just by looking at them.
   - Speeds: walk 2.3, sprint 4.3, crouch 1.3 m/s. Battery lasts 5 minutes; the worker starts with 1 spare.
   - **Cabinet key puzzle:** the west train can be climbed into by jumping onto a wooden crate beside the track; it's blocked by collapsed seats halfway. A key lies on a bench (blood spatter above it) and opens the blue cabinet on the platform's east wall: second fuse, a battery and a shotgun shell.
-  - **Item glow (2026-10-22):** fuses, batteries, shells and keys give off a faint, slowly breathing warm glow (Amnesia-style) so they can be spotted in the dark. On by default; `GameSettings.ItemGlow` is the switch a future settings menu will show.
+  - **Item glow (2026-10-22):** fuses, batteries, shells and keys give off a faint, slowly breathing warm glow on their own surface only, with no light spilling around them (Amnesia-style) so they can be spotted in the dark. On by default; `GameSettings.ItemGlow` is the switch a future settings menu will show.
   - **Rain (2026-10-22):** a light drizzle from the "Rain Particles" pack (Game Seed Assets) with small splashes; it follows the player on the street and stops underground.
   - Station lamps throw light 50% further (and wider) once mains power is back.
-  - Screen: PS1 filter at 9% (slight pixelation, colour banding, dither).
+  - Screen: PS1 filter at 15% (slight pixelation, colour banding, dither; raised from 9% on 2026-10-22).
+  - **Station lamps (2026-10-22):** a wide, soft-edged pool downward plus a weak glow that reaches the ceiling and upper walls, so there is no hard line between light and dark. The "SUBWAY HOLLIS ST LINE 4" sign above the stairs was removed (its text showed through walls).
   - Vertical field of view 60° (about 90° across a 16:9 screen).
 
 ## Street level (intro area) — built 2026-10-20
