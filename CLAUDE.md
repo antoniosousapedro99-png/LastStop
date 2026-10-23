@@ -89,4 +89,7 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
   - Game time runs on several seconds between evals, so measure with a recorder hooked to `InputSystem.onAfterUpdate` (store max speed/height on a temporary GameObject), not by reading positions later.
 - The real mouse moves the camera while Play mode runs (cursor locked), so set the view right before each capture.
 - `capture_game_view --save_path` only accepts paths inside the project and lands in `Assets/Temp`. Delete that with `AssetDatabase.DeleteAsset("Assets/Temp")` when done.
+- **The game starts on the title screen** with the Player switched off. To test gameplay, start it first: call `MenuSystem`'s private `Choose()` with page `Main`, item 0 (New game) via reflection, and wait ~2 s for the fade. Capture menus with `capture_game_view --source screen` (`--source camera` misses on-screen UI).
+- **Refresh and wait for compiling before entering Play mode.** If Unity recompiles during Play (it notices an edit late), every component loses its private data and floods the Console with null errors that are not real bugs.
+- Settings live in PlayerPrefs (the registry). After testing settings, call `GameSettings.ResetToDefaults()` in edit mode. Display settings (vsync, fullscreen) only apply in builds, so Play mode never rewrites `ProjectSettings`.
 - Exit Play mode (`editor_stop`) when testing is done.

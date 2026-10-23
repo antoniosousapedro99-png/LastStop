@@ -47,6 +47,17 @@ public static partial class LookTestBuilder
         glow.type = LightType.Point; glow.color = new Color(1f, 0.22f, 0.1f);
         glow.intensity = 25f; glow.range = 14f; glow.shadows = LightShadows.None;   // light fades fast with distance; this reaches the tunnel walls
 
+        // Held, the flare sits a hand's width from its own light, which would blow it out to white: its
+        // light skips the viewmodel layer, and a faint red glow (viewmodel only) lights the stick instead.
+        foreach (var r in flare.GetComponentsInChildren<Renderer>()) r.renderingLayerMask = ViewmodelLayer;
+        SetLightLayers(glow, ~ViewmodelLayer);
+        var bodyGlow = new GameObject("BodyGlow").AddComponent<Light>();
+        bodyGlow.transform.SetParent(flare.transform, false);
+        bodyGlow.transform.localPosition = new Vector3(0.15f, 0.2f, 0.05f);   // a little way off, so it lights the stick evenly
+        bodyGlow.type = LightType.Point; bodyGlow.color = new Color(1f, 0.3f, 0.15f);
+        bodyGlow.intensity = 0.08f; bodyGlow.range = 0.6f; bodyGlow.shadows = LightShadows.None;
+        SetLightLayers(bodyGlow, ViewmodelLayer);
+
         var fizz = flare.AddComponent<AudioSource>();
         fizz.clip = Load<AudioClip>(SfxDir + "/FastWaterfallStreamLoop.wav");   // rushing water, sped up into a hiss
         fizz.loop = true; fizz.playOnAwake = true; fizz.volume = 0.15f; fizz.pitch = 2.2f;

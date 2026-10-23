@@ -19,6 +19,7 @@ public class InventoryScreen : MonoBehaviour
     public Texture2D frame, coverPanel;
 
     public static bool IsOpen { get; private set; }
+    public static int ClosedFrame { get; private set; } = -1;   // so the same Esc press doesn't also open the pause menu
 
     struct Entry { public string kind, name, description; public int count; }
     readonly List<Entry> entries = new List<Entry>();
@@ -47,7 +48,7 @@ public class InventoryScreen : MonoBehaviour
     {
         var keyboard = Keyboard.current;
         if (keyboard == null) return;
-        if (keyboard.tabKey.wasPressedThisFrame) { if (IsOpen) Close(); else Open(); return; }
+        if (keyboard.tabKey.wasPressedThisFrame && !MenuSystem.IsOpen) { if (IsOpen) Close(); else Open(); return; }
         if (!IsOpen) return;
         if (keyboard.escapeKey.wasPressedThisFrame) { Close(); return; }
 
@@ -79,6 +80,7 @@ public class InventoryScreen : MonoBehaviour
     void Close()
     {
         IsOpen = false;
+        ClosedFrame = Time.frameCount;
         Time.timeScale = timeScaleBefore;
         AudioListener.pause = false;
         Hud.Hidden = false;
@@ -190,6 +192,7 @@ public class InventoryScreen : MonoBehaviour
             smallStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold };
             textStyle.normal.textColor = new Color(0.88f, 0.84f, 0.8f);
         }
+        rowStyle.font = nameStyle.font = textStyle.font = smallStyle.font = MenuStyle.Font;   // the menus' VCR font
         rowStyle.fontSize = Mathf.RoundToInt(30 * scale);
         nameStyle.fontSize = Mathf.RoundToInt(22 * scale);
         textStyle.fontSize = Mathf.RoundToInt(24 * scale);

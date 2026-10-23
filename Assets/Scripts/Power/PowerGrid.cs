@@ -37,7 +37,9 @@ public class PowerGrid : MonoBehaviour
         if (musicSting)
         {
             var music = gameObject.AddComponent<AudioSource>();
-            music.clip = musicSting; music.volume = 0.6f; music.spatialBlend = 0f;
+            music.clip = musicSting; music.spatialBlend = 0f;
+            music.ignoreListenerVolume = true;              // music has its own volume setting
+            music.volume = 0.6f * GameSettings.MusicLevel;
             music.Play();
         }
         Restored?.Invoke();

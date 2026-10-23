@@ -29,16 +29,17 @@ public class Hud : MonoBehaviour
         if (Hidden) return;
         if (style == null) style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
         if (readStyle == null) readStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, wordWrap = true };
+        style.font = readStyle.font = MenuStyle.Font;   // the menus' VCR font
         float scale = Screen.height / 1080f;   // same size at any resolution
         style.fontSize = Mathf.RoundToInt(26 * scale);
         readStyle.fontSize = Mathf.RoundToInt(28 * scale);
 
-        // Centre dot: shows exactly where the 'look at' ray points.
+        // Centre dot: shows exactly where the 'look at' ray points (can be switched off in Options).
         bool onTarget = !string.IsNullOrEmpty(prompt) || !string.IsNullOrEmpty(reading);
         float dot = Mathf.Max(2f, (onTarget ? 6f : 3f) * scale);
         var old = GUI.color;
         GUI.color = new Color(0.92f, 0.9f, 0.85f, onTarget ? 0.9f : 0.35f);
-        GUI.DrawTexture(new Rect(Screen.width * 0.5f - dot * 0.5f, Screen.height * 0.5f - dot * 0.5f, dot, dot), Texture2D.whiteTexture);
+        if (GameSettings.CentreDot) GUI.DrawTexture(new Rect(Screen.width * 0.5f - dot * 0.5f, Screen.height * 0.5f - dot * 0.5f, dot, dot), Texture2D.whiteTexture);
         GUI.color = old;
 
         // The note you're looking at: wrapped text on a dark panel in the lower middle of the screen.

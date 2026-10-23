@@ -204,6 +204,7 @@ public static partial class LookTestBuilder
         EnsurePsxFilter();
         BuildPlayerGear(player);
         BuildInventoryScreen();   // needs the player's gear (torch battery)
+        BuildMenus();             // last: the menus switch the player off until "New game"
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
         // (doors, lockers, the inventory's turntable) must NOT be static, or its merged copy stays frozen.

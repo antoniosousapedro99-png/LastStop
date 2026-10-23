@@ -297,14 +297,13 @@ public static partial class LookTestBuilder
     }
 
     // ---------------------------------------------------------------- PSX screen filter
-    // Adds the full-screen PS1 effect (Assets/Shaders/PSXScreen.shader, 9% strength) to the PC
+    // Adds the full-screen PS1 effect (Assets/Shaders/PSXScreen.shader; strength is the player's setting) to the PC
     // renderer once, as a "Full Screen Pass" that runs after the other post effects.
     static void EnsurePsxFilter()
     {
         const string matPath = "Assets/Art/Materials/PSXScreen.mat";
         var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
         if (mat == null) { mat = new Material(Shader.Find("LastStop/PSXScreen")); AssetDatabase.CreateAsset(mat, matPath); }
-        mat.SetFloat("_Strength", 0.15f);   // 15%
         mat.SetFloat("_PixelSize", 3f);
         mat.SetFloat("_ColorSteps", 32f);
         EditorUtility.SetDirty(mat);

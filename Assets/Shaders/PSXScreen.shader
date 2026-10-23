@@ -1,12 +1,12 @@
 // Full-screen PS1 look, drawn after all other effects: the picture is made slightly chunky
 // (pixelated), its colours are reduced to fewer steps, and a fine 4x4 checker pattern ("dither")
 // hides the banding between steps, like the PlayStation did. The result is blended over the normal
-// image by _Strength (0.15 = 15%), so it adds texture without hiding detail.
+// image by the player's "PS1 filter" setting (_PSXStrength, a global value set by GameSettings;
+// 0.15 = 15%), so it adds texture without hiding detail.
 Shader "LastStop/PSXScreen"
 {
     Properties
     {
-        _Strength ("Strength", Range(0, 1)) = 0.15
         _PixelSize ("Pixel size (screen pixels per PS1 pixel)", Float) = 3
         _ColorSteps ("Colour steps per channel", Float) = 32
     }
@@ -23,7 +23,7 @@ Shader "LastStop/PSXScreen"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
-            float _Strength;
+            float _PSXStrength;   // global: set by GameSettings.Apply
             float _PixelSize;
             float _ColorSteps;
 
@@ -45,7 +45,7 @@ Shader "LastStop/PSXScreen"
                 float threshold = (Bayer[index] + 0.5) / 16.0;
                 half3 psx = floor(colour * _ColorSteps + threshold) / _ColorSteps;
 
-                return half4(lerp(original.rgb, psx, _Strength), original.a);
+                return half4(lerp(original.rgb, psx, _PSXStrength), original.a);
             }
             ENDHLSL
         }

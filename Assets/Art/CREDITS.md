@@ -29,4 +29,5 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | Graffiti tags (4 PNGs, renamed Tag_Peso, Tag_Goru, Tag_Scrawl, Tag_Drips) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Spray-paint tags on the street, stairwell and platform | `Textures/Graffiti` |
 | NEUROZAM-9 PSX Pill Bottle | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Painkiller bottles | `Models/Props/PillBottle` |
 | FREE PSX UI | rohhsa (rohhsa.itch.io) | free; README gives no licence terms (`UI/PsxUI/README.txt`) — **confirm before release** | to confirm (credit "rohhsa" to be safe) | Inventory screen frame (skin 1, dark wine) and its status panel | `UI/PsxUI` |
+| VCR OSD Mono (font) | Riciery Leal (dafont) | listed "100% Free" on dafont — confirm the readme terms before release | to confirm (credited in game anyway) | All menu, HUD and inventory text | `UI/Fonts` |
 Asset library on disk: `Documents/PSX horror/assets` (copy in only the files actually used).

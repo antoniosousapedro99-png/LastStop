@@ -50,6 +50,8 @@ public class Flare : MonoBehaviour
     {
         dropped = true;
         transform.SetParent(null, true);
+        foreach (var t in GetComponentsInChildren<Transform>()) t.gameObject.layer = 0;   // a world object now, not a held one
+        foreach (var r in GetComponentsInChildren<Renderer>()) r.renderingLayerMask = 1u;   // lit like everything else again
         var body = gameObject.AddComponent<Rigidbody>();
         body.mass = 0.3f;
         body.linearVelocity = toss;
