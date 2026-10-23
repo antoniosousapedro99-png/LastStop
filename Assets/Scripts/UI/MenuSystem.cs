@@ -349,7 +349,10 @@ public class MenuSystem : MonoBehaviour
         if (look) look.enabled = on;
     }
 
-    void QuitToTitle()
+    void QuitToTitle() => BackToTitle();
+
+    // Reloads the level, which starts at the title (also used after dying).
+    public static void BackToTitle()
     {
         Time.timeScale = 1f;
         AudioListener.pause = false;

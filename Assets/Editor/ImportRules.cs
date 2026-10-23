@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 6;
+    public override uint GetVersion() => 8;
 
     void OnPreprocessTexture()
     {
@@ -29,10 +29,34 @@ public class ImportRules : AssetPostprocessor
     // simple Animation component play a clip by name, e.g. a quick grab when picking something up.
     void OnPreprocessModel()
     {
-        if (!assetPath.Contains("/Characters/PsxArms/") && !assetPath.Contains("/Characters/TheWrapper/")) return;
         var importer = (ModelImporter)assetImporter;
+        // The Pale Man and TheWrapper are "Humanoid": Unity maps both skeletons to one standard human body,
+        // so TheWrapper's walk, run, idle, scream and attack can play on the Pale Man (who has none).
+        if (assetPath.Contains("/Characters/PaleMan/") || assetPath.Contains("/Characters/TheWrapper/"))
+        {
+            importer.animationType = ModelImporterAnimationType.Human;
+            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            importer.importAnimation = assetPath.Contains("/TheWrapper/");
+            return;
+        }
+        if (!assetPath.Contains("/Characters/PsxArms/")) return;
         importer.animationType = ModelImporterAnimationType.Legacy;
         importer.importAnimation = true;
+    }
+
+    // TheWrapper's walk, run and idle repeat; the attack, scream and wall slam play once.
+    void OnPreprocessAnimation()
+    {
+        if (!assetPath.Contains("/Characters/TheWrapper/")) return;
+        var importer = (ModelImporter)assetImporter;
+        var clips = importer.defaultClipAnimations;
+        foreach (var clip in clips)
+        {
+            clip.loopTime = clip.name.Contains("Walk") || clip.name.Contains("Run") || clip.name.Contains("Idle");
+            clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;   // the AI moves the body, not the clip
+            clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;
+        }
+        importer.clipAnimations = clips;
     }
 
     void OnPreprocessAudio()

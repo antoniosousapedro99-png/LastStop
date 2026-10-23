@@ -52,6 +52,23 @@ public class PoweredLight : MonoBehaviour
         SetLevel(1f);
     }
 
+    // A single stutter (used when the Pale Man wakes): off for a moment, a weak blink, then back on.
+    public void StutterOnce()
+    {
+        if (isActiveAndEnabled && lights.Length > 0 && lights[0].enabled) StartCoroutine(Stutter());
+    }
+
+    IEnumerator Stutter()
+    {
+        SetLevel(0f);
+        yield return new WaitForSeconds(0.12f);
+        SetLevel(0.4f);
+        yield return new WaitForSeconds(0.08f);
+        SetLevel(0f);
+        yield return new WaitForSeconds(Random.Range(0.2f, 0.5f));
+        SetLevel(1f);
+    }
+
     IEnumerator Steady()
     {
         if (flicker)

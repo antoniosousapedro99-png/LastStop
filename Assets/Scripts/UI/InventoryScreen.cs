@@ -14,6 +14,8 @@ public class InventoryScreen : MonoBehaviour
     public FlashlightBattery battery;
     public FuseBox fuseBox;
     public PlayerLook look;
+    public PlayerHealth health;
+    public AudioClip pillSound;
     public ItemTurntable turntable;
     public RenderTexture preview;
     public Texture2D frame, coverPanel;
@@ -24,6 +26,7 @@ public class InventoryScreen : MonoBehaviour
     struct Entry { public string kind, name, description; public int count; }
     readonly List<Entry> entries = new List<Entry>();
     int selected;
+    string message;                   // a reply under the description, e.g. after taking painkillers
     float timeScaleBefore = 1f;
     GUIStyle rowStyle, nameStyle, textStyle, smallStyle;
 
@@ -57,7 +60,17 @@ public class InventoryScreen : MonoBehaviour
         var mouse = Mouse.current;
         if (mouse != null) { float wheel = mouse.scroll.ReadValue().y; if (wheel > 0) move = -1; else if (wheel < 0) move = 1; }
         if (entries.Count > 0) selected = Mathf.Clamp(selected + move, 0, entries.Count - 1);
+        if (Controls.UiAccept() && entries.Count > 0 && entries[selected].kind == "Painkillers") TakePainkillers();
         turntable.Show(entries.Count > 0 ? entries[selected].kind : null);
+    }
+
+    // Painkillers heal one hit; they're kept if you aren't hurt.
+    void TakePainkillers()
+    {
+        if (!health || !health.Heal()) { message = "You're not hurt."; return; }
+        inventory.painkillers--;
+        if (pillSound) AudioSource.PlayClipAtPoint(pillSound, transform.position, 0.8f);
+        message = "You swallow two pills. The pain dulls.";
     }
 
     void Open()
@@ -71,6 +84,7 @@ public class InventoryScreen : MonoBehaviour
         Cursor.visible = true;
         Hud.Hidden = true;
         selected = 0;
+        message = null;
         Refresh();
         turntable.Show(entries.Count > 0 ? entries[0].kind : null);
     }
@@ -91,9 +105,10 @@ public class InventoryScreen : MonoBehaviour
     {
         entries.Clear();
         Add("Fuse", "Fuse", inventory.fuses, "A glass cartridge fuse. The platform fuse box needs two before the breaker will hold.");
-        Add("Battery", "Torch battery", inventory.spareBatteries, "A spare battery for your flashlight. Press H to swap it in when the light starts to die.");
-        Add("Flare", "Road flare", inventory.flares, "Thirty seconds of red light. Press G to strike it; press G again to drop it, still burning.");
-        Add("Painkillers", "Painkillers", inventory.painkillers, "Strong painkillers. For when something down here hurts you.");
+        string battery = Controls.Label(GameAction.SwapBattery), flare = Controls.Label(GameAction.Flare);
+        Add("Battery", "Torch battery", inventory.spareBatteries, "A spare battery for your flashlight. Press " + battery + " to swap it in when the light starts to die.");
+        Add("Flare", "Road flare", inventory.flares, "Thirty seconds of red light. Press " + flare + " to strike it; press " + flare + " again to drop it, still burning. Whatever is down here keeps away from it.");
+        Add("Painkillers", "Painkillers", inventory.painkillers, "Strong painkillers. Press " + (Controls.UsingGamepad ? "A" : "ENTER") + " to take them after you've been hurt.");
         if (inventory.hasCabinetKey) Add("Key", "Cabinet key", 1, "A small key. Its tag reads 'PLATFORM CABINET'.");
         if (entries.Count > 0) selected = Mathf.Clamp(selected, 0, entries.Count - 1);
     }
@@ -156,7 +171,7 @@ public class InventoryScreen : MonoBehaviour
 
         // What the selected item is.
         if (entries.Count > 0)
-            GUI.Label(R(DescriptionBox), entries[selected].description, textStyle);
+            GUI.Label(R(DescriptionBox), entries[selected].description + (message != null ? "\n\n" + message : ""), textStyle);
 
         // Status, drawn over the frame's printed menu words.
         var status = R(StatusBox);
@@ -175,6 +190,8 @@ public class InventoryScreen : MonoBehaviour
         GUI.Label(at, "FUSE BOX   " + fuseBox.Installed + " / " + fuseBox.Required, smallStyle);
         at.y += line;
         GUI.Label(at, fuseBox.grid.IsOn ? "POWER   ON" : "POWER   OFF", smallStyle);
+        at.y += line;
+        if (health) GUI.Label(at, health.Hurt ? "CONDITION   HURT" : "CONDITION   FINE", smallStyle);
         at.y += line * 1.4f;
         smallStyle.normal.textColor = new Color(0.55f, 0.48f, 0.48f);
         GUI.Label(at, "[" + Controls.Label(GameAction.Inventory) + "] close", smallStyle);

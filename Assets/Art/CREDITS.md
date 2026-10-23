@@ -6,7 +6,7 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | Pack | Author | Licence | Credit needed | Used for | Folder |
 |---|---|---|---|---|---|
 | Metro PSX | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Station textures (tiles, tactile strip, rails), bench seats, trash can, vending machine, metro map | `Models/Environment/MetroPSX` (its film posters were left out on purpose) |
-| Darkworld Audio – Survival Effects [Free] | Darkworld Audio | Royalty-free; no attribution needed; don't sell the raw sounds (`LICENSE.pdf`) | no | Footsteps (concrete, wet gravel on the tracks, puddle splashes), switches, doors, cabinets, paper rustles, pickups, distant rockfalls and scrapes, leaking pipe | `Audio/SFX/Darkworld` |
+| Darkworld Audio – Survival Effects [Free] | Darkworld Audio | Royalty-free; no attribution needed; don't sell the raw sounds (`LICENSE.pdf`) | no | Footsteps (concrete, wet gravel on the tracks, puddle splashes), the Pale Man's stand-in voice (pitched-down cries and breaths), player pain sounds, switches, doors, cabinets, paper rustles, pickups, distant rockfalls and scrapes, leaking pipe | `Audio/SFX/Darkworld` |
 | Helton Yan's Surreal Drones | Helton Yan | **no licence file — confirm before release** | yes (credit "Helton Yan") | Area drones (station, tunnels, street wind), lamp buzz, power hum | `Audio/Ambience/HeltonYan` |
 | PSX Kitchen Props Pack | Nicowlas | Use in projects; **no redistribution** (LICENSE.txt) | no | Half-eaten pizza, cola can | `Models/Props/Kitchen` |
 | OFFICE pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Desk, office chair, logbook binder | `Models/Props/Office` |
@@ -14,8 +14,8 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | 3D Retro Plumbing & Wiring | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Fuse box and fuses (converted from .blend) | `Models/Props/Plumbing` |
 | Shotgun PS1 V2.0 | see `README.txt` (to confirm) | to confirm | to confirm | Shotgun | `Models/Weapons/ShotgunPS1` |
 | PSX First Person Arms (free) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | First-person arms (black fingerless gloves) and their grab animation | `Models/Characters/PsxArms` |
-| PSX Horror Music | Svirls (TheRealSwirls) | CC BY | yes ("Svirls", composer) | Power-restored sting ("Powerbox") | `Audio/Music/Svirls` |
-| TheWrapper V2 | unknown (to confirm) | **no licence file — confirm before release** | to confirm | The stalker (not placed yet) | `Models/Characters/TheWrapper` |
+| PSX Horror Music | Svirls (TheRealSwirls) | CC BY | yes ("Svirls", composer) | Power-restored sting ("Powerbox"), chase music ("Chase 1") | `Audio/Music/Svirls` |
+| TheWrapper V2 | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Animations for the Pale Man (walk, run, idle, scream, attack), retargeted as Humanoid; its own body is not used | `Models/Characters/TheWrapper` |
 | Gas Station, 6twelve, VHS Shop, Laundry, Pizzeria, Buildings, Bus Stop packs | unknown (to confirm) | **no licence files — confirm before release** | to confirm | Street buildings and shopfronts (only the pieces used were extracted) | `Models/Environment/Street/*` |
 | URBAN pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Street lamps, barriers, cones, bins, graffiti, fence railings | `Models/Environment/Street/Urban` |
 | PSX Style Cars | GGBot (ggbot.itch.io) | to confirm | to confirm | Parked cars, taxi, police car, maintenance van | `Models/Environment/Street/Cars` |
@@ -30,4 +30,5 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | NEUROZAM-9 PSX Pill Bottle | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Painkiller bottles | `Models/Props/PillBottle` |
 | FREE PSX UI | rohhsa (rohhsa.itch.io) | free; README gives no licence terms (`UI/PsxUI/README.txt`) — **confirm before release** | to confirm (credit "rohhsa" to be safe) | Inventory screen frame (skin 1, dark wine) and its status panel | `UI/PsxUI` |
 | VCR OSD Mono (font) | Riciery Leal (dafont) | listed "100% Free" on dafont — confirm the readme terms before release | to confirm (credited in game anyway) | All menu, HUD and inventory text | `UI/Fonts` |
+| Characters PSX 1.2 (Character_Monster) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | The Pale Man (the monster). The pack's "rigged" file had no skeleton, so it was rigged in Blender with the Mixamo skeleton of the same pack's Character_Killer (`Tools/Blender/rig_paleman.py`) | `Models/Characters/PaleMan` |
 Asset library on disk: `Documents/PSX horror/assets` (copy in only the files actually used).

@@ -204,6 +204,7 @@ public static partial class LookTestBuilder
         EnsurePsxFilter();
         BuildPlayerGear(player);
         BuildInventoryScreen();   // needs the player's gear (torch battery)
+        BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildMenus();             // last: the menus switch the player off until "New game"
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves

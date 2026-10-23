@@ -19,6 +19,23 @@ public class Flare : MonoBehaviour
 
     public bool BurntOut => burned >= burnTime;
 
+    // Every flare that is burning right now (held or dropped), so the Pale Man can keep away from them.
+    static readonly System.Collections.Generic.List<Flare> lit = new System.Collections.Generic.List<Flare>();
+    void OnEnable() => lit.Add(this);
+    void OnDisable() => lit.Remove(this);
+
+    public static Transform NearestLit(Vector3 from)
+    {
+        Transform best = null; float bestDistance = float.MaxValue;
+        foreach (var f in lit)
+        {
+            if (!f || f.BurntOut) continue;
+            float d = Vector3.Distance(from, f.transform.position);
+            if (d < bestDistance) { bestDistance = d; best = f.transform; }
+        }
+        return best;
+    }
+
     void Awake()
     {
         baseIntensity = glow.intensity;

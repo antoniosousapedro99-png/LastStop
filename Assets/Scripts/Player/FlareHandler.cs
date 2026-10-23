@@ -33,6 +33,7 @@ public class FlareHandler : MonoBehaviour
         held.transform.localRotation = Quaternion.identity;
         held.gameObject.SetActive(true);
         if (strikeSound) AudioSource.PlayClipAtPoint(strikeSound, hand.position, 0.9f);
+        Noise.Make(hand.position, 8f);   // the strike and the fizz can be heard
         Hud.Notice("Flare lit (" + inventory.flares + " left)   [" + Controls.Label(GameAction.Flare) + "] drop it");
     }
 
