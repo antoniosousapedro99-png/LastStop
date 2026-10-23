@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// The fuse box that brings the area's power back. Press E to slot in fuses you carry (one per press);
+// The fuse box that brings the area's power back. Click it to slot in fuses you carry (one per click);
 // when every slot is filled, click it again to pull the breaker and restore the PowerGrid.
 public class FuseBox : MonoBehaviour, IInteractable
 {
@@ -9,6 +9,7 @@ public class FuseBox : MonoBehaviour, IInteractable
     public AudioClip insertSound;
 
     int installed;
+    public int Installed => installed;     // shown on the inventory screen
     PlayerInventory inventory;
 
     int Carried
@@ -20,7 +21,7 @@ public class FuseBox : MonoBehaviour, IInteractable
         }
     }
 
-    int Required => fuseSlots.Length;
+    public int Required => fuseSlots.Length;
 
     void Awake()
     {

@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 5;
+    public override uint GetVersion() => 6;
 
     void OnPreprocessTexture()
     {
@@ -21,6 +21,8 @@ public class ImportRules : AssetPostprocessor
         // Graffiti tags: the see-through background is stored as white, which would bleed into the black
         // letters when the picture is shrunk for distance; this setting fills it with the letters' colour.
         if (assetPath.Contains("/Textures/Graffiti/")) { importer.alphaIsTransparency = true; importer.wrapMode = TextureWrapMode.Clamp; }
+        // Screen UI (menus, inventory frame): drawn at many sizes, so smooth filtering and no mipmaps.
+        if (assetPath.Contains("/Art/UI/")) { importer.filterMode = FilterMode.Bilinear; importer.mipmapEnabled = false; importer.wrapMode = TextureWrapMode.Clamp; }
     }
 
     // The first-person arms come with animations (grab, push, idle...). "Legacy" animation lets a

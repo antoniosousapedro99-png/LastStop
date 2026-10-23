@@ -11,6 +11,8 @@ public class Hud : MonoBehaviour
     static float noticeUntil;
     static string reading;
 
+    public static bool Hidden;   // set while a full-screen page (the inventory) is open
+
     public static void SetPrompt(string text) => prompt = text;
     public static void SetReading(string text) => reading = text;
 
@@ -24,6 +26,7 @@ public class Hud : MonoBehaviour
 
     void OnGUI()
     {
+        if (Hidden) return;
         if (style == null) style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
         if (readStyle == null) readStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, wordWrap = true };
         float scale = Screen.height / 1080f;   // same size at any resolution

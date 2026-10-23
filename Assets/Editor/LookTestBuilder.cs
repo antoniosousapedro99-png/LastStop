@@ -203,11 +203,12 @@ public static partial class LookTestBuilder
         boundary.player = player.transform;
         EnsurePsxFilter();
         BuildPlayerGear(player);
+        BuildInventoryScreen();   // needs the player's gear (torch battery)
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
-        // (doors, lockers) must NOT be static, or its merged copy stays frozen while the hinge turns.
+        // (doors, lockers, the inventory's turntable) must NOT be static, or its merged copy stays frozen.
         foreach (var t in root.GetComponentsInChildren<Transform>())
-            t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>() == null;
+            t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 
