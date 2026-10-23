@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
 using UnityEngine.SceneManagement;
 
 // The game's menus, drawn in the FREE PSX UI pack's style (see MenuStyle):
 // - Title: a view of the dark tunnel with the flickering cab light. "Press any key", then
 //   New game / Options / Credits / Quit. New game fades to black and hands over to the player.
-// - Pause (Esc while playing): Resume / Options / Credits / Quit to title / Quit game.
-//   The game freezes and goes quiet while it's open. Quitting asks first.
-// - Options: every setting in GameSettings, saved as soon as it changes.
+// - Pause (Esc, or Menu on a controller, while playing): Resume / Options / Credits / Quit to title /
+//   Quit game. The game freezes and goes quiet while it's open. Quitting asks first.
+// - Options: every setting in GameSettings, saved as soon as it changes; Key bindings (pick an action,
+//   press the new key or mouse button); Controller layout (fixed buttons, shown for reference).
 // - Credits.
 // Keyboard: W/S or arrows move, A/D or arrows adjust, Enter/Space choose, Esc goes back.
-// Mouse: hover selects, click chooses, drag sliders, wheel scrolls.
+// Controller: d-pad or left stick, A chooses, B goes back. Mouse: hover, click, drag sliders, wheel.
 public class MenuSystem : MonoBehaviour
 {
     public GameObject player;
@@ -25,7 +27,7 @@ public class MenuSystem : MonoBehaviour
 
     public static bool IsOpen { get; private set; }   // a menu (or the title) is on screen
 
-    enum Page { PressKey, Main, Pause, Options, Credits, Confirm }
+    enum Page { PressKey, Main, Pause, Options, Credits, Confirm, Keys, Pad }
     Page page;
     Page optionsReturn;                 // where Options/Credits go back to (Main or Pause)
     bool inTitle;
@@ -33,7 +35,7 @@ public class MenuSystem : MonoBehaviour
     float fade;                         // black over everything, 0..1
     bool starting;
     float creditsScroll;
-    int optionsFirst;                   // first options row shown (the list scrolls)
+    int firstRow;                       // first row shown on the scrolling pages (options, key bindings)
     Vector2 lastMouse;
     bool draggingSlider;
     float timeScaleBefore = 1f;
@@ -41,6 +43,12 @@ public class MenuSystem : MonoBehaviour
     string confirmQuestion;
     Action confirmYes;
     Page confirmReturn;
+
+    // Key binding: waiting for the player to press the new key for this action.
+    bool waitingForKey;
+    GameAction rebinding;
+    InputControl pressedWhileWaiting;
+    IDisposable keyListener;
 
     // ---------------------------------------------------------------- options rows
     enum Kind { Header, Slider, Toggle, Button }
@@ -65,9 +73,11 @@ public class MenuSystem : MonoBehaviour
             Slider("MASTER VOLUME", () => GameSettings.MasterVolume, v => GameSettings.MasterVolume = v, 0f, 1f, 0.05f, Percent),
             Slider("MUSIC VOLUME", () => GameSettings.MusicVolume, v => GameSettings.MusicVolume = v, 0f, 1f, 0.05f, Percent),
             Slider("EFFECTS & AMBIENCE", () => GameSettings.EffectsVolume, v => GameSettings.EffectsVolume = v, 0f, 1f, 0.05f, Percent),
-            Header("MOUSE"),
-            Slider("MOUSE SENSITIVITY", () => GameSettings.MouseSensitivity, v => GameSettings.MouseSensitivity = v, 0.2f, 3f, 0.05f, v => "x" + Number(v, "0.00")),
+            Header("CONTROLS"),
+            Slider("LOOK SENSITIVITY", () => GameSettings.MouseSensitivity, v => GameSettings.MouseSensitivity = v, 0.2f, 3f, 0.05f, v => "x" + Number(v, "0.00")),
             Toggle("INVERT Y", () => GameSettings.InvertY, v => GameSettings.InvertY = v),
+            Button("KEY BINDINGS", () => Go(Page.Keys)),
+            Button("CONTROLLER LAYOUT", () => Go(Page.Pad)),
             Header("PICTURE"),
             Slider("BRIGHTNESS", () => GameSettings.Brightness, v => GameSettings.Brightness = v, -1f, 1.5f, 0.1f, v => (v >= 0f ? "+" : "") + Number(v, "0.0")),
             Slider("PS1 FILTER", () => GameSettings.PsxFilter, v => GameSettings.PsxFilter = v, 0f, 0.3f, 0.01f, Percent),
@@ -110,6 +120,8 @@ public class MenuSystem : MonoBehaviour
 
     void Start() => FreeCursor(true);
 
+    void OnDestroy() => keyListener?.Dispose();
+
     static void FreeCursor(bool free)
     {
         Cursor.lockState = free ? CursorLockMode.None : CursorLockMode.Locked;
@@ -119,48 +131,47 @@ public class MenuSystem : MonoBehaviour
     // ---------------------------------------------------------------- input
     void Update()
     {
-        var keyboard = Keyboard.current;
-        var mouse = Mouse.current;
-        if (starting || keyboard == null) return;
+        Controls.TrackDevice();   // so prompts name the controller's buttons when it's in use
+        if (starting) return;
 
         if (!IsOpen)
         {
-            // In the game: Esc pauses (unless it was just used to close the inventory).
-            if (keyboard.escapeKey.wasPressedThisFrame && !InventoryScreen.IsOpen && InventoryScreen.ClosedFrame != Time.frameCount)
-                OpenPause();
+            // In the game: the Pause control (or Esc) pauses, unless Esc just closed the inventory.
+            bool pause = Controls.Pressed(GameAction.Pause) || (Keyboard.current?.escapeKey.wasPressedThisFrame ?? false);
+            if (pause && !InventoryScreen.IsOpen && InventoryScreen.ClosedFrame != Time.frameCount) OpenPause();
             return;
         }
+
+        if (waitingForKey) { WaitForKey(); return; }
 
         if (page == Page.PressKey)
         {
-            if (keyboard.anyKey.wasPressedThisFrame || (mouse != null && mouse.leftButton.wasPressedThisFrame)) Go(Page.Main);
+            if (Controls.UiAnyButton()) Go(Page.Main);
             return;
         }
 
-        if (Pressed(keyboard.wKey, keyboard.upArrowKey)) Move(-1);
-        if (Pressed(keyboard.sKey, keyboard.downArrowKey)) Move(1);
-        if (Pressed(keyboard.aKey, keyboard.leftArrowKey)) Adjust(-1);
-        if (Pressed(keyboard.dKey, keyboard.rightArrowKey)) Adjust(1);
-        if (Pressed(keyboard.enterKey, keyboard.spaceKey) || keyboard.numpadEnterKey.wasPressedThisFrame) Choose();
-        if (keyboard.escapeKey.wasPressedThisFrame) Back();
+        if (Controls.UiUp()) Move(-1);
+        if (Controls.UiDown()) Move(1);
+        if (Controls.UiLeft()) Adjust(-1);
+        if (Controls.UiRight()) Adjust(1);
+        if (Controls.UiAccept()) Choose();
+        if (Controls.UiBack() || (page == Page.Pause && Controls.Pressed(GameAction.Pause) && !(Keyboard.current?.escapeKey.wasPressedThisFrame ?? false))) Back();
+
+        var mouse = Mouse.current;
         if (mouse != null)
         {
             float wheel = mouse.scroll.ReadValue().y;
             if (page == Page.Credits) creditsScroll = Mathf.Max(0f, creditsScroll - wheel * 0.5f);
-            else if (page == Page.Options && wheel != 0f) optionsFirst = Mathf.Clamp(optionsFirst - Math.Sign(wheel), 0, Mathf.Max(0, rows.Count - OptionsVisible));
+            else if (wheel != 0f && (page == Page.Options || page == Page.Keys))
+                firstRow = Mathf.Clamp(firstRow - Math.Sign(wheel), 0, Mathf.Max(0, ItemCount - VisibleRows));
         }
         if (page == Page.Credits) creditsScroll += Time.unscaledDeltaTime * 30f;   // slow roll upward
     }
 
-    static bool Pressed(params UnityEngine.InputSystem.Controls.KeyControl[] keys)
-    {
-        foreach (var k in keys) if (k.wasPressedThisFrame) return true;
-        return false;
-    }
-
     int ItemCount => page switch
     {
-        Page.Main => 4, Page.Pause => 5, Page.Options => rows.Count, Page.Confirm => 2, _ => 0,
+        Page.Main => 4, Page.Pause => 5, Page.Options => rows.Count, Page.Confirm => 2,
+        Page.Keys => Controls.Listed.Length + 2, Page.Pad => 1, _ => 0,
     };
 
     void Move(int step)
@@ -202,7 +213,14 @@ public class MenuSystem : MonoBehaviour
                 if (row.kind == Kind.Toggle) row.setOn(!row.getOn());
                 else if (row.kind == Kind.Button) row.press();
                 break;
+            case Page.Keys:
+                int n = Controls.Listed.Length;
+                if (selected < n) StartRebind(Controls.Listed[selected].action);
+                else if (selected == n) Controls.ResetToDefaults();
+                else Back();
+                break;
             case Page.Credits:
+            case Page.Pad:
                 Back();
                 break;
             case Page.Confirm:
@@ -217,6 +235,8 @@ public class MenuSystem : MonoBehaviour
         {
             case Page.Options:
             case Page.Credits: Go(optionsReturn); break;
+            case Page.Keys:
+            case Page.Pad: Go(Page.Options, optionsReturn); break;
             case Page.Confirm: Go(confirmReturn); break;
             case Page.Pause: ClosePause(); break;
             case Page.Main: Go(Page.PressKey); break;
@@ -229,7 +249,7 @@ public class MenuSystem : MonoBehaviour
         page = next;
         selected = 0;
         creditsScroll = 0f;
-        optionsFirst = 0;
+        firstRow = 0;
         if (next == Page.Options) Move(1);   // skip the first header
         draggingSlider = false;
     }
@@ -241,6 +261,41 @@ public class MenuSystem : MonoBehaviour
         confirmReturn = returnTo;
         Go(Page.Confirm);
         selected = 1;   // "NO" first, so a stray Enter doesn't quit
+    }
+
+    // ---------------------------------------------------------------- key binding
+    void StartRebind(GameAction action)
+    {
+        rebinding = action;
+        waitingForKey = true;
+        pressedWhileWaiting = null;
+        Listen();
+    }
+
+    // The next key or mouse button pressed anywhere (controller buttons are ignored: its layout is fixed).
+    void Listen()
+    {
+        keyListener?.Dispose();
+        keyListener = InputSystem.onAnyButtonPress
+            .Where(c => c.device is Keyboard || c.device is Mouse)
+            .CallOnce(c => pressedWhileWaiting = c);
+    }
+
+    void WaitForKey()
+    {
+        if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame) { StopWaiting(); return; }   // B cancels
+        if (pressedWhileWaiting == null) return;
+        string path = Controls.PathOf(pressedWhileWaiting);
+        if (path != "<Keyboard>/escape" && path != null) Controls.Rebind(rebinding, path);   // Esc cancels
+        StopWaiting();
+    }
+
+    void StopWaiting()
+    {
+        waitingForKey = false;
+        pressedWhileWaiting = null;
+        keyListener?.Dispose();
+        keyListener = null;
     }
 
     // ---------------------------------------------------------------- actions
@@ -315,7 +370,7 @@ public class MenuSystem : MonoBehaviour
     float VirtualWidth => Screen.width / s;
     Rect R(float x, float y, float w, float h) => new Rect(x * s, y * s, w * s, h * s);
     const float RowHeight = 54f;
-    const int OptionsVisible = 13;
+    const int VisibleRows = 13;
 
     void OnGUI()
     {
@@ -329,6 +384,7 @@ public class MenuSystem : MonoBehaviour
             lastMouse = e.mousePosition;
         }
         if (e.type == EventType.MouseUp) draggingSlider = false;
+        if (waitingForKey && e.isMouse) e.Use();   // the click is the new binding, not a menu click
 
         if (IsOpen)
         {
@@ -338,6 +394,8 @@ public class MenuSystem : MonoBehaviour
                 case Page.Main: DrawTitle(); DrawList(new[] { "NEW GAME", "OPTIONS", "CREDITS", "QUIT" }, 120f, 560f, mouseMoved); break;
                 case Page.Pause: DrawPauseBackdrop(); DrawList(new[] { "RESUME", "OPTIONS", "CREDITS", "QUIT TO TITLE", "QUIT GAME" }, 120f, 400f, mouseMoved); break;
                 case Page.Options: DrawBackdrop(); DrawOptions(mouseMoved); break;
+                case Page.Keys: DrawBackdrop(); DrawKeys(mouseMoved); break;
+                case Page.Pad: DrawBackdrop(); DrawPad(); break;
                 case Page.Credits: DrawBackdrop(); DrawCredits(); break;
                 case Page.Confirm: DrawBackdrop(); DrawConfirm(mouseMoved); break;
             }
@@ -367,7 +425,7 @@ public class MenuSystem : MonoBehaviour
         MenuStyle.Label(R(0, 140, VirtualWidth, 140), "P A U S E", 110, TextAnchor.MiddleCenter);
     }
 
-    // A ">> option" list; returns nothing, but hovering selects and clicking chooses.
+    // A ">> option" list: hovering selects, clicking chooses.
     void DrawList(string[] items, float x, float y, bool mouseMoved)
     {
         var e = Event.current;
@@ -380,16 +438,25 @@ public class MenuSystem : MonoBehaviour
         }
     }
 
+    // The panel and title shared by the scrolling pages; returns where the first row goes.
+    Rect ListPanel(string title, out float x, out float w)
+    {
+        w = 1240f; x = (VirtualWidth - w) * 0.5f;
+        MenuStyle.Label(R(x, 70, w, 80), title, 70);
+        var panelRect = R(x, 150, w, VisibleRows * RowHeight + 60f);
+        MenuStyle.DrawPanel(panelRect);
+        return panelRect;
+    }
+
     void DrawOptions(bool mouseMoved)
     {
         var e = Event.current;
-        float w = 1240f, x = (VirtualWidth - w) * 0.5f, y = 150f;
-        MenuStyle.Label(R(x, 70, w, 80), "OPTIONS", 70);
-        MenuStyle.DrawPanel(R(x, y, w, OptionsVisible * RowHeight + 60f));
-        for (int i = optionsFirst; i < Mathf.Min(rows.Count, optionsFirst + OptionsVisible); i++)
+        ListPanel("OPTIONS", out float x, out float w);
+        const float y = 150f;
+        for (int i = firstRow; i < Mathf.Min(rows.Count, firstRow + VisibleRows); i++)
         {
             var row = rows[i];
-            float ry = y + 30f + (i - optionsFirst) * RowHeight;
+            float ry = y + 30f + (i - firstRow) * RowHeight;
             var full = R(x + 40, ry, w - 80, RowHeight);
             bool isSel = i == selected;
             if (row.kind == Kind.Header)
@@ -399,7 +466,7 @@ public class MenuSystem : MonoBehaviour
             }
             if (mouseMoved && full.Contains(e.mousePosition)) selected = i;
             if (isSel) MenuStyle.Fill(full, new Color(1f, 0.85f, 0.85f, 0.07f));
-            MenuStyle.Label(R(x + 70, ry, 560, RowHeight), row.label, 36, TextAnchor.MiddleLeft, isSel ? MenuStyle.Lit : MenuStyle.Dim);
+            MenuStyle.Label(R(x + 70, ry, 560, RowHeight), row.label + (row.kind == Kind.Button && row.label != "BACK" && !row.label.StartsWith("RESET") ? "  >" : ""), 36, TextAnchor.MiddleLeft, isSel ? MenuStyle.Lit : MenuStyle.Dim);
 
             if (row.kind == Kind.Slider)
             {
@@ -423,15 +490,69 @@ public class MenuSystem : MonoBehaviour
             }
             else if (e.type == EventType.MouseDown && e.button == 0 && full.Contains(e.mousePosition)) { selected = i; row.press(); e.Use(); return; }
         }
-        if (rows.Count > OptionsVisible)
-            MenuStyle.Label(R(x, y + OptionsVisible * RowHeight + 70f, w, 40), "mouse wheel / arrows to scroll", 26, TextAnchor.MiddleRight, MenuStyle.Faint);
+        ScrollHint(x, w, rows.Count);
+    }
+
+    void DrawKeys(bool mouseMoved)
+    {
+        var e = Event.current;
+        ListPanel("KEY BINDINGS", out float x, out float w);
+        const float y = 150f;
+        int n = Controls.Listed.Length;
+        for (int i = firstRow; i < Mathf.Min(n + 2, firstRow + VisibleRows); i++)
+        {
+            float ry = y + 30f + (i - firstRow) * RowHeight;
+            var full = R(x + 40, ry, w - 80, RowHeight);
+            bool isSel = i == selected;
+            if (!waitingForKey && mouseMoved && full.Contains(e.mousePosition)) selected = i;
+            if (isSel) MenuStyle.Fill(full, new Color(1f, 0.85f, 0.85f, 0.07f));
+            string label = i < n ? Controls.Listed[i].name : i == n ? "RESET KEYS" : "BACK";
+            MenuStyle.Label(R(x + 70, ry, 560, RowHeight), label, 36, TextAnchor.MiddleLeft, isSel ? MenuStyle.Lit : MenuStyle.Dim);
+            if (i < n)
+            {
+                bool waitingHere = waitingForKey && isSel;
+                float blink = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 6f);
+                string shown = waitingHere ? "PRESS A KEY...  (ESC CANCELS)" : "[ " + Controls.KeyLabel(Controls.Binding(Controls.Listed[i].action)) + " ]";
+                MenuStyle.Label(R(x + 660, ry, 520, RowHeight), shown, 34, TextAnchor.MiddleRight,
+                                waitingHere ? new Color(1f, 1f, 1f, 0.4f + 0.6f * blink) : isSel ? MenuStyle.Lit : MenuStyle.Dim);
+            }
+            if (!waitingForKey && e.type == EventType.MouseDown && e.button == 0 && full.Contains(e.mousePosition)) { selected = i; Choose(); e.Use(); return; }
+        }
+        ScrollHint(x, w, n + 2);
+    }
+
+    void ScrollHint(float x, float w, int count)
+    {
+        if (count > VisibleRows)
+            MenuStyle.Label(R(x, 150 + VisibleRows * RowHeight + 70f, w, 40), "mouse wheel / arrows to scroll", 26, TextAnchor.MiddleRight, MenuStyle.Faint);
+    }
+
+    void DrawPad()
+    {
+        float w = 1100f, x = (VirtualWidth - w) * 0.5f;
+        MenuStyle.Label(R(x, 70, w, 80), "CONTROLLER", 70);
+        MenuStyle.DrawPanel(R(x, 150, w, 760));
+        string[,] layout =
+        {
+            { "LEFT STICK", "MOVE" }, { "RIGHT STICK", "LOOK" }, { "L3 (CLICK)", "SPRINT" }, { "A", "JUMP" }, { "B", "CROUCH" },
+            { "X", "USE / PICK UP" }, { "Y", "FLARE" }, { "LB / RB", "LEAN LEFT / RIGHT" }, { "D-PAD UP", "FLASHLIGHT" },
+            { "D-PAD DOWN", "SWAP BATTERY" }, { "VIEW", "INVENTORY" }, { "MENU", "PAUSE" },
+        };
+        for (int i = 0; i < layout.GetLength(0); i++)
+        {
+            float ry = 185f + i * 56f;
+            MenuStyle.Label(R(x + 80, ry, 420, 56), layout[i, 0], 34, TextAnchor.MiddleLeft, MenuStyle.Lit);
+            MenuStyle.Label(R(x + 520, ry, 500, 56), layout[i, 1], 34, TextAnchor.MiddleLeft, MenuStyle.Dim);
+        }
+        MenuStyle.Label(R(x, 925, w, 40), Gamepad.current != null ? "controller connected   [B / ESC] back" : "no controller connected   [ESC] back",
+                        26, TextAnchor.MiddleRight, MenuStyle.Faint);
     }
 
     void KeepSelectedVisible()
     {
-        if (page != Page.Options) return;
-        if (selected < optionsFirst) optionsFirst = Mathf.Max(0, selected - 1);   // show its header too
-        if (selected >= optionsFirst + OptionsVisible) optionsFirst = selected - OptionsVisible + 1;
+        if (page != Page.Options && page != Page.Keys) return;
+        if (selected < firstRow) firstRow = Mathf.Max(0, selected - (page == Page.Options ? 1 : 0));   // show its header too
+        if (selected >= firstRow + VisibleRows) firstRow = selected - VisibleRows + 1;
     }
 
     void DrawCredits()

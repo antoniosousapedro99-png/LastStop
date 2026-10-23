@@ -22,8 +22,7 @@ public class PlayerCrouch : MonoBehaviour
 
     void Update()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard != null && keyboard.cKey.wasPressedThisFrame)
+        if (Controls.Pressed(GameAction.Crouch))
         {
             if (!IsCrouched) IsCrouched = true;
             else if (HasHeadroom()) IsCrouched = false;

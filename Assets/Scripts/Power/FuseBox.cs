@@ -59,6 +59,6 @@ public class FuseBox : MonoBehaviour, IInteractable
         installed++;
         if (insertSound) AudioSource.PlayClipAtPoint(insertSound, transform.position, 1f);
         Hud.Notice(installed < Required ? "Fuse inserted (" + installed + "/" + Required + ")"
-                                        : "All fuses in place   [LMB] pull the breaker");
+                                        : "All fuses in place   [" + Controls.Label(GameAction.Use) + "] pull the breaker");
     }
 }

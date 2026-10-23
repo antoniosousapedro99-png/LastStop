@@ -31,19 +31,10 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        var keyboard = Keyboard.current;
-        Vector2 input = Vector2.zero;
-        bool running = false, jump = false;
-        if (keyboard != null)
-        {
-            if (keyboard.wKey.isPressed) input.y += 1;
-            if (keyboard.sKey.isPressed) input.y -= 1;
-            if (keyboard.dKey.isPressed) input.x += 1;
-            if (keyboard.aKey.isPressed) input.x -= 1;
-            running = keyboard.leftShiftKey.isPressed && !IsCrouched;
-            jump = keyboard.spaceKey.wasPressedThisFrame && !IsCrouched;
-        }
-        input = Vector2.ClampMagnitude(input, 1f);
+        // Keys (or the left stick) from Controls, so they follow the player's bindings.
+        Vector2 input = Controls.Move();
+        bool running = Controls.Sprinting() && !IsCrouched;
+        bool jump = Controls.Pressed(GameAction.Jump) && !IsCrouched;
 
         // Move relative to where the body faces (the body turns left/right with the mouse).
         float speed = IsCrouched ? crouchSpeed : running ? runSpeed : walkSpeed;

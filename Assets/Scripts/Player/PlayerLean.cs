@@ -15,13 +15,9 @@ public class PlayerLean : MonoBehaviour
 
     void Update()
     {
-        var keyboard = Keyboard.current;
         float target = 0f;
-        if (keyboard != null)
-        {
-            if (keyboard.qKey.isPressed) target -= 1f;
-            if (keyboard.eKey.isPressed) target += 1f;
-        }
+        if (Controls.Held(GameAction.LeanLeft)) target -= 1f;
+        if (Controls.Held(GameAction.LeanRight)) target += 1f;
 
         // Don't lean into a wall: check how much room there is beside the head.
         if (target != 0f)

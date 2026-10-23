@@ -1,8 +1,7 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-// Road flares. G with nothing in hand strikes a new one (if any are carried) and holds it low in the
-// right hand; G again drops it where you stand, still burning. A flare that burns out in the hand is
+// Road flares. The flare key (G) with nothing in hand strikes a new one (if any are carried) and holds it low in the
+// right hand; the flare key again drops it where you stand, still burning. A flare that burns out in the hand is
 // thrown away automatically.
 public class FlareHandler : MonoBehaviour
 {
@@ -15,12 +14,11 @@ public class FlareHandler : MonoBehaviour
 
     void Update()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard == null || Cursor.lockState != CursorLockMode.Locked) return;
+        if (Cursor.lockState != CursorLockMode.Locked) return;   // a menu or the inventory is open
 
         if (held != null && held.BurntOut) Drop();   // nothing left to hold
 
-        if (!keyboard.gKey.wasPressedThisFrame) return;
+        if (!Controls.Pressed(GameAction.Flare)) return;
         if (held != null) Drop();
         else Strike();
     }
@@ -35,7 +33,7 @@ public class FlareHandler : MonoBehaviour
         held.transform.localRotation = Quaternion.identity;
         held.gameObject.SetActive(true);
         if (strikeSound) AudioSource.PlayClipAtPoint(strikeSound, hand.position, 0.9f);
-        Hud.Notice("Flare lit (" + inventory.flares + " left)   [G] drop it");
+        Hud.Notice("Flare lit (" + inventory.flares + " left)   [" + Controls.Label(GameAction.Flare) + "] drop it");
     }
 
     public void Drop()

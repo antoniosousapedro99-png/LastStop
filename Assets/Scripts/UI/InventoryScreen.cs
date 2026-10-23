@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// The inventory: Tab opens and closes it (Esc closes it too). The game pauses while it's open.
-// Drawn on the PSX UI pack's frame:
+// The inventory: the Inventory control (Tab; View on a controller) opens and closes it, and Esc / B
+// closes it too. The game pauses while it's open. Drawn on the PSX UI pack's frame:
 // - left box: the selected item's model, slowly turning, with its name on the strip below
-// - right rows: everything you carry, with counts; W/S, the arrow keys, the mouse wheel or a click selects
+// - right rows: everything you carry, with counts; W/S, arrows, d-pad, the mouse wheel or a click selects
 // - bottom right: what the selected item is and how to use it
 // - bottom left (over the frame's printed menu words): torch battery and fuse box progress
 public class InventoryScreen : MonoBehaviour
@@ -46,16 +46,14 @@ public class InventoryScreen : MonoBehaviour
 
     void Update()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard == null) return;
-        if (keyboard.tabKey.wasPressedThisFrame && !MenuSystem.IsOpen) { if (IsOpen) Close(); else Open(); return; }
+        if (Controls.Pressed(GameAction.Inventory) && !MenuSystem.IsOpen) { if (IsOpen) Close(); else Open(); return; }
         if (!IsOpen) return;
-        if (keyboard.escapeKey.wasPressedThisFrame) { Close(); return; }
+        if (Controls.UiBack()) { Close(); return; }
 
         Refresh();
         int move = 0;
-        if (keyboard.wKey.wasPressedThisFrame || keyboard.upArrowKey.wasPressedThisFrame) move = -1;
-        if (keyboard.sKey.wasPressedThisFrame || keyboard.downArrowKey.wasPressedThisFrame) move = 1;
+        if (Controls.UiUp()) move = -1;
+        if (Controls.UiDown()) move = 1;
         var mouse = Mouse.current;
         if (mouse != null) { float wheel = mouse.scroll.ReadValue().y; if (wheel > 0) move = -1; else if (wheel < 0) move = 1; }
         if (entries.Count > 0) selected = Mathf.Clamp(selected + move, 0, entries.Count - 1);
@@ -179,7 +177,7 @@ public class InventoryScreen : MonoBehaviour
         GUI.Label(at, fuseBox.grid.IsOn ? "POWER   ON" : "POWER   OFF", smallStyle);
         at.y += line * 1.4f;
         smallStyle.normal.textColor = new Color(0.55f, 0.48f, 0.48f);
-        GUI.Label(at, "[TAB] close", smallStyle);
+        GUI.Label(at, "[" + Controls.Label(GameAction.Inventory) + "] close", smallStyle);
     }
 
     void MakeStyles(float scale)

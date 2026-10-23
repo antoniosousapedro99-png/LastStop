@@ -35,12 +35,11 @@ public class Flashlight : MonoBehaviour
 
     void Update()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard != null && keyboard.fKey.wasPressedThisFrame)
+        if (Controls.Pressed(GameAction.Torch))
         {
             IsOn = !IsOn;
             if (audioSource) audioSource.PlayOneShot(IsOn ? clickOn : clickOff);
-            if (IsOn && battery && battery.Empty) Hud.Notice("The battery is dead   [H] swap battery");
+            if (IsOn && battery && battery.Empty) Hud.Notice("The battery is dead   [" + Controls.Label(GameAction.SwapBattery) + "] swap battery");
         }
         if (IsOn && battery) battery.Drain(Time.deltaTime);
     }

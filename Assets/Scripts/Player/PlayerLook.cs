@@ -3,11 +3,12 @@ using UnityEngine.InputSystem;
 
 // Mouse look: moving the mouse sideways turns the whole body, up/down tilts only the camera.
 // The cursor is hidden and locked to the window (the pause menu frees it; clicking the game locks it again).
-// Speed and up/down direction come from the Mouse options (GameSettings).
+// Speed and up/down direction come from the Mouse options (GameSettings); a controller's right stick also looks.
 public class PlayerLook : MonoBehaviour
 {
     public Transform cameraPivot;      // the camera (child of the player)
     public float sensitivity = 0.12f;  // degrees per pixel of mouse movement at sensitivity x1.00
+    public float padSpeed = 140f;      // degrees per second with the controller's right stick fully over
     public float pitch;                // current up/down angle (public so tests can set it)
     public float roll;                 // sideways head tilt, set by PlayerLean
 
@@ -17,9 +18,11 @@ public class PlayerLook : MonoBehaviour
     {
         var mouse = Mouse.current;
         if (mouse != null && mouse.leftButton.wasPressedThisFrame) LockCursor(true);
-        if (mouse == null || Cursor.lockState != CursorLockMode.Locked) { Apply(); return; }
+        if (Cursor.lockState != CursorLockMode.Locked) { Apply(); return; }
 
-        Vector2 delta = mouse.delta.ReadValue() * sensitivity * GameSettings.MouseSensitivity;
+        Vector2 delta = mouse != null ? mouse.delta.ReadValue() * sensitivity : Vector2.zero;
+        delta += Controls.PadLook() * padSpeed * Time.deltaTime;   // controller right stick
+        delta *= GameSettings.MouseSensitivity;
         if (GameSettings.InvertY) delta.y = -delta.y;
         transform.Rotate(0f, delta.x, 0f);
         pitch = Mathf.Clamp(pitch - delta.y, -85f, 85f);

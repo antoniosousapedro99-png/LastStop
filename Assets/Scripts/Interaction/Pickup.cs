@@ -30,7 +30,7 @@ public class Pickup : MonoBehaviour, IInteractable
                 break;
             case Kind.Battery:
                 inv.spareBatteries++;
-                Hud.Notice("Spare battery (" + inv.spareBatteries + ")   [H] swap flashlight battery");
+                Hud.Notice("Spare battery (" + inv.spareBatteries + ")   [" + Controls.Label(GameAction.SwapBattery) + "] swap flashlight battery");
                 break;
             case Kind.Shotgun:
                 inv.hasShotgun = true;
@@ -42,7 +42,7 @@ public class Pickup : MonoBehaviour, IInteractable
                 break;
             case Kind.Flare:
                 inv.flares++;
-                Hud.Notice("Road flare (" + inv.flares + ")   [G] strike");
+                Hud.Notice("Road flare (" + inv.flares + ")   [" + Controls.Label(GameAction.Flare) + "] strike");
                 break;
             case Kind.Painkillers:
                 inv.painkillers++;

@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // Sits on the camera. Every frame it casts a short invisible ray from the centre of the view.
-// - If it hits something usable (IInteractable), a prompt shows and the LEFT MOUSE BUTTON uses it
-//   (like Amnesia). While the shotgun is aimed, left mouse fires instead, so nothing is used.
+// - If it hits something usable (IInteractable), a prompt shows and the Use control (left mouse by
+//   default, like Amnesia; X on a controller) uses it. While the shotgun is aimed, nothing is used.
 // - If it hits something with writing on it (ReadableNote), the text appears on screen while you
 //   look at it; no click needed.
 public class Interactor : MonoBehaviour
@@ -37,15 +37,13 @@ public class Interactor : MonoBehaviour
         lastNote = note;
 
         bool aiming = Shotgun.IsAiming;
-        var mouse = Mouse.current;
-        if (!aiming && Target != null && mouse != null && mouse.leftButton.wasPressedThisFrame
-            && Cursor.lockState == CursorLockMode.Locked)
+        if (!aiming && Target != null && Controls.Pressed(GameAction.Use) && Cursor.lockState == CursorLockMode.Locked)
         {
             Target.Interact(this);
             Interacted?.Invoke();
         }
 
-        Hud.SetPrompt(!aiming && Target != null ? "[LMB] " + Target.Prompt : null);
+        Hud.SetPrompt(!aiming && Target != null ? "[" + Controls.Label(GameAction.Use) + "] " + Target.Prompt : null);
         Hud.SetReading(aiming ? null : reading);
     }
 }

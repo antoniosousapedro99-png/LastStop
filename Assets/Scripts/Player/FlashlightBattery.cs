@@ -40,8 +40,7 @@ public class FlashlightBattery : MonoBehaviour
             flickerTimer = dip ? Random.Range(0.04f, 0.12f) : Random.Range(0.2f, 0.8f);
         }
 
-        var keyboard = Keyboard.current;
-        if (keyboard != null && keyboard.hKey.wasPressedThisFrame)
+        if (Controls.Pressed(GameAction.SwapBattery))
         {
             if (inventory.spareBatteries <= 0) { Hud.Notice("No spare batteries"); return; }
             inventory.spareBatteries--;
