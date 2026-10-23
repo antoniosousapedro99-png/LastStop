@@ -1,9 +1,10 @@
 using UnityEngine;
 
-// An item lying in the world: a fuse, a spare battery, the shotgun, a shotgun shell or a key. Left click to take it.
+// An item lying in the world: a fuse, a spare battery, a flare, painkillers, a key (or the shotgun and its shells,
+// switched off for now). Left click to take it.
 public class Pickup : MonoBehaviour, IInteractable
 {
-    public enum Kind { Fuse, Battery, Shotgun, Shell, Key }
+    public enum Kind { Fuse, Battery, Shotgun, Shell, Key, Flare, Painkillers }   // new kinds go at the end
     public Kind kind;
     public AudioClip pickupSound;
 
@@ -13,6 +14,8 @@ public class Pickup : MonoBehaviour, IInteractable
         Kind.Battery => "Pick up battery",
         Kind.Shotgun => "Take shotgun",
         Kind.Key => "Take key",
+        Kind.Flare => "Take flare",
+        Kind.Painkillers => "Take painkillers",
         _ => "Take shotgun shell",
     };
 
@@ -36,6 +39,14 @@ public class Pickup : MonoBehaviour, IInteractable
             case Kind.Key:
                 inv.hasCabinetKey = true;
                 Hud.Notice("A small key. Tag: 'PLATFORM CABINET'", 4f);
+                break;
+            case Kind.Flare:
+                inv.flares++;
+                Hud.Notice("Road flare (" + inv.flares + ")   [G] strike");
+                break;
+            case Kind.Painkillers:
+                inv.painkillers++;
+                Hud.Notice("Painkillers (" + inv.painkillers + ")");
                 break;
             case Kind.Shell:
                 inv.shells++;

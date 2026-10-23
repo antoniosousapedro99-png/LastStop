@@ -21,6 +21,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **Rare other horrors** appear only in scripted moments.
 - **Defense: a shotgun with very rare shells.** It **stuns BagMan but never kills it**. There are no other weapons.
   - **Shotgun on hold (2026-10-22):** the shotgun and shells are switched off (`ShotgunEnabled = false` in `LookTestBuilder.CoreLoop.cs`) because they are hard to balance for this kind of game. The code stays; the locker and cabinet are simply empty of them. The creative director wants more useful consumables and collectibles instead.
+  - **Consumables (2026-10-23):** **road flares** replace the shotgun as the only "defence": G strikes one and holds it low in the right hand (bright, flickering red light and a fizz for 30 s, fading over the last 4 s); G again drops it, still burning, a little ahead of you. Later they will keep the stalker back. Two in this area: on the staff locker shelf and by the wall deep in the west tunnel. No flare model yet (a red stick made of basic shapes). **Painkillers**: two bottles (staff desk, blue platform cabinet), collected and counted only until the player has health (planned with the stalker).
 - **Flashlight:** the battery drains and spare batteries are scarce.
 - **Saving:** only in **safe rooms** (e.g. a staff break room with a working lamp).
 - **No sanity mechanic.**
@@ -71,7 +72,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
     - Right hand on the grip. Left hand cups the forend: **palm under it, thumb along its left side, fingers wrapped up its right side**, sitting flush; the left elbow angles out to the left.
     - Arms appear only while the shotgun is up, plus a quick hand **grab** when picking something up or using things.
   - **Fuse box** sits at eye level (centre 1.5 m), and a small dot marks the centre of the screen (brighter when you can use what you're looking at). Its prompt says how many fuses you carry.
-  - **Controls (2026-10-21):** WASD, Shift sprint, C crouch (toggle), Space jump, **Q / E lean** (hold), **LMB use** (Amnesia-style), F torch, H battery, **hold RMB aim shotgun**, LMB fire while aiming, R reload. Notes and posters show their text just by looking at them.
+  - **Controls (2026-10-21):** WASD, Shift sprint, C crouch (toggle), Space jump, **Q / E lean** (hold), **LMB use** (Amnesia-style), F torch, H battery, **G flare** (strike / drop), **hold RMB aim shotgun**, LMB fire while aiming, R reload. Notes and posters show their text just by looking at them.
   - Speeds: walk 2.3, sprint 4.3, crouch 1.3 m/s. Battery lasts 5 minutes; the worker starts with 1 spare.
   - **Cabinet key puzzle:** the west train can be climbed into by jumping onto a wooden crate beside the track; it's blocked by collapsed seats halfway. A key lies on a bench (blood spatter above it) and opens the blue cabinet on the platform's east wall: second fuse, a battery and a shotgun shell.
   - **Item glow (2026-10-22):** fuses, batteries, shells and keys give off a faint, slowly breathing warm glow on their own surface only, with no light spilling around them (Amnesia-style) so they can be spotted in the dark. On by default; `GameSettings.ItemGlow` is the switch a future settings menu will show.

@@ -27,4 +27,5 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | Rain sound (soundreality-rain-sound-550289) | SoundReality (Pixabay) | Pixabay Content Licence: free to use, no credit needed (to confirm on the download page) | no | Street rain loop | `Audio/Ambience/Rain` |
 | Blood textures (BloodDrop, BloodFabric, BloodSpatter) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Blood trail on the stairs, train spatter, tunnel wall smear, drops and stains | `Textures/Blood` |
 | Graffiti tags (4 PNGs, renamed Tag_Peso, Tag_Goru, Tag_Scrawl, Tag_Drips) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Spray-paint tags on the street, stairwell and platform | `Textures/Graffiti` |
+| NEUROZAM-9 PSX Pill Bottle | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Painkiller bottles | `Models/Props/PillBottle` |
 Asset library on disk: `Documents/PSX horror/assets` (copy in only the files actually used).

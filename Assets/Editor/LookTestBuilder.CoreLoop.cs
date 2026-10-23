@@ -57,6 +57,7 @@ public static partial class LookTestBuilder
         MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
                Top(fuseCrateW, -80.2f, 25.0f), 30f, "SmallGlassBottles1");   // glass fuse clinking
         // (The second fuse is locked in the blue platform cabinet; its key is inside the west train.)
+        PlaceFlare(items, new Vector3(-58f, -1.3f, 20.45f), 15f);   // by the wall deep in the west tunnel
 
         MakePickup(ModelPiece(SurvivalFbx, "Battery", items, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
                new Vector3(-13.2f, 0f, 14.8f), 70f, "PlasticBox1", lieDown: true);   // clear of the bench, so it can be looked at
@@ -284,7 +285,11 @@ public static partial class LookTestBuilder
                    new Vector3(inX, shelf, midZ - 0.2f), 0f, "SmallGlassBottles1");
         MakePickup(ModelPiece(SurvivalFbx, "Battery", cab, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
                    new Vector3(inX, shelf, midZ + 0.25f), 80f, "PlasticBox1", lieDown: true);
-        if (!ShotgunEnabled) return;
+        if (!ShotgunEnabled)
+        {
+            PlacePainkillers(cab, new Vector3(inX, y0 + t, midZ), 0f);   // where the shell used to be
+            return;
+        }
         var shell = Shell(cab);
         shell.transform.rotation = Quaternion.Euler(0, 30f, 90f);
         StandOn(shell, new Vector3(inX, y0 + t, midZ));
@@ -446,6 +451,7 @@ public static partial class LookTestBuilder
         var lighter = ModelPiece(SurvivalFbx, "zippo_01", room, Tex2("Props/Survival/zippo.png"), 0.55f);
         lighter.transform.rotation = Quaternion.Euler(90f, 0, 0) * lighter.transform.rotation;      // lying on its side
         StandOn(lighter, new Vector3(43.13f, top, 29.22f));
+        PlacePainkillers(room, new Vector3(43.95f, top, 29.35f), 20f);
 
         BuildLocker(room, floorY);
     }
@@ -499,7 +505,11 @@ public static partial class LookTestBuilder
         lockerDoor.doorName = "locker";
         lockerDoor.openSound = Load<AudioClip>(SfxDir + "/MetalCabinet1.wav");
 
-        if (!ShotgunEnabled) return;   // the locker stays, empty
+        if (!ShotgunEnabled)
+        {
+            PlaceFlare(locker, new Vector3((x0 + x1) * 0.5f, shelfY, (z0 + z1) * 0.5f), 70f);   // a flare on the shelf instead
+            return;
+        }
         // The shotgun stands upright inside, barrels up, leaning on the back wall.
         var gun = ShotgunModel(locker);
         gun.transform.rotation = Quaternion.Euler(-82f, 90f, 0f) * gun.transform.rotation;   // barrels up
@@ -566,6 +576,7 @@ public static partial class LookTestBuilder
         battery.inventory = inventory;
         battery.swapSound = Load<AudioClip>(SfxDir + "/PlasticBox1.wav");
         torch.GetComponent<Flashlight>().battery = battery;
+        BuildFlareGear(player, cam, inventory);
 
         // ---- shotgun held in first person
         var rig = new GameObject("ShotgunRig").transform;
