@@ -43,7 +43,7 @@ public static partial class LookTestBuilder
         capsule.center = new Vector3(0f, 1.05f, 0f); capsule.height = 2.1f; capsule.radius = 0.3f;
 
         var agent = man.AddComponent<NavMeshAgent>();
-        agent.radius = 0.35f; agent.height = 2.1f; agent.speed = 1.4f;
+        agent.radius = 0.35f; agent.height = 2.1f; agent.speed = 0.9f;
         agent.acceleration = 10f; agent.angularSpeed = 180f; agent.stoppingDistance = 0.5f;   // 180: turns smoothly, not snapping round
         agent.autoTraverseOffMeshLink = true;
 

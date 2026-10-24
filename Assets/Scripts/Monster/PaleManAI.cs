@@ -21,7 +21,7 @@ public class PaleManAI : MonoBehaviour
     public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff }
 
     public Animator animator;
-    public float walkSpeed = 1.4f, chaseSpeed = 3.8f;
+    public float walkSpeed = 0.9f, chaseSpeed = 3.8f;
     public float attackRange = 1.6f, hitReach = 2.1f;
     public float loseAfter = 8f;               // seconds without seeing the player before giving up the chase
     public float flareKeepAway = 6f;           // metres he stays from a lit flare
@@ -29,7 +29,7 @@ public class PaleManAI : MonoBehaviour
     // the clips, in metres per second). The animation is sped up to match how fast he really moves, so his
     // feet don't skate, but only up to a limit, past which it looks like fast-forward.
     public float clipWalkSpeed = 0.28f, clipRunSpeed = 1.07f;
-    public float maxWalkPlayback = 2.6f, maxRunPlayback = 3f;
+    public float maxWalkPlayback = 3.25f, maxRunPlayback = 3f;
     // Where in each animation's loop (0..1) a foot hits the ground, for the footstep sounds.
     public float[] walkFootfalls = { 0.37f, 0.87f }, runFootfalls = { 0.0f, 0.5f };
     public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
