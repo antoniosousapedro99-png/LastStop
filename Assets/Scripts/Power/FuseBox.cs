@@ -28,6 +28,13 @@ public class FuseBox : MonoBehaviour, IInteractable
         foreach (var slot in fuseSlots) slot.SetActive(false);
     }
 
+    // Loading a save: put back fuses that were already slotted in.
+    public void SetInstalled(int count)
+    {
+        installed = Mathf.Clamp(count, 0, Required);
+        for (int i = 0; i < fuseSlots.Length; i++) fuseSlots[i].SetActive(i < installed);
+    }
+
     public string Prompt
     {
         get

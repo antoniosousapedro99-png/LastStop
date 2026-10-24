@@ -45,6 +45,9 @@ public class Flashlight : MonoBehaviour
         if (IsOn && battery) battery.Drain(Time.deltaTime);
     }
 
+    // Loading a save: on or off, silently.
+    public void SetOn(bool on) => IsOn = on;
+
     void LateUpdate()
     {
         float level = IsOn ? (battery ? battery.Brightness : 1f) : 0f;

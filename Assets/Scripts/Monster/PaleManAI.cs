@@ -25,7 +25,13 @@ public class PaleManAI : MonoBehaviour
     public float attackRange = 1.6f, hitReach = 2.1f;
     public float loseAfter = 8f;               // seconds without seeing the player before giving up the chase
     public float flareKeepAway = 6f;           // metres he stays from a lit flare
-    public float clipWalkSpeed = 1.2f, clipRunSpeed = 3.4f;   // how fast the animations' feet move, to match them up
+    // How fast each animation's planted foot slides back along the ground at normal playback (measured on
+    // the clips, in metres per second). The animation is sped up to match how fast he really moves, so his
+    // feet don't skate, but only up to a limit, past which it looks like fast-forward.
+    public float clipWalkSpeed = 0.28f, clipRunSpeed = 1.07f;
+    public float maxWalkPlayback = 2.6f, maxRunPlayback = 3f;
+    // Where in each animation's loop (0..1) a foot hits the ground, for the footstep sounds.
+    public float[] walkFootfalls = { 0.37f, 0.87f }, runFootfalls = { 0.0f, 0.5f };
     public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
 
     [Header("Sounds")]
@@ -44,7 +50,8 @@ public class PaleManAI : MonoBehaviour
 
     NavMeshAgent agent;
     PaleManSenses senses;
-    float moodTime, lastSeen, nextBreath, nextCrack, stepTimer, sightTimer, noticedAt = -1f;
+    float moodTime, lastSeen, nextBreath, nextCrack, sightTimer, noticedAt = -1f;
+    float smoothedSpeed, lastCycle;            // his speed, eased so the animation doesn't flick between walk and run
     Vector3 lastSeenAt, walkOffTo;
     bool hitDone, seesPlayer;
     string playing;
@@ -66,6 +73,14 @@ public class PaleManAI : MonoBehaviour
         noticedAt = -1f;
         if (senses.Player) FaceTowards(senses.Player.position, 1000f);
         SetMood(Mood.Reveal);
+    }
+
+    // Loading a save: back where he was, wandering.
+    public void PutBack(Vector3 position, float yaw)
+    {
+        agent.Warp(position);
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        SetMood(Mood.Wander);
     }
 
     void Update()
@@ -289,9 +304,12 @@ public class PaleManAI : MonoBehaviour
     {
         if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal) agent.updateRotation = true;
         if (Current == Mood.Attack) return;
-        float speed = agent.velocity.magnitude;
-        if (speed > 2.4f) { Play("Run"); animator.speed = speed / clipRunSpeed; }
-        else if (speed > 0.2f) { Play("Walk"); animator.speed = Mathf.Max(0.5f, speed / clipWalkSpeed); }
+        smoothedSpeed = Mathf.Lerp(smoothedSpeed, agent.velocity.magnitude, 1f - Mathf.Exp(-8f * Time.deltaTime));
+        float speed = smoothedSpeed;
+        // Two thresholds, so hovering around one speed doesn't keep swapping walk and run.
+        bool run = playing == "Run" ? speed > 2.0f : speed > 2.6f;
+        if (run) { Play("Run"); animator.speed = Mathf.Clamp(speed / clipRunSpeed, 1f, maxRunPlayback); }
+        else if (speed > 0.15f) { Play("Walk"); animator.speed = Mathf.Clamp(speed / clipWalkSpeed, 0.8f, maxWalkPlayback); }
         else { Play("Idle"); animator.speed = 1f; }
     }
 
@@ -300,17 +318,19 @@ public class PaleManAI : MonoBehaviour
         if (playing == state) return;
         playing = state;
         if (state == "Attack" || state == "Scream") animator.speed = 1f;
-        animator.CrossFadeInFixedTime(state, 0.2f);
+        animator.CrossFadeInFixedTime(state, 0.25f);
+        lastCycle = 0f;
     }
 
     void Sounds()
     {
-        // Slow, heavy steps that match his pace.
-        float speed = agent.velocity.magnitude;
-        if (speed > 0.2f && steps.Length > 0)
+        // A footstep each time a foot lands in the walk or run animation, so sound and picture match.
+        if ((playing == "Walk" || playing == "Run") && steps.Length > 0)
         {
-            stepTimer -= Time.deltaTime * speed;
-            if (stepTimer <= 0f) { stepTimer = 1.3f; feet.pitch = Random.Range(0.92f, 1.05f); feet.PlayOneShot(steps[Random.Range(0, steps.Length)], 0.9f); }
+            float cycle = animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1f;
+            foreach (float landing in playing == "Run" ? runFootfalls : walkFootfalls)
+                if (Crossed(lastCycle, cycle, landing)) { feet.pitch = Random.Range(0.92f, 1.05f); feet.PlayOneShot(steps[Random.Range(0, steps.Length)], 0.9f); }
+            lastCycle = cycle;
             // Now and then a joint snaps.
             if (Time.time > nextCrack && cracks.Length > 0)
             {
@@ -324,6 +344,13 @@ public class PaleManAI : MonoBehaviour
             nextBreath = Time.time + Random.Range(3f, 6f);
             Say(breaths[Random.Range(0, breaths.Length)], 0.7f);
         }
+    }
+
+    // Did the loop position move past 'mark' since last frame (allowing for the wrap from 1 back to 0)?
+    static bool Crossed(float from, float to, float mark)
+    {
+        if (to >= from) return mark > from && mark <= to;
+        return mark > from || mark <= to;
     }
 
     void Say(AudioClip clip, float volume)

@@ -1,0 +1,204 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+// Saving and loading games.
+// - A save is a SaveData written as a small JSON file in the player's save folder
+//   (Application.persistentDataPath/Saves): slot 0 is the autosave, slots 1-5 are the player's.
+// - Loading reloads the level (so it starts clean, exactly as built) and then puts everything back the
+//   way the save describes (Apply). MenuSystem notices the waiting save and skips the title.
+// - Things in the level (pickups, doors) are found again by their place in the hierarchy, their "path",
+//   recorded when the level starts, before anything has been picked up or opened.
+public static class SaveSystem
+{
+    public const int Autosave = 0;
+    public const int Slots = 5;
+
+    public static SaveData Pending { get; private set; }    // a save waiting to be applied after the reload
+    public static bool LoadedGame { get; private set; }     // this run of the level came from a save
+
+    static readonly Dictionary<string, Pickup> pickups = new Dictionary<string, Pickup>();
+    static readonly Dictionary<string, HingedDoor> doors = new Dictionary<string, HingedDoor>();
+
+    static string Folder => Path.Combine(Application.persistentDataPath, "Saves");
+    static string FileFor(int slot) => Path.Combine(Folder, slot == Autosave ? "autosave.json" : "slot" + slot + ".json");
+
+    // ---------------------------------------------------------------- level start
+    // Called by MenuSystem as the level wakes up: remembers every pickup and door by its path.
+    public static void RememberLevel()
+    {
+        LoadedGame = Pending != null;
+        pickups.Clear();
+        doors.Clear();
+        foreach (var p in UnityEngine.Object.FindObjectsByType<Pickup>(FindObjectsInactive.Include))
+            pickups[PathOf(p.transform)] = p;
+        foreach (var d in UnityEngine.Object.FindObjectsByType<HingedDoor>(FindObjectsInactive.Include))
+            doors[PathOf(d.transform)] = d;
+    }
+
+    // "Root#0/Pickups#3/Battery#7": names plus their position among their siblings, so two objects
+    // with the same name still get different paths. The level is generated, so these never change.
+    static string PathOf(Transform t)
+    {
+        string path = t.name + "#" + t.GetSiblingIndex();
+        for (var p = t.parent; p != null; p = p.parent) path = p.name + "#" + p.GetSiblingIndex() + "/" + path;
+        return path;
+    }
+
+    // ---------------------------------------------------------------- files
+    public static SaveData Peek(int slot)
+    {
+        try
+        {
+            string file = FileFor(slot);
+            return File.Exists(file) ? JsonUtility.FromJson<SaveData>(File.ReadAllText(file)) : null;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("Couldn't read save " + slot + ": " + e.Message);
+            return null;
+        }
+    }
+
+    public static bool Write(int slot, string name)
+    {
+        try
+        {
+            var data = Capture();
+            data.name = string.IsNullOrWhiteSpace(name) ? DefaultName() : name.Trim();
+            data.savedAt = DateTime.Now.ToString("o", CultureInfo.InvariantCulture);
+            Directory.CreateDirectory(Folder);
+            File.WriteAllText(FileFor(slot), JsonUtility.ToJson(data, true));
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("Couldn't save to slot " + slot + ": " + e.Message);
+            return false;
+        }
+    }
+
+    // Starts loading: reloads the level; MenuSystem then calls ApplyPending once it's back.
+    public static void Load(int slot)
+    {
+        var data = Peek(slot);
+        if (data == null) return;
+        Pending = data;
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // "Platform - 14:32": where the player is and the time of day, the suggested name for a new save.
+    public static string DefaultName()
+    {
+        var player = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();
+        return (player ? AreaAt(player.transform.position) : "Station") + " - " + DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    // A plain name for each part of the level, from a position (the layout in LookTestBuilder).
+    public static string AreaAt(Vector3 p)
+    {
+        if (p.y > 3f) return "Street";
+        if (p.x > 40f && p.x < 45.5f && p.z > 25.8f) return "Staff Room";
+        if (p.x < -18.3f) return "West Tunnel";
+        if (p.x > 18.3f) return "East Tunnel";
+        if (p.z < 13.7f) return "Corridor";
+        return p.y < -0.5f ? "Tracks" : "Platform";
+    }
+
+    // "24 OCT 14:32" for the slot list.
+    public static string ShortDate(SaveData data)
+    {
+        if (!DateTime.TryParse(data.savedAt, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var when)) return "";
+        return when.ToString("dd MMM  HH:mm", CultureInfo.InvariantCulture).ToUpperInvariant();
+    }
+
+    // ---------------------------------------------------------------- capture and apply
+    static SaveData Capture()
+    {
+        var d = new SaveData();
+        var inv = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();
+        var player = inv.transform;
+        d.area = AreaAt(player.position);
+        d.playerPosition = player.position;
+        d.playerYaw = player.eulerAngles.y;
+        var look = player.GetComponent<PlayerLook>();
+        if (look) d.cameraPitch = look.pitch;
+        var health = player.GetComponent<PlayerHealth>();
+        if (health) d.hits = health.Hits;
+        var battery = player.GetComponentInChildren<FlashlightBattery>(true);
+        if (battery) d.batteryCharge = battery.charge;
+        var torch = player.GetComponentInChildren<Flashlight>(true);
+        d.torchOn = torch && torch.IsOn;
+
+        d.fuses = inv.fuses; d.spareBatteries = inv.spareBatteries; d.flares = inv.flares;
+        d.painkillers = inv.painkillers; d.shells = inv.shells;
+        d.hasCabinetKey = inv.hasCabinetKey; d.hasShotgun = inv.hasShotgun;
+
+        var fuseBox = UnityEngine.Object.FindAnyObjectByType<FuseBox>();
+        if (fuseBox) { d.fusesInstalled = fuseBox.Installed; d.powerOn = fuseBox.grid.IsOn; }
+        foreach (var pair in pickups) if (pair.Value == null) d.taken.Add(pair.Key);           // destroyed = picked up
+        foreach (var pair in doors) if (pair.Value != null && pair.Value.IsOpen) d.openDoors.Add(pair.Key);
+
+        var monster = UnityEngine.Object.FindAnyObjectByType<PaleManAI>();   // only found while he's awake
+        if (monster)
+        {
+            d.monsterAwake = true;
+            d.monsterPosition = monster.transform.position;
+            d.monsterYaw = monster.transform.eulerAngles.y;
+        }
+        return d;
+    }
+
+    // Called by MenuSystem after the reload, once the player has been switched on.
+    public static void ApplyPending()
+    {
+        var d = Pending;
+        Pending = null;
+        if (d == null) return;
+
+        foreach (string path in d.taken)
+            if (pickups.TryGetValue(path, out var p) && p) UnityEngine.Object.Destroy(p.gameObject);
+        foreach (string path in d.openDoors)
+            if (doors.TryGetValue(path, out var door) && door) door.OpenNow();
+
+        var inv = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();
+        inv.fuses = d.fuses; inv.spareBatteries = d.spareBatteries; inv.flares = d.flares;
+        inv.painkillers = d.painkillers; inv.shells = d.shells;
+        inv.hasCabinetKey = d.hasCabinetKey; inv.hasShotgun = d.hasShotgun;
+
+        var player = inv.transform;
+        var battery = player.GetComponentInChildren<FlashlightBattery>(true);
+        if (battery) battery.charge = d.batteryCharge;
+        var torch = player.GetComponentInChildren<Flashlight>(true);
+        if (torch) torch.SetOn(d.torchOn);
+        var health = player.GetComponent<PlayerHealth>();
+        if (health) health.SetHits(d.hits);
+
+        var fuseBox = UnityEngine.Object.FindAnyObjectByType<FuseBox>();
+        if (fuseBox)
+        {
+            fuseBox.SetInstalled(d.fusesInstalled);
+            if (d.powerOn)
+            {
+                fuseBox.grid.RestoreQuietly(fuseBox.transform.position);
+                foreach (var door in doors.Values)
+                    if (door && door.needsPower == fuseBox.grid) door.OpenNow();   // even if it was still swinging when saved
+            }
+        }
+        var arrival = UnityEngine.Object.FindAnyObjectByType<PaleManArrival>();
+        if (arrival) arrival.LoadState(d.monsterAwake, d.monsterPosition, d.monsterYaw, d.powerOn);
+
+        // Move the player last; the CharacterController has to be off to be moved directly.
+        var controller = player.GetComponent<CharacterController>();
+        if (controller) controller.enabled = false;
+        player.SetPositionAndRotation(d.playerPosition, Quaternion.Euler(0f, d.playerYaw, 0f));
+        if (controller) controller.enabled = true;
+        var look = player.GetComponent<PlayerLook>();
+        if (look) look.pitch = d.cameraPitch;
+    }
+}

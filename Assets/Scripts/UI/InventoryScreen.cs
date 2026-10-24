@@ -28,16 +28,17 @@ public class InventoryScreen : MonoBehaviour
     int selected;
     string message;                   // a reply under the description, e.g. after taking painkillers
     float timeScaleBefore = 1f;
-    GUIStyle rowStyle, nameStyle, textStyle, smallStyle;
+    [System.NonSerialized] GUIStyle rowStyle, nameStyle, textStyle, smallStyle;
 
     // Where things sit on the frame picture (its own pixels, 864 x 624).
     const float FrameW = 864f, FrameH = 624f;
     static readonly Rect PreviewBox = new Rect(40, 40, 302, 175);
     static readonly Rect NameStrip = new Rect(48, 216, 288, 24);
     static readonly Rect ListBox = new Rect(388, 48, 428, 340);
+    static readonly Rect ListCover = new Rect(380, 42, 442, 352);   // over the frame's printed item boxes
     static readonly Rect DescriptionBox = new Rect(396, 440, 412, 140);
     static readonly Rect StatusBox = new Rect(44, 330, 296, 255);
-    const int Rows = 4;
+    const int Rows = 7;                // items shown at once; more scroll
 
     // Statics survive between Play runs here (no domain reload), so start every run closed.
     void Awake()
@@ -49,7 +50,7 @@ public class InventoryScreen : MonoBehaviour
 
     void Update()
     {
-        if (Controls.Pressed(GameAction.Inventory) && !MenuSystem.IsOpen) { if (IsOpen) Close(); else Open(); return; }
+        if (Controls.Pressed(GameAction.Inventory) && !MenuSystem.IsOpen && !SaveMenu.IsOpen) { if (IsOpen) Close(); else Open(); return; }
         if (!IsOpen) return;
         if (Controls.UiBack()) { Close(); return; }
 
@@ -143,27 +144,38 @@ public class InventoryScreen : MonoBehaviour
             GUI.Label(R(NameStrip), entries[selected].name.ToUpperInvariant(), nameStyle);
         }
 
-        // The rows: the selected one gets a soft highlight; a click selects.
+        // The frame picture has four tall item boxes printed in it: cover them, then draw one slim box per
+        // row in the same wine style (seven fit), empty ones dim, the selected one lit. A click selects.
+        GUI.color = new Color(0.06f, 0.03f, 0.04f, 1f);
+        GUI.DrawTexture(R(ListCover), Texture2D.whiteTexture);
+        GUI.color = old;
         var list = R(ListBox);
         float rowH = list.height / Rows;
         int first = Mathf.Clamp(selected - Rows + 1, 0, Mathf.Max(0, entries.Count - Rows));   // scroll to keep it visible
+        for (int slot = 0; slot < Rows; slot++)
+        {
+            int i = first + slot;
+            var box = new Rect(list.x, list.y + slot * rowH + rowH * 0.09f, list.width, rowH * 0.82f);
+            GUI.color = i == selected ? new Color(1f, 0.92f, 0.92f) : i < entries.Count ? new Color(0.7f, 0.6f, 0.62f) : new Color(0.38f, 0.32f, 0.34f);
+            GUI.DrawTexture(box, coverPanel, ScaleMode.StretchToFill);
+            if (i == selected)
+            {
+                GUI.color = new Color(1f, 0.88f, 0.88f, 0.14f);   // a soft glow over the chosen row
+                GUI.DrawTexture(box, Texture2D.whiteTexture);
+            }
+            GUI.color = old;
+        }
         if (entries.Count == 0)
-            GUI.Label(new Rect(list.x, list.y, list.width, rowH), "Your pockets are empty.", rowStyle);
+            GUI.Label(new Rect(list.x + 20 * scale, list.y, list.width, rowH), "Your pockets are empty.", rowStyle);
         for (int i = first; i < Mathf.Min(entries.Count, first + Rows); i++)
         {
             var row = new Rect(list.x, list.y + (i - first) * rowH, list.width, rowH);
-            if (i == selected)
-            {
-                GUI.color = new Color(0.95f, 0.85f, 0.85f, 0.18f);
-                GUI.DrawTexture(row, Texture2D.whiteTexture);
-                GUI.color = old;
-            }
             rowStyle.normal.textColor = i == selected ? new Color(0.97f, 0.93f, 0.9f) : new Color(0.75f, 0.68f, 0.68f);
-            GUI.Label(new Rect(row.x + 24 * scale, row.y, row.width, row.height), entries[i].name, rowStyle);
+            GUI.Label(new Rect(row.x + 20 * scale, row.y, row.width, row.height), entries[i].name, rowStyle);
             if (entries[i].count > 1 || entries[i].kind != "Key")
             {
                 rowStyle.alignment = TextAnchor.MiddleRight;
-                GUI.Label(new Rect(row.x, row.y, row.width - 24 * scale, row.height), "x " + entries[i].count, rowStyle);
+                GUI.Label(new Rect(row.x, row.y, row.width - 20 * scale, row.height), "x " + entries[i].count, rowStyle);
                 rowStyle.alignment = TextAnchor.MiddleLeft;
             }
             if (GUI.Button(row, GUIContent.none, GUIStyle.none)) selected = i;
@@ -201,14 +213,19 @@ public class InventoryScreen : MonoBehaviour
     {
         if (rowStyle == null)
         {
-            rowStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold };
-            nameStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-            textStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperLeft, wordWrap = true };
-            smallStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold };
-            textStyle.normal.textColor = new Color(0.88f, 0.84f, 0.8f);
+            rowStyle = new GUIStyle(GUI.skin.label);
+            nameStyle = new GUIStyle(GUI.skin.label);
+            textStyle = new GUIStyle(GUI.skin.label);
+            smallStyle = new GUIStyle(GUI.skin.label);
         }
+        // Set every frame: the styles can come back from an editor reload with old settings.
+        rowStyle.alignment = TextAnchor.MiddleLeft; rowStyle.fontStyle = FontStyle.Bold; rowStyle.wordWrap = false;
+        nameStyle.alignment = TextAnchor.MiddleCenter; nameStyle.fontStyle = FontStyle.Bold; nameStyle.wordWrap = false;
+        textStyle.alignment = TextAnchor.UpperLeft; textStyle.wordWrap = true;
+        textStyle.normal.textColor = new Color(0.88f, 0.84f, 0.8f);
+        smallStyle.alignment = TextAnchor.MiddleLeft; smallStyle.fontStyle = FontStyle.Bold; smallStyle.wordWrap = false;
         rowStyle.font = nameStyle.font = textStyle.font = smallStyle.font = MenuStyle.Font;   // the menus' VCR font
-        rowStyle.fontSize = Mathf.RoundToInt(30 * scale);
+        rowStyle.fontSize = Mathf.RoundToInt(21 * scale);   // small enough for seven rows
         nameStyle.fontSize = Mathf.RoundToInt(22 * scale);
         textStyle.fontSize = Mathf.RoundToInt(24 * scale);
         smallStyle.fontSize = Mathf.RoundToInt(20 * scale);

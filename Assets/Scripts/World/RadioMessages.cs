@@ -18,7 +18,7 @@ public class RadioMessages : MonoBehaviour, IInteractable
 
     void Start()
     {
-        if (playOnStart) StartCoroutine(Play(2f));
+        if (playOnStart && !SaveSystem.LoadedGame) StartCoroutine(Play(2f));   // not again after loading a save
     }
 
     public void Interact(Interactor player)

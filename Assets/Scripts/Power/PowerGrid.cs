@@ -29,6 +29,17 @@ public class PowerGrid : MonoBehaviour
         StartCoroutine(PowerWave());
     }
 
+    // Loading a save made after the power came back: everything simply on, with no clunk, wave or music,
+    // and without the Restored event (the Pale Man and the autosave have their own saved state).
+    public void RestoreQuietly(Vector3 origin)
+    {
+        if (IsOn) return;
+        IsOn = true;
+        Origin = origin;
+        foreach (var light in FindObjectsByType<PoweredLight>()) light.PowerOn();
+        if (hum) { hum.volume = humVolume; hum.Play(); }
+    }
+
     IEnumerator PowerWave()
     {
         if (clunk) AudioSource.PlayClipAtPoint(clunk, Origin, 1f);

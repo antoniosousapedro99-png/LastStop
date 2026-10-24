@@ -52,6 +52,9 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
 
 - **Anything that moves must not be static.** The builder marks level objects static (merged for speed); objects under a `HingedDoor` are excluded. A static object's hinge turns but its drawn mesh stays frozen. Test moving things with a screenshot, not just by reading their angle.
 
+- **Saving:** `SaveSystem` writes `SaveData` as JSON to `Application.persistentDataPath/Saves` (slot 0 = autosave, 1-5 = player). When a feature has state worth keeping, add it to `SaveData` and to `SaveSystem.Capture`/`ApplyPending`, plus a quiet "put back" method on the component (like `FuseBox.SetInstalled`, `PowerGrid.RestoreQuietly`, `HingedDoor.OpenNow`). Pickups and doors are found by hierarchy path + sibling index, recorded in `SaveSystem.RememberLevel` at level start. Loading reloads the scene; `MenuSystem.Start` sees `SaveSystem.Pending`, skips the title and applies it. One-time intro events must check `SaveSystem.LoadedGame`. The save/load screen is `SaveMenu` (on the Menus object). Saves made during tests stay on disk: delete `%USERPROFILE%\AppData\LocalLow\DefaultCompany\LastStop\Saves` afterwards.
+- **IMGUI styles kept in fields** can come back from an editor reload with stale settings: mark them `[System.NonSerialized]` and set alignment/wrap every frame.
+
 - **Interaction:** `Interactor` (on the camera) casts a ray using `PlayerRay`, which skips the player's own capsule. Anything with `IInteractable` (Prompt + Interact) gets "[E] prompt".
 - **Power:** `PowerGrid` (one per area) plus `PoweredLight` on every lamp. Things that need power listen to `PowerGrid.Restored` (see `HingedDoor.needsPower`).
 - **Pickups:** `Pickup` (Fuse, Battery, Shotgun, Shell). Counts live in `PlayerInventory`.

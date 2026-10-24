@@ -58,6 +58,21 @@ public class PaleManArrival : MonoBehaviour
         return best;
     }
 
+    // Loading a save. If he was already awake he's put back where he was; if the power was on but he
+    // hadn't come yet, his 15-20 second countdown starts again.
+    public void LoadState(bool awake, Vector3 position, float yaw, bool powerOn)
+    {
+        if (!awake && !powerOn) return;
+        grid.Restored -= OnPower;
+        if (awake)
+        {
+            Arrived = true;
+            monster.gameObject.SetActive(true);
+            monster.PutBack(position, yaw);
+        }
+        else StartCoroutine(Arrive(Random.Range(minDelay, maxDelay)));
+    }
+
     // For testing: wake him now.
     public void ArriveNow() => StartCoroutine(Arrive(0f));
 }

@@ -44,7 +44,7 @@ public static partial class LookTestBuilder
 
         var agent = man.AddComponent<NavMeshAgent>();
         agent.radius = 0.35f; agent.height = 2.1f; agent.speed = 1.4f;
-        agent.acceleration = 12f; agent.angularSpeed = 300f; agent.stoppingDistance = 0.5f;
+        agent.acceleration = 10f; agent.angularSpeed = 180f; agent.stoppingDistance = 0.5f;   // 180: turns smoothly, not snapping round
         agent.autoTraverseOffMeshLink = true;
 
         var eyes = new GameObject("Eyes").transform;
@@ -78,6 +78,7 @@ public static partial class LookTestBuilder
         shriek.gameObject.AddComponent<AudioReverbFilter>().reverbPreset = AudioReverbPreset.SewerPipe;
         var arrival = arrivalObject.AddComponent<PaleManArrival>();
         arrival.grid = grid;
+        arrivalObject.AddComponent<AutosaveOnPower>().grid = grid;   // the autosave, a few seconds after the power returns
         arrival.monster = ai;
         arrival.shriek = shriek;
         // He first appears under the lamp at the far end of the platform, then walks into that end's tunnel.
@@ -86,7 +87,7 @@ public static partial class LookTestBuilder
 
         // The sting when the player first sees him: a music cue, so it follows the Music volume.
         var sting = arrivalObject.AddComponent<AudioSource>();
-        sting.clip = Load<AudioClip>("Assets/Art/Audio/Music/Jumpscare.ogg");
+        sting.clip = Load<AudioClip>("Assets/Art/Audio/Music/Svirls/Jumpscare.ogg");
         sting.playOnAwake = false; sting.spatialBlend = 0f; sting.ignoreListenerVolume = true;
         ai.sting = sting;
 

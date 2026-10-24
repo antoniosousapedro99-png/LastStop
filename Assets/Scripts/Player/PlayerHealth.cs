@@ -5,7 +5,7 @@ using UnityEngine;
 // - A hit flashes the screen red, jolts the view and plays a cry of pain; while hurt, the edges of the
 //   screen stay faintly red and the player breathes heavily.
 // - Death: control stops, the view drops to the floor, the screen fades to black with "YOU DIED", and
-//   the game goes back to the title (there are no saves yet).
+//   the game goes back to the title (load a save from there).
 public class PlayerHealth : MonoBehaviour
 {
     public int maxHits = 2;
@@ -38,6 +38,9 @@ public class PlayerHealth : MonoBehaviour
         if (look) look.AddRecoil(-8f, Random.Range(-6f, 6f));   // the view jolts down and sideways
         if (Hits >= maxHits) StartCoroutine(Die());
     }
+
+    // Loading a save: how many hits were already taken (never enough to be dead).
+    public void SetHits(int hits) => Hits = Mathf.Clamp(hits, 0, maxHits - 1);
 
     // Painkillers: heal one hit. Returns false if there was nothing to heal.
     public bool Heal()

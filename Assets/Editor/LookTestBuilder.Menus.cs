@@ -34,6 +34,7 @@ public static partial class LookTestBuilder
         // ---- the menus
         var menus = new GameObject("Menus");
         menus.transform.SetParent(root);
+        menus.AddComponent<SaveMenu>();   // the save / load screen (the staff PC and Load game open it)
         var system = menus.AddComponent<MenuSystem>();
         system.player = player;
         system.titleCamera = title;

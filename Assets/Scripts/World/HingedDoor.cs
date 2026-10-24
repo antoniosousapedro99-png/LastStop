@@ -20,6 +20,17 @@ public class HingedDoor : MonoBehaviour, IInteractable
 
     void Awake() => closedRotation = transform.localRotation;
 
+    public bool IsOpen => open || moving;
+
+    // Loading a save: snaps straight to open, no sound.
+    public void OpenNow()
+    {
+        StopAllCoroutines();
+        transform.localRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+        moving = false;
+        open = true;
+    }
+
     void Start()
     {
         if (needsPower) needsPower.Restored += OnPowerRestored;

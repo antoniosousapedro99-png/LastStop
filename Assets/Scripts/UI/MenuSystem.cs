@@ -8,9 +8,11 @@ using UnityEngine.SceneManagement;
 
 // The game's menus, drawn in the FREE PSX UI pack's style (see MenuStyle):
 // - Title: a view of the dark tunnel with the flickering cab light. "Press any key", then
-//   New game / Options / Credits / Quit. New game fades to black and hands over to the player.
-// - Pause (Esc, or Menu on a controller, while playing): Resume / Options / Credits / Quit to title /
-//   Quit game. The game freezes and goes quiet while it's open. Quitting asks first.
+//   New game / Load game / Options / Credits / Quit. New game fades to black and hands over to the player.
+// - Pause (Esc, or Menu on a controller, while playing): Resume / Load game / Options / Credits /
+//   Quit to title / Quit game. The game freezes and goes quiet while it's open. Quitting asks first.
+// - Load game opens SaveMenu. Loading reloads the level; when it comes back with a save waiting
+//   (SaveSystem.Pending) the title is skipped and the save is put back.
 // - Options: every setting in GameSettings, saved as soon as it changes; Key bindings (pick an action,
 //   press the new key or mouse button); Controller layout (fixed buttons, shown for reference).
 // - Credits.
@@ -104,6 +106,7 @@ public class MenuSystem : MonoBehaviour
     {
         MenuStyle.Font = font;
         MenuStyle.Panel = panel;
+        SaveSystem.RememberLevel();   // before anything in the level is picked up or opened
         BuildRows();
         Time.timeScale = 1f;
         AudioListener.pause = false;
@@ -118,7 +121,11 @@ public class MenuSystem : MonoBehaviour
         Hud.Hidden = true;
     }
 
-    void Start() => FreeCursor(true);
+    void Start()
+    {
+        if (SaveSystem.Pending != null) StartCoroutine(ResumeSavedGame());
+        else FreeCursor(true);
+    }
 
     void OnDestroy() => keyListener?.Dispose();
 
@@ -133,6 +140,7 @@ public class MenuSystem : MonoBehaviour
     {
         Controls.TrackDevice();   // so prompts name the controller's buttons when it's in use
         if (starting) return;
+        if (SaveMenu.IsOpen || SaveMenu.ClosedFrame == Time.frameCount) return;   // the save/load screen has the keys
 
         if (!IsOpen)
         {
@@ -170,7 +178,7 @@ public class MenuSystem : MonoBehaviour
 
     int ItemCount => page switch
     {
-        Page.Main => 4, Page.Pause => 5, Page.Options => rows.Count, Page.Confirm => 2,
+        Page.Main => 5, Page.Pause => 6, Page.Options => rows.Count, Page.Confirm => 2,
         Page.Keys => Controls.Listed.Length + 2, Page.Pad => 1, _ => 0,
     };
 
@@ -197,15 +205,17 @@ public class MenuSystem : MonoBehaviour
         {
             case Page.Main:
                 if (selected == 0) StartGame();
-                else if (selected == 1) Go(Page.Options, Page.Main);
-                else if (selected == 2) Go(Page.Credits, Page.Main);
+                else if (selected == 1) SaveMenu.Current.Open(SaveMenu.Mode.Load, false);
+                else if (selected == 2) Go(Page.Options, Page.Main);
+                else if (selected == 3) Go(Page.Credits, Page.Main);
                 else Confirm("QUIT THE GAME?", QuitGame, Page.Main);
                 break;
             case Page.Pause:
                 if (selected == 0) ClosePause();
-                else if (selected == 1) Go(Page.Options, Page.Pause);
-                else if (selected == 2) Go(Page.Credits, Page.Pause);
-                else if (selected == 3) Confirm("QUIT TO TITLE?", QuitToTitle, Page.Pause);
+                else if (selected == 1) SaveMenu.Current.Open(SaveMenu.Mode.Load, false, askFirst: true);
+                else if (selected == 2) Go(Page.Options, Page.Pause);
+                else if (selected == 3) Go(Page.Credits, Page.Pause);
+                else if (selected == 4) Confirm("QUIT TO TITLE?", QuitToTitle, Page.Pause);
                 else Confirm("QUIT THE GAME?", QuitGame, Page.Pause);
                 break;
             case Page.Options:
@@ -309,6 +319,29 @@ public class MenuSystem : MonoBehaviour
         starting = true;
         for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.8f) { fade = t; yield return null; }
         fade = 1f;
+        EnterGame();
+        for (float t = 1f; t > 0f; t -= Time.unscaledDeltaTime / 0.8f) { fade = t; yield return null; }
+        fade = 0f;
+        starting = false;
+    }
+
+    // After loading a save: straight from black into the game, with everything put back.
+    System.Collections.IEnumerator ResumeSavedGame()
+    {
+        starting = true;
+        fade = 1f;
+        EnterGame();
+        yield return null;                   // let the player's scripts start up first
+        SaveSystem.ApplyPending();
+        yield return null;
+        for (float t = 1f; t > 0f; t -= Time.unscaledDeltaTime / 0.8f) { fade = t; yield return null; }
+        fade = 0f;
+        starting = false;
+    }
+
+    // Swaps the title camera for the player.
+    void EnterGame()
+    {
         titleCamera.SetActive(false);
         player.SetActive(true);              // its PlayerLook locks the cursor
         ambience.player = player.transform;
@@ -317,9 +350,6 @@ public class MenuSystem : MonoBehaviour
         IsOpen = false;
         Hud.Hidden = false;
         FreeCursor(false);
-        for (float t = 1f; t > 0f; t -= Time.unscaledDeltaTime / 0.8f) { fade = t; yield return null; }
-        fade = 0f;
-        starting = false;
     }
 
     void OpenPause()
@@ -389,13 +419,14 @@ public class MenuSystem : MonoBehaviour
         if (e.type == EventType.MouseUp) draggingSlider = false;
         if (waitingForKey && e.isMouse) e.Use();   // the click is the new binding, not a menu click
 
-        if (IsOpen)
+        if (IsOpen && SaveMenu.IsOpen && inTitle) DrawTitle();   // the save list draws itself on top
+        else if (IsOpen)
         {
             switch (page)
             {
                 case Page.PressKey: DrawTitle(); DrawPressKey(); break;
-                case Page.Main: DrawTitle(); DrawList(new[] { "NEW GAME", "OPTIONS", "CREDITS", "QUIT" }, 120f, 560f, mouseMoved); break;
-                case Page.Pause: DrawPauseBackdrop(); DrawList(new[] { "RESUME", "OPTIONS", "CREDITS", "QUIT TO TITLE", "QUIT GAME" }, 120f, 400f, mouseMoved); break;
+                case Page.Main: DrawTitle(); DrawList(new[] { "NEW GAME", "LOAD GAME", "OPTIONS", "CREDITS", "QUIT" }, 120f, 540f, mouseMoved); break;
+                case Page.Pause: DrawPauseBackdrop(); DrawList(new[] { "RESUME", "LOAD GAME", "OPTIONS", "CREDITS", "QUIT TO TITLE", "QUIT GAME" }, 120f, 380f, mouseMoved); break;
                 case Page.Options: DrawBackdrop(); DrawOptions(mouseMoved); break;
                 case Page.Keys: DrawBackdrop(); DrawKeys(mouseMoved); break;
                 case Page.Pad: DrawBackdrop(); DrawPad(); break;
