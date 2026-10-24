@@ -7,11 +7,16 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 |---|---|---|---|---|---|
 | Metro PSX | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Station textures (tiles, tactile strip, rails), bench seats, trash can, vending machine, metro map | `Models/Environment/MetroPSX` (its film posters were left out on purpose) |
 | Darkworld Audio – Survival Effects [Free] | Darkworld Audio | Royalty-free; no attribution needed; don't sell the raw sounds (`LICENSE.pdf`) | no | Footsteps (concrete, wet gravel on the tracks, puddle splashes), the Pale Man's voice, steps and joint cracks (cries, breaths, eating, punches and wood snaps reshaped with ffmpeg, in `Darkworld/PaleMan`), player pain sounds, switches, doors, cabinets, paper rustles, pickups, distant rockfalls and scrapes, leaking pipe | `Audio/SFX/Darkworld` |
-| Helton Yan's Surreal Drones | Helton Yan | **no licence file — confirm before release** | yes (credit "Helton Yan") | Area drones (station, tunnels, street wind), lamp buzz, power hum | `Audio/Ambience/HeltonYan` |
+| Helton Yan's Surreal Drones | Helton Yan | **no licence file — confirm before release** | yes (credit "Helton Yan") | Area drones (station, tunnels, street wind, service level "Thrusters Inside"), lamp buzz, power hum, train engine | `Audio/Ambience/HeltonYan` |
 | PSX Kitchen Props Pack | Nicowlas | Use in projects; **no redistribution** (LICENSE.txt) | no | Half-eaten pizza, cola can | `Models/Props/Kitchen` |
 | OFFICE pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Desk, office chair, logbook binder | `Models/Props/Office` |
 | Survival pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Flashlight battery, Zippo | `Models/Props/Survival` |
-| 3D Retro Plumbing & Wiring | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Fuse box and fuses (converted from .blend) | `Models/Props/Plumbing` |
+| 3D Retro Plumbing & Wiring | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Fuse box and fuses; service level generator, pumps, transformers, turbine (all converted from .blend) | `Models/Props/Plumbing` |
+| PSX Derelict Furniture (Standard) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Squatter camp mattresses, couch, chair, fridge; storage shelves | `Models/Props/DerelictFurniture` |
+| PSX Old Stuff Pack | unnamed author | README asks for credit (`LICENSE.txt`) | yes ("PSX Old Stuff Pack") | Candles, oxidised barrels (converted from .glb) | `Models/Props/OldStuff` |
+| Trash and Debris | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Cans, chip bags, cardboard on the service level | `Models/Props/Trash` |
+| Retro PSX Trash bag | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Bin bags in the squatter camp | `Models/Props/Trash` |
+| Sewer pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Service level textures: dirty concrete, brick, metal (stairs), door metal | `Models/Environment/Sewer` |
 | Shotgun PS1 V2.0 | see `README.txt` (to confirm) | to confirm | to confirm | Shotgun | `Models/Weapons/ShotgunPS1` |
 | PSX First Person Arms (free) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | First-person arms (black fingerless gloves) and their grab animation | `Models/Characters/PsxArms` |
 | PSX Horror Music | Svirls (TheRealSwirls) | CC BY | yes ("Svirls", composer) | Power-restored sting ("Powerbox"), chase music ("Chase 1"), first-sighting sting ("Jumpscare") | `Audio/Music/Svirls` |

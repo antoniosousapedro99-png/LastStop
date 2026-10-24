@@ -51,12 +51,10 @@ public static partial class LookTestBuilder
                 if (x < (side > 0 ? TunnelEndE : TunnelEndW) - 20f)   // none hidden behind the train
                 WorkLamp(lamps, new Vector3(x * side, 1.4f, 20f), housing, bulb);
 
-        // ---- fuses (one per tunnel) and spare batteries, on crates and the floor
+        // ---- spare batteries and a flare, on crates and the floor
+        // (One fuse lies in the squatter camp on the service level, LookTestBuilder.Service.cs; the second
+        // is locked in the blue platform cabinet, and its key is inside the west train.)
         var items = Group("Pickups");
-        var fuseCrateW = Span("Crate_FuseW", items, new Vector3(-80.5f, -1.3f, 24.7f), new Vector3(-79.9f, -0.7f, 25.3f), crate);
-        MakePickup(ModelPiece(BreakerFbx, "Fuse", items, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
-               Top(fuseCrateW, -80.2f, 25.0f), 30f, "SmallGlassBottles1");   // glass fuse clinking
-        // (The second fuse is locked in the blue platform cabinet; its key is inside the west train.)
         PlaceFlare(items, new Vector3(-58f, -1.3f, 20.45f), 15f);   // by the wall deep in the west tunnel
 
         MakePickup(ModelPiece(SurvivalFbx, "Battery", items, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,

@@ -16,6 +16,7 @@ public static partial class LookTestBuilder
         ambience.streetDrone = Loop(sound, "StreetWind", AmbienceDir + "/DSGNDron_Tonal-Tube Wind_HY_SD.wav");
         ambience.stationDrone = Loop(sound, "StationDrone", AmbienceDir + "/DSGNDron_Tonal-Too Quiet_HY_SD.wav");
         ambience.tunnelDrone = Loop(sound, "TunnelDrone", AmbienceDir + "/DSGNDron_Tonal-Always Observing_HY_SD.wav");
+        ambience.serviceDrone = Loop(sound, "ServiceDrone", AmbienceDir + "/DSGNDron_Noise-Thrusters Inside_HY_SD.wav");
 
         var noises = sound.gameObject.AddComponent<DistantNoises>();
         noises.player = player;

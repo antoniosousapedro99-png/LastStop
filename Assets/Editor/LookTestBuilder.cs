@@ -146,7 +146,14 @@ public static partial class LookTestBuilder
                 Span("DoorLintel", tunnel, new Vector3(StaffDoorX, 0.9f, 25.5f), new Vector3(StaffDoorX + 1f, top, 25.8f), tunnelConcrete);
                 Span("DoorThreshold", tunnel, new Vector3(StaffDoorX, -1.5f, 25.5f), new Vector3(StaffDoorX + 1f, -1.3f, 25.8f), concrete);
             }
-            else Span("OuterWall", tunnel, Mirror(new Vector3(18.3f, -1.5f, 25.5f), side), Mirror(new Vector3(end, top, 25.8f), side), tunnelConcrete);
+            else
+            {
+                // The west tunnel's outer wall has the maintenance doorway to the service level (LookTestBuilder.Service.cs).
+                Span("OuterWall_A", tunnel, new Vector3(ServiceDoorX + 1f, -1.5f, 25.5f), new Vector3(-18.3f, top, 25.8f), tunnelConcrete);
+                Span("OuterWall_B", tunnel, new Vector3(-end, -1.5f, 25.5f), new Vector3(ServiceDoorX, top, 25.8f), tunnelConcrete);
+                Span("DoorLintel", tunnel, new Vector3(ServiceDoorX, 0.9f, 25.5f), new Vector3(ServiceDoorX + 1f, top, 25.8f), tunnelConcrete);
+                Span("DoorThreshold", tunnel, new Vector3(ServiceDoorX, -1.5f, 25.5f), new Vector3(ServiceDoorX + 1f, -1.3f, 25.8f), concrete);
+            }
             Span("Ceiling", tunnel, Mirror(new Vector3(18.3f, TunnelTop, 20), side), Mirror(new Vector3(end, top, 25.5f), side), tunnelConcrete);
             Span("EndCap", tunnel, Mirror(new Vector3(end, -1.5f, 19.7f), side), Mirror(new Vector3(end + 0.3f, top, 25.8f), side), tunnelConcrete);
         }
@@ -205,6 +212,7 @@ public static partial class LookTestBuilder
         BuildPlayerGear(player);
         BuildInventoryScreen();   // needs the player's gear (torch battery)
         BuildHidingLockers();     // before the walkable area is baked, so he walks round them
+        BuildServiceLevel();      // the service tunnels under the west tunnel
         BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildScares();            // one-time scares (after the lamps and the monster model exist)
         BuildMenus();             // last: the menus switch the player off until "New game"
@@ -214,7 +222,7 @@ public static partial class LookTestBuilder
         foreach (var t in root.GetComponentsInChildren<Transform>())
             t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
                                 && t.GetComponentInParent<HidingLocker>(true) == null && t.GetComponentInParent<SlidingDrawer>(true) == null
-                                && t.GetComponentInParent<TrainDeparture>(true) == null;
+                                && t.GetComponentInParent<TrainDeparture>(true) == null && t.GetComponentInParent<LookAwayChange>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 

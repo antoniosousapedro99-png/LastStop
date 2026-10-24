@@ -24,6 +24,8 @@ Retro Tree Pack, All Bushes pack
 OFFICE pack, Survival pack, 3D Retro Plumbing & Wiring
 Industrial exterior, NEUROZAM-9 Pill Bottle
 Big Frankie (the monster)
+PSX Derelict Furniture, PSX Old Stuff Pack
+Trash and Debris, Retro PSX Trash bag, Sewer pack
 Shotgun PS1, PSX First Person Arms
 Blood and graffiti textures
 
