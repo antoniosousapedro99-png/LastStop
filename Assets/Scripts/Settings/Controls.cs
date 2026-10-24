@@ -7,9 +7,9 @@ using UnityEngine.InputSystem.Controls;
 // - Keyboard/mouse: each action has one key or mouse button, saved in PlayerPrefs as a path such as
 //   "<Keyboard>/w" or "<Mouse>/leftButton" (Rebind changes it; ResetToDefaults restores them).
 // - Controller: a fixed layout (left stick moves, right stick looks, A jump, B crouch, X use, Y flare,
-//   LB/RB lean, L3 sprint, d-pad up torch, d-pad down battery, View inventory, Menu pause).
+//   LB/RB lean, L3 sprint, R3 turn around, d-pad up torch, d-pad down battery, View inventory, Menu pause).
 // - Menus have their own fixed keys (arrows/WASD, Enter, Esc; d-pad/stick, A, B) via the Ui* calls.
-public enum GameAction { Forward, Back, Left, Right, Sprint, Crouch, Jump, LeanLeft, LeanRight, Use, Torch, SwapBattery, Flare, Inventory, Pause }
+public enum GameAction { Forward, Back, Left, Right, Sprint, Crouch, Jump, LeanLeft, LeanRight, Use, Torch, SwapBattery, Flare, Inventory, Pause, TurnAround }
 
 public static class Controls
 {
@@ -18,7 +18,7 @@ public static class Controls
     {
         (GameAction.Forward, "MOVE FORWARD"), (GameAction.Back, "MOVE BACK"), (GameAction.Left, "MOVE LEFT"), (GameAction.Right, "MOVE RIGHT"),
         (GameAction.Sprint, "SPRINT"), (GameAction.Crouch, "CROUCH"), (GameAction.Jump, "JUMP"),
-        (GameAction.LeanLeft, "LEAN LEFT"), (GameAction.LeanRight, "LEAN RIGHT"), (GameAction.Use, "USE / PICK UP"),
+        (GameAction.LeanLeft, "LEAN LEFT"), (GameAction.LeanRight, "LEAN RIGHT"), (GameAction.TurnAround, "TURN AROUND"), (GameAction.Use, "USE / PICK UP"),
         (GameAction.Torch, "FLASHLIGHT"), (GameAction.SwapBattery, "SWAP BATTERY"), (GameAction.Flare, "FLARE"),
         (GameAction.Inventory, "INVENTORY"), (GameAction.Pause, "PAUSE"),
     };
@@ -29,7 +29,7 @@ public static class Controls
         { GameAction.Sprint, "<Keyboard>/leftShift" }, { GameAction.Crouch, "<Keyboard>/c" }, { GameAction.Jump, "<Keyboard>/space" },
         { GameAction.LeanLeft, "<Keyboard>/q" }, { GameAction.LeanRight, "<Keyboard>/e" }, { GameAction.Use, "<Mouse>/leftButton" },
         { GameAction.Torch, "<Keyboard>/f" }, { GameAction.SwapBattery, "<Keyboard>/h" }, { GameAction.Flare, "<Keyboard>/g" },
-        { GameAction.Inventory, "<Keyboard>/tab" }, { GameAction.Pause, "<Keyboard>/escape" },
+        { GameAction.Inventory, "<Keyboard>/tab" }, { GameAction.Pause, "<Keyboard>/escape" }, { GameAction.TurnAround, "<Keyboard>/leftAlt" },
     };
 
     static string PrefKey(GameAction a) => "Key_" + a;
@@ -88,6 +88,7 @@ public static class Controls
             GameAction.Flare => pad.buttonNorth,
             GameAction.Inventory => pad.selectButton,
             GameAction.Pause => pad.startButton,
+            GameAction.TurnAround => pad.rightStickButton,
             _ => null,   // movement comes from the left stick (see Move)
         };
     }
@@ -182,7 +183,7 @@ public static class Controls
         GameAction.Sprint => "L3", GameAction.Crouch => "B", GameAction.Jump => "A",
         GameAction.LeanLeft => "LB", GameAction.LeanRight => "RB", GameAction.Use => "X",
         GameAction.Torch => "D-PAD UP", GameAction.SwapBattery => "D-PAD DOWN", GameAction.Flare => "Y",
-        GameAction.Inventory => "VIEW", GameAction.Pause => "MENU", _ => "?",
+        GameAction.Inventory => "VIEW", GameAction.Pause => "MENU", GameAction.TurnAround => "R3", _ => "?",
     };
 
     // ---------------------------------------------------------------- menu navigation (fixed keys)

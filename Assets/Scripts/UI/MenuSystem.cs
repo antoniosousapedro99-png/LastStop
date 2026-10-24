@@ -570,14 +570,14 @@ public class MenuSystem : MonoBehaviour
         string[,] layout =
         {
             { "LEFT STICK", "MOVE" }, { "RIGHT STICK", "LOOK" }, { "L3 (CLICK)", "SPRINT" }, { "A", "JUMP" }, { "B", "CROUCH" },
-            { "X", "USE / PICK UP" }, { "Y", "FLARE" }, { "LB / RB", "LEAN LEFT / RIGHT" }, { "D-PAD UP", "FLASHLIGHT" },
+            { "X", "USE / PICK UP" }, { "Y", "FLARE" }, { "LB / RB", "LEAN LEFT / RIGHT" }, { "R3 (CLICK)", "TURN AROUND" }, { "D-PAD UP", "FLASHLIGHT" },
             { "D-PAD DOWN", "SWAP BATTERY" }, { "VIEW", "INVENTORY" }, { "MENU", "PAUSE" },
         };
         for (int i = 0; i < layout.GetLength(0); i++)
         {
-            float ry = 185f + i * 56f;
-            MenuStyle.Label(R(x + 80, ry, 420, 56), layout[i, 0], 34, TextAnchor.MiddleLeft, MenuStyle.Lit);
-            MenuStyle.Label(R(x + 520, ry, 500, 56), layout[i, 1], 34, TextAnchor.MiddleLeft, MenuStyle.Dim);
+            float ry = 180f + i * 54f;
+            MenuStyle.Label(R(x + 80, ry, 420, 54), layout[i, 0], 34, TextAnchor.MiddleLeft, MenuStyle.Lit);
+            MenuStyle.Label(R(x + 520, ry, 500, 54), layout[i, 1], 34, TextAnchor.MiddleLeft, MenuStyle.Dim);
         }
         MenuStyle.Label(R(x, 925, w, 40), Gamepad.current != null ? "controller connected   [B / ESC] back" : "no controller connected   [ESC] back",
                         26, TextAnchor.MiddleRight, MenuStyle.Faint);

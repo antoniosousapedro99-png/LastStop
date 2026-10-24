@@ -14,6 +14,9 @@ public class PlayerLook : MonoBehaviour
     public bool limitYaw;              // while hiding in a locker: turning is kept within yawRange of yawCentre
     public float yawCentre, yawRange = 55f;
     public static float Shake;         // degrees of view shake (TrainRumble sets it; 0 = still)
+    public float turnTime = 0.25f;     // seconds for the Turn around control's half-turn
+
+    float turnLeft;                    // degrees of the half-turn still to go
 
     void OnEnable() => LockCursor(true);
 
@@ -30,6 +33,14 @@ public class PlayerLook : MonoBehaviour
         delta *= GameSettings.MouseSensitivity;
         if (GameSettings.InvertY) delta.y = -delta.y;
         transform.Rotate(0f, delta.x, 0f);
+        // Turn around (Left Alt / R3): a quick, smooth half-turn. Not inside a locker.
+        if (Controls.Pressed(GameAction.TurnAround) && !limitYaw && turnLeft <= 0f) turnLeft = 180f;
+        if (turnLeft > 0f)
+        {
+            float step = Mathf.Min(turnLeft, 180f / turnTime * Time.deltaTime);
+            transform.Rotate(0f, step, 0f);
+            turnLeft -= step;
+        }
         if (limitYaw)
         {
             float offset = Mathf.Clamp(Mathf.DeltaAngle(yawCentre, transform.eulerAngles.y), -yawRange, yawRange);
