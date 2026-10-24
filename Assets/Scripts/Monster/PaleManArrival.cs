@@ -73,6 +73,16 @@ public class PaleManArrival : MonoBehaviour
         else StartCoroutine(Arrive(Random.Range(minDelay, maxDelay)));
     }
 
+    // The train finale wakes him at once if he hadn't come yet (no shriek or reveal).
+    public void WakeNow()
+    {
+        if (Arrived) return;
+        StopAllCoroutines();
+        grid.Restored -= OnPower;
+        Arrived = true;
+        monster.gameObject.SetActive(true);
+    }
+
     // For testing: wake him now.
     public void ArriveNow() => StartCoroutine(Arrive(0f));
 }

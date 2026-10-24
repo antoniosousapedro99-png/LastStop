@@ -67,39 +67,12 @@ public static partial class LookTestBuilder
 
         BuildStaffRoom(tubeLit, housing, concrete, ceiling, floorTile, doorMetal);
 
-        // ---- a stalled train at the end of each tunnel: dark, doors shut, filling the tunnel so the
-        // line seems to carry on beyond it. A dim cab light flickers on the end facing the player.
-        StalledTrain(1, TunnelEndE);
+        // ---- a stalled train at the end of each tunnel, filling the tunnel so the line seems to carry on
+        // beyond it, a dim cab light flickering at the end facing the player. The east one is the way out
+        // (LookTestBuilder.Exit.cs); the west one holds the cabinet key.
+        BuildDepartureTrain(TunnelEndE, crate);
         OpenTrain(TunnelEndW, crate);
         BuildPlatformCabinet();
-    }
-
-    static void StalledTrain(int side, float tunnelEnd)
-    {
-        var car = Prop("subway_car", root.Find(side > 0 ? "Tunnel_E" : "Tunnel_W"), Vector3.zero, 90f);
-        car.name = "StalledTrain";
-        car.transform.localScale *= 0.75f;                          // 4 m tall, 17.5 m long
-        var b = Bounds(car);
-        float nearX = side > 0 ? tunnelEnd - 1f - b.size.x : -(tunnelEnd - 1f - b.size.x);
-        float centreX = nearX + side * b.size.x * 0.5f;
-        StandOn(car, new Vector3(centreX, -1.3f, 22.75f));          // on the rails, centred on the track
-        b = Bounds(car);
-        float faceX = side > 0 ? b.min.x : b.max.x;                 // the end the player walks up to
-        var cab = new GameObject("CabLight");
-        cab.transform.SetParent(car.transform, true);
-        cab.transform.position = new Vector3(faceX - side * 0.4f, b.min.y + b.size.y * 0.55f, 22.75f);
-        var light = cab.AddComponent<Light>();
-        light.type = LightType.Point; light.color = new Color(1f, 0.55f, 0.3f);
-        light.intensity = 3f; light.range = 5f; light.shadows = LightShadows.None;
-        // Invisible wall across the tunnel at the train's end: the gaps beside the car are too dark
-        // to read as a way through, and this stops anyone squeezing past to find the tunnel ends.
-        var block = new GameObject("TrainBlocker").AddComponent<BoxCollider>();
-        block.transform.SetParent(car.transform.parent, true);
-        block.transform.position = new Vector3(faceX - side * 0.1f, 0.85f, 22.75f);
-        block.size = new Vector3(0.2f, 4.3f, 5.5f);
-        var flicker = cab.AddComponent<FlickeringLight>();
-        flicker.lamp = light;
-        flicker.minCalm = 3f; flicker.maxCalm = 9f;
     }
 
     // ---------------------------------------------------------------- the open train (west tunnel)
@@ -451,6 +424,7 @@ public static partial class LookTestBuilder
         lighter.transform.rotation = Quaternion.Euler(90f, 0, 0) * lighter.transform.rotation;      // lying on its side
         StandOn(lighter, new Vector3(43.13f, top, 29.22f));
         PlacePainkillers(room, new Vector3(43.95f, top, 29.35f), 20f);
+        BuildKeyDrawer(room, floorY, Bounds(desk).max.x);   // the spare reverser key
 
         BuildLocker(room, floorY);
     }

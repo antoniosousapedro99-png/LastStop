@@ -144,6 +144,7 @@ public class MenuSystem : MonoBehaviour
 
         if (!IsOpen)
         {
+            SaveSystem.PlaySeconds += Time.deltaTime;   // zero while paused
             // In the game: the Pause control (or Esc) pauses, unless Esc just closed the inventory.
             bool pause = Controls.Pressed(GameAction.Pause) || (Keyboard.current?.escapeKey.wasPressedThisFrame ?? false);
             if (pause && !InventoryScreen.IsOpen && InventoryScreen.ClosedFrame != Time.frameCount) OpenPause();

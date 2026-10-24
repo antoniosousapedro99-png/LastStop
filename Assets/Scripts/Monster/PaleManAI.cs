@@ -51,6 +51,7 @@ public class PaleManAI : MonoBehaviour
     NavMeshAgent agent;
     PaleManSenses senses;
     float moodTime, lastSeen, nextBreath, nextCrack, sightTimer, noticedAt = -1f;
+    float huntUntil;                           // until then he never gives up a chase (the train finale)
     float smoothedSpeed, lastCycle;            // his speed, eased so the animation doesn't flick between walk and run
     Vector3 lastSeenAt, walkOffTo;
     bool hitDone, seesPlayer;
@@ -73,6 +74,19 @@ public class PaleManAI : MonoBehaviour
         noticedAt = -1f;
         if (senses.Player) FaceTowards(senses.Player.position, 1000f);
         SetMood(Mood.Reveal);
+    }
+
+    // In the train finale he lunges in through the cab door from the crate outside, so he reaches further.
+    float AttackRange => Time.time < huntUntil ? attackRange + 0.8f : attackRange;
+    float HitReach => Time.time < huntUntil ? hitReach + 0.6f : hitReach;
+
+    // The train finale: he knows where the player is and runs straight for them for 'seconds'.
+    public void Hunt(float seconds)
+    {
+        huntUntil = Time.time + seconds;
+        lastSeen = Time.time;
+        if (senses.Player) lastSeenAt = senses.Player.position;
+        SetMood(Mood.Chase);
     }
 
     // Loading a save: back where he was, wandering.
@@ -203,12 +217,12 @@ public class PaleManAI : MonoBehaviour
             target += (transform.position - target).normalized * (flareKeepAway + 0.5f);
         agent.SetDestination(target);
         float distance = Vector3.Distance(transform.position, senses.Player.position);
-        if (seesPlayer && distance < attackRange && !(flare && Vector3.Distance(flare.position, transform.position) < flareKeepAway + 1f))
+        if (seesPlayer && distance < AttackRange && !(flare && Vector3.Distance(flare.position, transform.position) < flareKeepAway + 1f))
         {
             SetMood(Mood.Attack);
             return;
         }
-        if (Time.time - lastSeen > loseAfter) SetMood(Mood.Search);
+        if (Time.time - lastSeen > loseAfter && Time.time > huntUntil) SetMood(Mood.Search);
     }
 
     void Search()
@@ -226,7 +240,7 @@ public class PaleManAI : MonoBehaviour
         {
             hitDone = true;
             var health = senses.Player ? senses.Player.GetComponent<PlayerHealth>() : null;
-            if (health && Vector3.Distance(transform.position, senses.Player.position) < hitReach)
+            if (health && Vector3.Distance(transform.position, senses.Player.position) < HitReach)
             {
                 if (hitSound) feet.PlayOneShot(hitSound, 1f);
                 health.Hit(transform.position);

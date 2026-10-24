@@ -212,7 +212,8 @@ public static partial class LookTestBuilder
         // (doors, lockers, the inventory's turntable) must NOT be static, or its merged copy stays frozen.
         foreach (var t in root.GetComponentsInChildren<Transform>())
             t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
-                                && t.GetComponentInParent<HidingLocker>(true) == null;
+                                && t.GetComponentInParent<HidingLocker>(true) == null && t.GetComponentInParent<SlidingDrawer>(true) == null
+                                && t.GetComponentInParent<TrainDeparture>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 

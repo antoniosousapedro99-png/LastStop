@@ -19,9 +19,11 @@ public static class SaveSystem
 
     public static SaveData Pending { get; private set; }    // a save waiting to be applied after the reload
     public static bool LoadedGame { get; private set; }     // this run of the level came from a save
+    public static float PlaySeconds;                         // time played; MenuSystem counts it while in the game
 
     static readonly Dictionary<string, Pickup> pickups = new Dictionary<string, Pickup>();
     static readonly Dictionary<string, HingedDoor> doors = new Dictionary<string, HingedDoor>();
+    static readonly Dictionary<string, SlidingDrawer> drawers = new Dictionary<string, SlidingDrawer>();
 
     static string Folder => Path.Combine(Application.persistentDataPath, "Saves");
     static string FileFor(int slot) => Path.Combine(Folder, slot == Autosave ? "autosave.json" : "slot" + slot + ".json");
@@ -31,12 +33,16 @@ public static class SaveSystem
     public static void RememberLevel()
     {
         LoadedGame = Pending != null;
+        PlaySeconds = 0f;
         pickups.Clear();
         doors.Clear();
+        drawers.Clear();
         foreach (var p in UnityEngine.Object.FindObjectsByType<Pickup>(FindObjectsInactive.Include))
             pickups[PathOf(p.transform)] = p;
         foreach (var d in UnityEngine.Object.FindObjectsByType<HingedDoor>(FindObjectsInactive.Include))
             doors[PathOf(d.transform)] = d;
+        foreach (var d in UnityEngine.Object.FindObjectsByType<SlidingDrawer>(FindObjectsInactive.Include))
+            drawers[PathOf(d.transform)] = d;
     }
 
     // "Root#0/Pickups#3/Battery#7": names plus their position among their siblings, so two objects
@@ -124,6 +130,7 @@ public static class SaveSystem
         var inv = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();
         var player = inv.transform;
         d.area = AreaAt(player.position);
+        d.playSeconds = PlaySeconds;
         d.playerPosition = player.position;
         d.playerYaw = player.eulerAngles.y;
         var look = player.GetComponent<PlayerLook>();
@@ -137,12 +144,13 @@ public static class SaveSystem
 
         d.fuses = inv.fuses; d.spareBatteries = inv.spareBatteries; d.flares = inv.flares;
         d.painkillers = inv.painkillers; d.shells = inv.shells;
-        d.hasCabinetKey = inv.hasCabinetKey; d.hasShotgun = inv.hasShotgun;
+        d.hasCabinetKey = inv.hasCabinetKey; d.hasShotgun = inv.hasShotgun; d.hasReverserKey = inv.hasReverserKey;
 
         var fuseBox = UnityEngine.Object.FindAnyObjectByType<FuseBox>();
         if (fuseBox) { d.fusesInstalled = fuseBox.Installed; d.powerOn = fuseBox.grid.IsOn; }
         foreach (var pair in pickups) if (pair.Value == null) d.taken.Add(pair.Key);           // destroyed = picked up
         foreach (var pair in doors) if (pair.Value != null && pair.Value.IsOpen) d.openDoors.Add(pair.Key);
+        foreach (var pair in drawers) if (pair.Value != null && pair.Value.IsOpen) d.openDrawers.Add(pair.Key);
 
         var monster = UnityEngine.Object.FindAnyObjectByType<PaleManAI>();   // only found while he's awake
         if (monster)
@@ -165,11 +173,14 @@ public static class SaveSystem
             if (pickups.TryGetValue(path, out var p) && p) UnityEngine.Object.Destroy(p.gameObject);
         foreach (string path in d.openDoors)
             if (doors.TryGetValue(path, out var door) && door) door.OpenNow();
+        foreach (string path in d.openDrawers)
+            if (drawers.TryGetValue(path, out var drawer) && drawer) drawer.OpenNow();
+        PlaySeconds = d.playSeconds;
 
         var inv = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();
         inv.fuses = d.fuses; inv.spareBatteries = d.spareBatteries; inv.flares = d.flares;
         inv.painkillers = d.painkillers; inv.shells = d.shells;
-        inv.hasCabinetKey = d.hasCabinetKey; inv.hasShotgun = d.hasShotgun;
+        inv.hasCabinetKey = d.hasCabinetKey; inv.hasShotgun = d.hasShotgun; inv.hasReverserKey = d.hasReverserKey;
 
         var player = inv.transform;
         var battery = player.GetComponentInChildren<FlashlightBattery>(true);

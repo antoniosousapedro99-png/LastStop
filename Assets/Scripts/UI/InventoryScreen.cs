@@ -111,6 +111,7 @@ public class InventoryScreen : MonoBehaviour
         Add("Flare", "Road flare", inventory.flares, "Thirty seconds of red light. Press " + flare + " to strike it; press " + flare + " again to drop it, still burning. Whatever is down here keeps away from it.");
         Add("Painkillers", "Painkillers", inventory.painkillers, "Strong painkillers. Press " + (Controls.UsingGamepad ? "A" : "ENTER") + " to take them after you've been hurt.");
         if (inventory.hasCabinetKey) Add("Key", "Cabinet key", 1, "A small key. Its tag reads 'PLATFORM CABINET'.");
+        if (inventory.hasReverserKey) Add("ReverserKey", "Reverser key", 1, "A train driver's key. It slots into a cab's controls and wakes the train.");
         if (entries.Count > 0) selected = Mathf.Clamp(selected, 0, entries.Count - 1);
     }
 
@@ -172,7 +173,7 @@ public class InventoryScreen : MonoBehaviour
             var row = new Rect(list.x, list.y + (i - first) * rowH, list.width, rowH);
             rowStyle.normal.textColor = i == selected ? new Color(0.97f, 0.93f, 0.9f) : new Color(0.75f, 0.68f, 0.68f);
             GUI.Label(new Rect(row.x + 20 * scale, row.y, row.width, row.height), entries[i].name, rowStyle);
-            if (entries[i].count > 1 || entries[i].kind != "Key")
+            if (entries[i].count > 1 || (entries[i].kind != "Key" && entries[i].kind != "ReverserKey"))
             {
                 rowStyle.alignment = TextAnchor.MiddleRight;
                 GUI.Label(new Rect(row.x, row.y, row.width - 20 * scale, row.height), "x " + entries[i].count, rowStyle);
