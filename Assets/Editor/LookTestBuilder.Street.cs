@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -123,9 +124,11 @@ public static partial class LookTestBuilder
         var shops = StreetGroup("Shops");
         // North side, facing the road (south). Yaw turns each model so its shopfront faces the street.
         Anchor(Place(StreetDir + "/Laundry/Laundry.fbx", shops, new Vector3(-38f, StreetY, -40f), LaundryYaw), "Laundry_building");
-        Anchor(Place(StreetDir + "/VhsShop/VhsShop.fbx", shops, new Vector3(-20f, StreetY, -39f), VhsYaw), "Shop_VHS");
+        // Its shell includes a lower storey meant to sit below the street: stand it on its door instead.
+        Anchor(Place(StreetDir + "/VhsShop/VhsShop.fbx", shops, new Vector3(-20f, StreetY, -39f), VhsYaw), "Door");
         var sixTwelve = Place(StreetDir + "/SixTwelve/SixTwelve.fbx", shops, new Vector3(2f, StreetY, -43f), SixTwelveYaw);
-        Anchor(sixTwelve, "6twelve");
+        // Its interior and front stood on a raised shop floor (not brought in): stand the door frames on the pavement.
+        Anchor(sixTwelve, "Door_frame");
         // Its doormats belonged on a raised shop floor that wasn't brought in; without it they'd hover.
         foreach (var r in sixTwelve.GetComponentsInChildren<Renderer>()) if (r.name.StartsWith("Rug")) Object.DestroyImmediate(r.gameObject);
         Anchor(Place(StreetDir + "/GasStation/GasStation.fbx", shops, new Vector3(30f, StreetY, -52f), GasYaw), "Sidewalk");
@@ -164,10 +167,11 @@ public static partial class LookTestBuilder
         // Trees and hedges.
         string t = StreetDir + "/Trees/";
         string[] trees = { "tree_rt_2", "dead_tree_rt_1", "tree_rt_4", "tree_rt_3", "dead_tree_rt_2", "tree_rt_2_1" };
+        var soil = Mat("TreeSoil", Load<Texture2D>("Assets/Art/Models/Environment/Sewer/soil_mud.jpg"), new Color(0.6f, 0.52f, 0.45f), 1.5f, 0.2f);
         for (int i = 0; i < 6; i++)
-            Place(t + trees[i] + ".fbx", f, new Vector3(-44f + i * 17f, StreetY, -3.5f), i * 47f, 1.5f);
+            TreePit(f, Place(t + trees[i] + ".fbx", f, new Vector3(-44f + i * 17f, StreetY, -3.5f), i * 47f, 1.5f), soil);
         for (int i = 0; i < 5; i++)
-            Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 1.4f);
+            TreePit(f, Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 1.4f), soil);
         string bush = StreetDir + "/Bushes/bush_connector_straight_autumn.fbx";
         for (int i = 0; i < 6; i++) Place(bush, f, new Vector3(16f + i * 2f, StreetY, -31f), 0f);
         // Bus stop by the entrance, with the newspaper (see BuildLore).
@@ -213,6 +217,15 @@ public static partial class LookTestBuilder
         Car(cars, c + "Car2.fbx", new Vector3(6f, -24.6f), -88f, "ParkedCar_4");
         Car(cars, c + "Car5_Taxi.fbx", new Vector3(24f, -21.5f), 115f, "AbandonedTaxi");   // stopped at an angle mid-road
         Car(cars, c + "Car5_Police.fbx", new Vector3(38.5f, -21f), 70f, "PoliceCar");
+    }
+
+    // A square of soil in the pavement round a tree's trunk (found by its bark material), 3 cm proud.
+    static void TreePit(Transform parent, GameObject tree, Material soil)
+    {
+        Vector3 at = tree.transform.position;
+        foreach (var r in tree.GetComponentsInChildren<Renderer>())
+            if (r.sharedMaterials.Any(m => m && m.name.ToLower().Contains("bark"))) { at = r.bounds.center; break; }
+        Span("TreePit", parent, new Vector3(at.x - 0.75f, StreetY, at.z - 0.75f), new Vector3(at.x + 0.75f, StreetY + 0.03f, at.z + 0.75f), soil, false);
     }
 
     // Trees and bushes are leaf pictures on flat cards. Their own materials (inside the model files) draw
