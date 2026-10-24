@@ -30,7 +30,7 @@ public class PowerGrid : MonoBehaviour
     }
 
     // Loading a save made after the power came back: everything simply on, with no clunk, wave or music,
-    // and without the Restored event (the Pale Man and the autosave have their own saved state).
+    // and without the Restored event (Frankie and the autosave have their own saved state).
     public void RestoreQuietly(Vector3 origin)
     {
         if (IsOn) return;

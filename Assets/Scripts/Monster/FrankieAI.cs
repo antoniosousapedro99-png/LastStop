@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-// The Pale Man's behaviour. He is always in exactly one of these moods:
+// Frankie's behaviour. He is always in exactly one of these moods:
 // - Wander: walks to random spots underground, now and then drifting toward where the player is.
 // - Investigate: heard something; walks to the spot and looks around.
 // - Chase: sees the player; runs at them (3.8 m/s, a little slower than sprinting).
@@ -15,8 +15,8 @@ using UnityEngine.AI;
 // A player hiding in a locker is invisible to him, unless he saw them get in: then he walks over,
 // pulls them out and attacks.
 // He walks on the underground navigation mesh only, so the street is safe.
-[RequireComponent(typeof(NavMeshAgent), typeof(PaleManSenses))]
-public class PaleManAI : MonoBehaviour
+[RequireComponent(typeof(NavMeshAgent), typeof(FrankieSenses))]
+public class FrankieAI : MonoBehaviour
 {
     public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff }
 
@@ -26,12 +26,14 @@ public class PaleManAI : MonoBehaviour
     public float loseAfter = 8f;               // seconds without seeing the player before giving up the chase
     public float flareKeepAway = 6f;           // metres he stays from a lit flare
     // How fast each animation's planted foot slides back along the ground at normal playback (measured on
-    // the clips, in metres per second). The animation is sped up to match how fast he really moves, so his
-    // feet don't skate, but only up to a limit, past which it looks like fast-forward.
-    public float clipWalkSpeed = 0.28f, clipRunSpeed = 1.07f;
-    public float maxWalkPlayback = 3.25f, maxRunPlayback = 3f;
+    // Frankie's clips at 2.1 m tall, in metres per second). The animation is sped up or slowed down to match
+    // how fast he really moves, so his feet don't skate, within limits so it never looks like fast-forward.
+    public float clipWalkSpeed = 0.8f, clipRunSpeed = 5.5f;
+    public float maxWalkPlayback = 2f, maxRunPlayback = 1.5f, minRunPlayback = 0.6f;
     // Where in each animation's loop (0..1) a foot hits the ground, for the footstep sounds.
-    public float[] walkFootfalls = { 0.37f, 0.87f }, runFootfalls = { 0.0f, 0.5f };
+    public float[] walkFootfalls = { 0.43f, 0.83f }, runFootfalls = { 0.44f, 0.94f };
+    // His attack animation: when the claws land, and how long it lasts.
+    public float hitAt = 0.8f, attackLength = 1.5f;
     public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
 
     [Header("Sounds")]
@@ -45,11 +47,11 @@ public class PaleManAI : MonoBehaviour
     public bool SeesPlayer => seesPlayer;
     public bool SeenByPlayer { get; private set; }   // he's on the player's screen, not hidden behind anything
 
-    // The one Pale Man in the level while he's awake (the torch flicker and the lockers ask about him).
-    public static PaleManAI Active { get; private set; }
+    // The one Frankie in the level while he's awake (the torch flicker and the lockers ask about him).
+    public static FrankieAI Active { get; private set; }
 
     NavMeshAgent agent;
-    PaleManSenses senses;
+    FrankieSenses senses;
     float moodTime, lastSeen, nextBreath, nextCrack, sightTimer, noticedAt = -1f;
     float huntUntil;                           // until then he never gives up a chase (the train finale)
     float smoothedSpeed, lastCycle;            // his speed, eased so the animation doesn't flick between walk and run
@@ -60,7 +62,7 @@ public class PaleManAI : MonoBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        senses = GetComponent<PaleManSenses>();
+        senses = GetComponent<FrankieSenses>();
     }
 
     void OnEnable() { Active = this; SetMood(Mood.Wander); }
@@ -235,8 +237,8 @@ public class PaleManAI : MonoBehaviour
     void Attack()
     {
         if (senses.Player) FaceTowards(senses.Player.position, 8f);
-        // The lunge lands about 0.45 s in; it only hurts if the player is still within reach.
-        if (!hitDone && moodTime > 0.45f)
+        // The claws land 'hitAt' seconds in; it only hurts if the player is still within reach.
+        if (!hitDone && moodTime > hitAt)
         {
             hitDone = true;
             var health = senses.Player ? senses.Player.GetComponent<PlayerHealth>() : null;
@@ -246,7 +248,7 @@ public class PaleManAI : MonoBehaviour
                 health.Hit(transform.position);
             }
         }
-        if (moodTime > 1.2f) SetMood(Mood.Retreat);
+        if (moodTime > attackLength) SetMood(Mood.Retreat);
     }
 
     void Retreat()
@@ -322,7 +324,7 @@ public class PaleManAI : MonoBehaviour
         float speed = smoothedSpeed;
         // Two thresholds, so hovering around one speed doesn't keep swapping walk and run.
         bool run = playing == "Run" ? speed > 2.0f : speed > 2.6f;
-        if (run) { Play("Run"); animator.speed = Mathf.Clamp(speed / clipRunSpeed, 1f, maxRunPlayback); }
+        if (run) { Play("Run"); animator.speed = Mathf.Clamp(speed / clipRunSpeed, minRunPlayback, maxRunPlayback); }
         else if (speed > 0.15f) { Play("Walk"); animator.speed = Mathf.Clamp(speed / clipWalkSpeed, 0.8f, maxWalkPlayback); }
         else { Play("Idle"); animator.speed = 1f; }
     }

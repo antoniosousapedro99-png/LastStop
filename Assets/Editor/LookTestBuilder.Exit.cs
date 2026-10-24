@@ -103,7 +103,7 @@ public static partial class LookTestBuilder
             g.size = new Vector3(0.2f, 4.3f, Mathf.Max(0.05f, gap.Item2 - gap.Item1));
         }
 
-        // (The cab is too small for the Pale Man to walk into; in the finale he lunges in from the crate.)
+        // (The cab is too small for Frankie to walk into; in the finale he lunges in from the crate.)
 
         // The engine and the departure itself.
         var engine = car.AddComponent<AudioSource>();

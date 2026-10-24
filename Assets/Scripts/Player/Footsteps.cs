@@ -12,7 +12,7 @@ public class Footsteps : MonoBehaviour
     public float splashVolume = 0.3f;
     public float strideLength = 1.6f;    // metres between footstep sounds
     public float volume = 0.55f;
-    public float walkNoise = 6f, runNoise = 15f;   // metres the Pale Man can hear them from
+    public float walkNoise = 6f, runNoise = 15f;   // metres Frankie can hear them from
 
     AudioSource audioSource;
     float distanceSinceStep;
@@ -46,7 +46,7 @@ public class Footsteps : MonoBehaviour
         audioSource.pitch = Random.Range(0.92f, 1.06f);
         // Crouched steps are softer: you're placing your feet carefully.
         audioSource.PlayOneShot(set[index], movement.IsCrouched ? level * 0.5f : level);
-        // The Pale Man can hear steps: running carries 15 m, walking 6 m, crouching nothing.
+        // Frankie can hear steps: running carries 15 m, walking 6 m, crouching nothing.
         Noise.Make(feet, movement.IsCrouched ? 0f : movement.CurrentSpeed > 3f ? runNoise : walkNoise);
     }
 }

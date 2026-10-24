@@ -1,10 +1,10 @@
 using UnityEngine;
 
-// What the Pale Man notices.
+// What Frankie notices.
 // - Sight: the player within 'sightRange' metres (further while the torch is on, because the light gives
 //   them away), inside a wide cone in front of him, with nothing solid in between.
 // - Hearing: any Noise made close enough (running carries far, walking less, crouching makes none).
-public class PaleManSenses : MonoBehaviour
+public class FrankieSenses : MonoBehaviour
 {
     public Transform eyes;                  // a point at head height
     public float sightRange = 15f;

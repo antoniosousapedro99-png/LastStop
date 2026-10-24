@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 8;
+    public override uint GetVersion() => 9;
 
     void OnPreprocessTexture()
     {
@@ -39,15 +39,23 @@ public class ImportRules : AssetPostprocessor
             importer.importAnimation = assetPath.Contains("/TheWrapper/");
             return;
         }
+        // Frankie (the monster) plays his own animations on his own skeleton: "Generic", no retargeting.
+        if (assetPath.Contains("/Characters/Frankie/"))
+        {
+            importer.animationType = ModelImporterAnimationType.Generic;
+            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            importer.importAnimation = true;
+            return;
+        }
         if (!assetPath.Contains("/Characters/PsxArms/")) return;
         importer.animationType = ModelImporterAnimationType.Legacy;
         importer.importAnimation = true;
     }
 
-    // TheWrapper's walk, run and idle repeat; the attack, scream and wall slam play once.
+    // TheWrapper's and Frankie's walk, run and idle repeat; the attack, scream and wall slam play once.
     void OnPreprocessAnimation()
     {
-        if (!assetPath.Contains("/Characters/TheWrapper/")) return;
+        if (!assetPath.Contains("/Characters/TheWrapper/") && !assetPath.Contains("/Characters/Frankie/")) return;
         var importer = (ModelImporter)assetImporter;
         var clips = importer.defaultClipAnimations;
         foreach (var clip in clips)

@@ -52,7 +52,7 @@ public class PoweredLight : MonoBehaviour
         SetLevel(1f);
     }
 
-    // A single stutter (used when the Pale Man wakes): off for a moment, a weak blink, then back on.
+    // A single stutter (used when Frankie wakes): off for a moment, a weak blink, then back on.
     public void StutterOnce()
     {
         if (isActiveAndEnabled && lights.Length > 0 && lights[0].enabled) StartCoroutine(Stutter());

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// A warning: the torch stutters when the Pale Man is close (within 'range' metres) but not in view.
+// A warning: the torch stutters when Frankie is close (within 'range' metres) but not in view.
 // The closer he is, the more often it cuts out. Once he's on screen the light holds steady so you can
 // see him. Flashlight multiplies its brightness by Multiplier.
 public class TorchInterference : MonoBehaviour
@@ -14,7 +14,7 @@ public class TorchInterference : MonoBehaviour
     void Update()
     {
         Multiplier = 1f;
-        var man = PaleManAI.Active;
+        var man = FrankieAI.Active;
         if (!man || man.SeenByPlayer) return;
         float distance = Vector3.Distance(man.transform.position, transform.position);
         if (distance > range) return;

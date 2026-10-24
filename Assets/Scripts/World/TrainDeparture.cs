@@ -4,10 +4,10 @@ using UnityEngine.AI;
 
 // Station 1's ending: the east train wakes up and pulls away.
 // - Begin (the reverser key goes in): a heavy clunk, the cab light steadies, the engine starts a low
-//   whine, and the noise brings the Pale Man charging down the tunnel (woken early if he hadn't come yet).
+//   whine, and the noise brings Frankie charging down the tunnel (woken early if he hadn't come yet).
 // - Tick: while the player holds the dead man's handle the countdown runs (10 s in total) and the engine
 //   whine climbs; letting go pauses it.
-// - Leave: the player's controls stop, the train lurches off down the tunnel with a screech, the Pale Man
+// - Leave: the player's controls stop, the train lurches off down the tunnel with a screech, Frankie
 //   is left behind at the door, and the screen fades to the end card (EndCard).
 // This object is the train car itself; it is not marked static, so it can move.
 public class TrainDeparture : MonoBehaviour
@@ -38,7 +38,7 @@ public class TrainDeparture : MonoBehaviour
     // He comes from down the tunnel behind the player, running.
     void SummonMonster()
     {
-        var arrival = FindAnyObjectByType<PaleManArrival>();
+        var arrival = FindAnyObjectByType<FrankieArrival>();
         var player = FindAnyObjectByType<PlayerInventory>();
         if (!arrival || !player) return;
         var monster = arrival.monster;
@@ -74,7 +74,7 @@ public class TrainDeparture : MonoBehaviour
         player.SetParent(transform, true);   // ride along
 
         // He's left standing at the door, staring after you.
-        var monster = PaleManAI.Active;
+        var monster = FrankieAI.Active;
         if (monster)
         {
             monster.Play("Idle");

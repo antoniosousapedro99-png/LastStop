@@ -51,7 +51,7 @@ public class Flashlight : MonoBehaviour
     void LateUpdate()
     {
         float level = IsOn ? (battery ? battery.Brightness : 1f) : 0f;
-        if (interference) level *= interference.Multiplier;   // stutters when the Pale Man is close
+        if (interference) level *= interference.Multiplier;   // stutters when Frankie is close
 
         // Light gets stronger the closer a surface is (distance squared), so a torch strong enough to
         // reach 60 m would blind you on a wall 2 m away. Like your eyes adjusting, soften the light when

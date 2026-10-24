@@ -3,8 +3,8 @@ using UnityEngine;
 
 // A tall locker the player can hide in. Use it to step inside: the door shuts behind you and you peek
 // out through its slats, able to turn your head a little. Use it again to step out.
-// While you're inside, the Pale Man can't see you, unless he watched you get in: then he walks over,
-// yanks the door open and drags you out (PaleManAI does the walking and calls PullOut).
+// While you're inside, Frankie can't see you, unless he watched you get in: then he walks over,
+// yanks the door open and drags you out (FrankieAI does the walking and calls PullOut).
 // This object sits at the centre of the locker's floor, facing out through the door.
 public class HidingLocker : MonoBehaviour, IInteractable
 {
@@ -15,10 +15,10 @@ public class HidingLocker : MonoBehaviour, IInteractable
 
     // The locker the player is hiding in right now (null when they aren't hiding).
     public static HidingLocker Occupied { get; private set; }
-    // Whether the Pale Man saw the player while they were getting in.
+    // Whether Frankie saw the player while they were getting in.
     public static bool SeenGettingIn { get; private set; }
 
-    // Where the Pale Man stands to pull someone out: just in front of the door.
+    // Where Frankie stands to pull someone out: just in front of the door.
     public Vector3 StandPoint => transform.position + transform.forward * 0.9f;
     Vector3 OutsidePoint => transform.position + transform.forward * 0.6f;
 
@@ -95,7 +95,7 @@ public class HidingLocker : MonoBehaviour, IInteractable
         busy = false;
     }
 
-    // The Pale Man found you: the door flies open and you're dragged out in front of him.
+    // Frankie found you: the door flies open and you're dragged out in front of him.
     public void PullOut()
     {
         if (Occupied != this) return;
@@ -140,10 +140,10 @@ public class HidingLocker : MonoBehaviour, IInteractable
         door.localRotation = to;
     }
 
-    // Remembers if the Pale Man catches sight of the player while they're climbing in.
+    // Remembers if Frankie catches sight of the player while they're climbing in.
     static void Watch()
     {
-        if (PaleManAI.Active && PaleManAI.Active.SeesPlayer) SeenGettingIn = true;
+        if (FrankieAI.Active && FrankieAI.Active.SeesPlayer) SeenGettingIn = true;
     }
 
     // Walking, crouching, leaning and footsteps are switched off while hiding (and while stepping in or out).

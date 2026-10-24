@@ -31,7 +31,7 @@ public class SaveData
     public List<string> openDoors = new List<string>();   // doors, lockers and cabinets standing open
     public List<string> openDrawers = new List<string>();
 
-    // The Pale Man
+    // Frankie
     public bool monsterAwake;
     public Vector3 monsterPosition;
     public float monsterYaw;

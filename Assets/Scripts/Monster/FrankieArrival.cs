@@ -1,15 +1,15 @@
 using System.Collections;
 using UnityEngine;
 
-// Wakes the Pale Man once the power is back. 15-20 seconds after the fuse box is fixed, every lamp
+// Wakes Frankie once the power is back. 15-20 seconds after the fuse box is fixed, every lamp
 // stutters and a shriek echoes out of the west tunnel. A few seconds later the lamps stutter again, and
 // when they come back he is standing under the lamp at the far end of the platform (the end further
-// from the player), staring. He walks off into that end's tunnel once he's been seen (PaleManAI's Reveal).
+// from the player), staring. He walks off into that end's tunnel once he's been seen (FrankieAI's Reveal).
 // Until then he is switched off and nowhere in the level.
-public class PaleManArrival : MonoBehaviour
+public class FrankieArrival : MonoBehaviour
 {
     public PowerGrid grid;
-    public PaleManAI monster;                  // switched off until he arrives
+    public FrankieAI monster;                  // switched off until he arrives
     public AudioSource shriek;                 // sits deep in the west tunnel, heard from far away
     public float minDelay = 15f, maxDelay = 20f;
     public float revealAfterShriek = 3.5f;     // seconds between the shriek and him appearing

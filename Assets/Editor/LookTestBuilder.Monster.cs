@@ -5,37 +5,44 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.AI;
 
-// The Pale Man (Character_Monster from Characters PSX 1.2, given a skeleton in Blender, animated with
-// TheWrapper's clips through Unity's Humanoid retargeting), his walkable area, his arrival after the
-// power comes back, the chase music, and the player's health.
+// Frankie (Big Frankie, converted in Blender by Tools/Blender/convert_frankie.py: hat removed, his own
+// idle, walk, run, roar and attack), his walkable area, his arrival after the power comes back, the
+// chase music, and the player's health.
 public static partial class LookTestBuilder
 {
-    const string PaleManDir = ArtDir + "/Characters/PaleMan";
-    const string WrapperFbx = ArtDir + "/Characters/TheWrapper/TheWrapper.fbx";
-    static readonly Vector3 PaleManSpawn = new Vector3(-70f, -1.3f, 22.7f);   // on the tracks, deep in the west tunnel
+    const string FrankieDir = ArtDir + "/Characters/Frankie";
+    static readonly Vector3 FrankieSpawn = new Vector3(-70f, -1.3f, 22.7f);   // on the tracks, deep in the west tunnel
 
     static void BuildMonster()
     {
         BakeUnderground();
 
-        // ---- the Pale Man
-        var man = new GameObject("PaleMan");
+        // ---- Frankie
+        var man = new GameObject("Frankie");
         man.transform.SetParent(root);
-        man.transform.position = PaleManSpawn;
+        man.transform.position = FrankieSpawn;
         man.transform.rotation = Quaternion.Euler(0f, 90f, 0f);   // facing the station
-        var model = Model(PaleManDir + "/PaleMan.fbx", null, man.transform, Tex2("Characters/PaleMan/Character_Monster.png"), 1f, 0f);
-        // Keep the file's own turn, then face him forward: Blender's "front" comes into Unity facing backwards.
-        model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * Load<GameObject>(PaleManDir + "/PaleMan.fbx").transform.localRotation;
+        var model = Model(FrankieDir + "/Frankie.fbx", null, man.transform, null, 1f, 0f, new System.Collections.Generic.Dictionary<string, string>
+        {
+            { "Frankie_Body", "Characters/Frankie/Frankie_Body.png" }, { "Frankie_Bones", "Characters/Frankie/Frankie_Bones.png" },
+            { "Frankie_Face", "Characters/Frankie/Frankie_Face.png" },
+        });
+        model.transform.localRotation = Load<GameObject>(FrankieDir + "/Frankie.fbx").transform.localRotation;   // the file already faces forward
         float height = Bounds(model).size.y;
-        model.transform.localScale *= 2.1f / height;                   // tall and thin
-        StandOn(model, PaleManSpawn);
-        model.transform.localPosition = new Vector3(0f, model.transform.localPosition.y, 0f);
+        model.transform.localScale *= 2.1f / height;                   // 2.1 m (the file has him at 4.2 m)
+        model.transform.localPosition = Vector3.zero;
+        // Stand him on the floor in his idle pose (his default pose holds the feet higher than the animations do):
+        // measure how far the soles reach below the foot bones in the default pose, then pose him and use the bones.
+        float soleBelowBones = LowestFootBone(model) - Bounds(model).min.y;
+        var idle = AssetDatabase.LoadAllAssetsAtPath(FrankieDir + "/Frankie.fbx").OfType<AnimationClip>().First(c => c.name.EndsWith("Idle"));
+        idle.SampleAnimation(model, 0f);
+        model.transform.localPosition = new Vector3(0f, man.transform.position.y - (LowestFootBone(model) - soleBelowBones), 0f);
         foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>()) r.updateWhenOffscreen = true;
 
         var animator = model.GetComponent<Animator>();
         if (!animator) animator = model.AddComponent<Animator>();
-        animator.avatar = AssetDatabase.LoadAllAssetsAtPath(PaleManDir + "/PaleMan.fbx").OfType<Avatar>().First();
-        animator.runtimeAnimatorController = PaleManController();
+        animator.avatar = AssetDatabase.LoadAllAssetsAtPath(FrankieDir + "/Frankie.fbx").OfType<Avatar>().First();
+        animator.runtimeAnimatorController = FrankieController();
         animator.applyRootMotion = false;
         animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
@@ -46,37 +53,39 @@ public static partial class LookTestBuilder
         agent.radius = 0.35f; agent.height = 2.1f; agent.speed = 0.9f;
         agent.acceleration = 10f; agent.angularSpeed = 180f; agent.stoppingDistance = 0.5f;   // 180: turns smoothly, not snapping round
         agent.autoTraverseOffMeshLink = true;
+        // The walkable area floats a few centimetres above the real floor; lower him by that gap so his feet touch it.
+        if (NavMesh.SamplePosition(FrankieSpawn, out var navHit, 1f, NavMesh.AllAreas)) agent.baseOffset = FrankieSpawn.y - navHit.position.y;
 
         var eyes = new GameObject("Eyes").transform;
         eyes.SetParent(man.transform, false);
         eyes.localPosition = new Vector3(0f, 1.95f, 0.1f);
-        var senses = man.AddComponent<PaleManSenses>();
+        var senses = man.AddComponent<FrankieSenses>();
         senses.eyes = eyes;
 
         var voice = MonsterAudio(man.transform, "Voice", new Vector3(0f, 1.9f, 0f), 30f);
         voice.gameObject.AddComponent<AudioReverbFilter>().reverbPreset = AudioReverbPreset.SewerPipe;   // echoes down the tunnel
         var feet = MonsterAudio(man.transform, "Feet", Vector3.zero, 22f);
 
-        var ai = man.AddComponent<PaleManAI>();
+        var ai = man.AddComponent<FrankieAI>();
         ai.animator = animator;
         ai.voice = voice; ai.feet = feet;
         // His own sounds, made from the Darkworld pack with ffmpeg (see Assets/Art/CREDITS.md).
-        ai.breaths = Clips("PaleMan/PaleManBreath1", "PaleMan/PaleManBreath2", "PaleMan/PaleManBreath3");
-        ai.shrieks = Clips("PaleMan/PaleManShriek1", "PaleMan/PaleManShriek2");
-        ai.steps = Clips("PaleMan/PaleManStep1", "PaleMan/PaleManStep2", "PaleMan/PaleManStep3", "PaleMan/PaleManStep4");
-        ai.cracks = Clips("PaleMan/PaleManCrack1", "PaleMan/PaleManCrack2", "PaleMan/PaleManCrack3");
+        ai.breaths = Clips("Frankie/FrankieBreath1", "Frankie/FrankieBreath2", "Frankie/FrankieBreath3");
+        ai.shrieks = Clips("Frankie/FrankieShriek1", "Frankie/FrankieShriek2");
+        ai.steps = Clips("Frankie/FrankieStep1", "Frankie/FrankieStep2", "Frankie/FrankieStep3", "Frankie/FrankieStep4");
+        ai.cracks = Clips("Frankie/FrankieCrack1", "Frankie/FrankieCrack2", "Frankie/FrankieCrack3");
         ai.hitSound = Load<AudioClip>(SfxDir + "/DesignedPunch1.wav");
         man.SetActive(false);   // nowhere in the level until the power comes back
 
         // ---- his arrival: a shriek from deep in the west tunnel, heard from far away
-        var arrivalObject = new GameObject("PaleManArrival");
+        var arrivalObject = new GameObject("FrankieArrival");
         arrivalObject.transform.SetParent(root);
         var shriek = MonsterAudio(arrivalObject.transform, "Shriek", Vector3.zero, 200f);
         shriek.transform.position = new Vector3(-85f, 0f, 22.7f);
-        shriek.clip = Load<AudioClip>(SfxDir + "/PaleMan/PaleManShriek1.wav");
+        shriek.clip = Load<AudioClip>(SfxDir + "/Frankie/FrankieShriek1.wav");
         shriek.pitch = 0.85f; shriek.minDistance = 15f; shriek.rolloffMode = AudioRolloffMode.Logarithmic;
         shriek.gameObject.AddComponent<AudioReverbFilter>().reverbPreset = AudioReverbPreset.SewerPipe;
-        var arrival = arrivalObject.AddComponent<PaleManArrival>();
+        var arrival = arrivalObject.AddComponent<FrankieArrival>();
         arrival.grid = grid;
         arrivalObject.AddComponent<AutosaveOnPower>().grid = grid;   // the autosave, a few seconds after the power returns
         arrival.monster = ai;
@@ -111,7 +120,7 @@ public static partial class LookTestBuilder
         screen.pillSound = Load<AudioClip>(SfxDir + "/PillsBox1.wav");
     }
 
-    // The area the Pale Man can walk: everything solid underground (corridor, platform, tracks, tunnels,
+    // The area Frankie can walk: everything solid underground (corridor, platform, tracks, tunnels,
     // the lower stairs), but not the street. The staff room door is shut when this is made, so the room
     // behind it is cut off: a safe room. Links let him climb between the platform and the tracks.
     static void BakeUnderground()
@@ -141,22 +150,30 @@ public static partial class LookTestBuilder
         }
     }
 
-    // Idle, Walk, Run, Attack and Scream, all from TheWrapper's animations; PaleManAI cross-fades between them.
-    static AnimatorController PaleManController()
+    // Idle, Walk, Run, Attack and Scream, Frankie's own animations; FrankieAI cross-fades between them.
+    static AnimatorController FrankieController()
     {
-        string path = PaleManDir + "/PaleMan.controller";
+        string path = FrankieDir + "/Frankie.controller";
         AssetDatabase.DeleteAsset(path);
         var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
-        var clips = AssetDatabase.LoadAllAssetsAtPath(WrapperFbx).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__")).ToArray();
+        var clips = AssetDatabase.LoadAllAssetsAtPath(FrankieDir + "/Frankie.fbx").OfType<AnimationClip>().Where(c => !c.name.StartsWith("__")).ToArray();
         var machine = controller.layers[0].stateMachine;
-        foreach (var (state, clipName) in new[] { ("Idle", "Idle_Watchful"), ("Walk", "Walk_Nervous"), ("Run", "Run_Frantic"),
-                                                  ("Attack", "Attack_Lunge"), ("Scream", "Scream") })
+        foreach (var state in new[] { "Idle", "Walk", "Run", "Attack", "Scream" })
         {
             var s = machine.AddState(state);
-            s.motion = clips.First(c => c.name.Contains(clipName));
+            s.motion = clips.First(c => c.name.EndsWith(state));
             if (state == "Idle") machine.defaultState = s;
         }
         return controller;
+    }
+
+    // The height of the lowest foot bone (foot / foot2 on either side) in the model's current pose.
+    static float LowestFootBone(GameObject model)
+    {
+        float lowest = float.MaxValue;
+        foreach (var t in model.GetComponentsInChildren<Transform>())
+            if (t.name.StartsWith("foot")) lowest = Mathf.Min(lowest, t.position.y);
+        return lowest;
     }
 
     static AudioSource MonsterAudio(Transform parent, string name, Vector3 localPos, float maxDistance)

@@ -275,7 +275,7 @@ public static partial class LookTestBuilder
         var torchAudio = torch.AddComponent<AudioSource>();
         torchAudio.playOnAwake = false; torchAudio.spatialBlend = 0f; torchAudio.volume = 0.6f;
         var flashlight = torch.AddComponent<Flashlight>();
-        flashlight.interference = torch.AddComponent<TorchInterference>();   // stutters near the Pale Man
+        flashlight.interference = torch.AddComponent<TorchInterference>();   // stutters near Frankie
         flashlight.beam = beam;
         flashlight.spill = spill;
         flashlight.clickOn = Load<AudioClip>(SfxDir + "/SwitchButton1_On.wav");

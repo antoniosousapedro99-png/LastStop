@@ -1,10 +1,10 @@
 using UnityEngine;
 
-// Music only while the Pale Man is chasing: it fades in when the chase starts and fades out a few
+// Music only while Frankie is chasing: it fades in when the chase starts and fades out a few
 // seconds after it ends. Follows the Music volume setting (and ignores the effects volume).
 public class ChaseMusic : MonoBehaviour
 {
-    public PaleManAI monster;
+    public FrankieAI monster;
     public AudioSource music;      // its own speaker (the same object also holds the first-sighting sting)
     public float volume = 0.7f;
     public float fadeIn = 1.5f, fadeOut = 4f;
@@ -18,7 +18,7 @@ public class ChaseMusic : MonoBehaviour
 
     void Update()
     {
-        bool chasing = monster && monster.isActiveAndEnabled && monster.Current == PaleManAI.Mood.Chase;
+        bool chasing = monster && monster.isActiveAndEnabled && monster.Current == FrankieAI.Mood.Chase;
         level = Mathf.MoveTowards(level, chasing ? 1f : 0f, Time.deltaTime / (chasing ? fadeIn : fadeOut));
         if (level > 0f && !music.isPlaying) music.Play();
         if (level <= 0f && music.isPlaying) music.Stop();

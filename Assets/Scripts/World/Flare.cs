@@ -19,7 +19,7 @@ public class Flare : MonoBehaviour
 
     public bool BurntOut => burned >= burnTime;
 
-    // Every flare that is burning right now (held or dropped), so the Pale Man can keep away from them.
+    // Every flare that is burning right now (held or dropped), so Frankie can keep away from them.
     static readonly System.Collections.Generic.List<Flare> lit = new System.Collections.Generic.List<Flare>();
     void OnEnable() => lit.Add(this);
     void OnDisable() => lit.Remove(this);

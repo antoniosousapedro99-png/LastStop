@@ -23,7 +23,7 @@ Buildings, Bus Stop and URBAN packs
 Retro Tree Pack, All Bushes pack
 OFFICE pack, Survival pack, 3D Retro Plumbing & Wiring
 Industrial exterior, NEUROZAM-9 Pill Bottle
-Characters PSX (the Pale Man), TheWrapper (his animations)
+Big Frankie (the monster)
 Shotgun PS1, PSX First Person Arms
 Blood and graffiti textures
 

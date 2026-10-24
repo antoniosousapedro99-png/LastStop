@@ -152,7 +152,7 @@ public static class SaveSystem
         foreach (var pair in doors) if (pair.Value != null && pair.Value.IsOpen) d.openDoors.Add(pair.Key);
         foreach (var pair in drawers) if (pair.Value != null && pair.Value.IsOpen) d.openDrawers.Add(pair.Key);
 
-        var monster = UnityEngine.Object.FindAnyObjectByType<PaleManAI>();   // only found while he's awake
+        var monster = UnityEngine.Object.FindAnyObjectByType<FrankieAI>();   // only found while he's awake
         if (monster)
         {
             d.monsterAwake = true;
@@ -201,7 +201,7 @@ public static class SaveSystem
                     if (door && door.needsPower == fuseBox.grid) door.OpenNow();   // even if it was still swinging when saved
             }
         }
-        var arrival = UnityEngine.Object.FindAnyObjectByType<PaleManArrival>();
+        var arrival = UnityEngine.Object.FindAnyObjectByType<FrankieArrival>();
         if (arrival) arrival.LoadState(d.monsterAwake, d.monsterPosition, d.monsterYaw, d.powerOn);
 
         // Move the player last; the CharacterController has to be off to be moved directly.
