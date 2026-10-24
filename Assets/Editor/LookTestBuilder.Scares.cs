@@ -143,7 +143,7 @@ public static partial class LookTestBuilder
         var holder = new GameObject("ShadowFigure");
         holder.transform.SetParent(parent);
         holder.transform.position = floorPoint;
-        var model = Model(FrankieDir + "/Frankie.fbx", null, holder.transform, null, 1f, 0f);
+        var model = Model(FrankieDir + "/Frankie.fbx", null, holder.transform, null, 1f, 0f, FrankieTextures);
         model.transform.localRotation = Load<GameObject>(FrankieDir + "/Frankie.fbx").transform.localRotation;
         model.transform.localScale *= 2.1f / Bounds(model).size.y;
         model.transform.localPosition = Vector3.zero;

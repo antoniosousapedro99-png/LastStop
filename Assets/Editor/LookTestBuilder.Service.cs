@@ -166,6 +166,8 @@ public static partial class LookTestBuilder
         Kit("Props/OldStuff/Barrel.fbx", null, "Props/OldStuff/Barrel.png", g, new Vector3(-45.3f, f, 42.1f), 70f, 0.9f, true);
         var crate = Place("Assets/Art/Models/Props/Crates/Crate.fbx", g, Vector3.zero, 15f, 0.8f);
         StandOn(crate, new Vector3(-64f, f, 43f));
+        MakePickup(ModelPiece(SurvivalFbx, "Battery", g, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
+                   new Vector3(-64f, Bounds(crate).max.y, 43f), 30f, "PlasticBox1", lieDown: true);
         var wide = Place("Assets/Art/Models/Props/Crates/WideCrate.fbx", g, Vector3.zero, -10f, 0.8f);
         StandOn(wide, new Vector3(-55f, f, 49f));
 
@@ -235,6 +237,9 @@ public static partial class LookTestBuilder
         Kit("Props/Trash/TrashAndDebris.fbx", "CardboardBox_2", "Props/Trash/CardboardPaper.png", g, new Vector3(-70.8f, f, 44.5f), -15f, 0.6f, true);
         Kit("Props/OldStuff/Barrel.fbx", null, "Props/OldStuff/Barrel.png", g, new Vector3(-81.2f, f, 48.5f), 0f, 0.9f, true);
         Kit("Props/OldStuff/Barrel.fbx", null, "Props/OldStuff/Barrel.png", g, new Vector3(-81.3f, f, 45.5f), 140f, 0.9f, true);
+        MakePickup(ModelPiece(SurvivalFbx, "Battery", g, Tex2("Props/Survival/Battery.png"), 1.5f), global::Pickup.Kind.Battery,
+                   new Vector3(-76.5f, f, 43.3f), 60f, "PlasticBox1", lieDown: true);
+        PlaceFlare(g, new Vector3(-80.4f, f, 47f), 35f);
     }
 
     // ---------------------------------------------------------------- squatter camp
@@ -256,10 +261,12 @@ public static partial class LookTestBuilder
         Candle(g, new Vector3(-37.4f, tableTop, 47.6f), true);
         MakePickup(ModelPiece(BreakerFbx, "Fuse", g, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
                    new Vector3(-37f, tableTop, 48f), 40f, "SmallGlassBottles1");
-        Note(g, "CampNote_Fuse", new Vector3(-36.85f, tableTop + 0.003f, 47.55f), 25f,
+        Note(g, "CampNote_Fuse", new Vector3(-36.35f, f + 0.008f, 48.55f), 25f,   // on the floor beside the crate
              "Took the fuse so the maintenance guys can't turn the lights back on.\nWhen the lights come back on, IT wakes up.\nDon't let them.");
         Note(g, "CampNote_Ray", Bounds(mattressA).center + Vector3.up * (Bounds(mattressA).extents.y + 0.003f), -15f,
              "Day 9 down here.\nRay swears he hears it walking the tracks at night.\nNot a train. Feet.\nRay went up to look on Tuesday.");
+
+        PlacePainkillers(g, new Vector3(-37f, f, 50.4f), 30f);
 
         // Candles burning on the floor by the mattress, and one by the couch that won't stay put.
         Candle(g, new Vector3(-34.2f, f, 50.1f), true);
@@ -292,7 +299,7 @@ public static partial class LookTestBuilder
         // Rubbish: bags, cans, chip packets, flattened cardboard for bedding.
         Kit("Props/Trash/TrashBagA.fbx", null, "Props/Trash/TrashBagBlack.png", g, new Vector3(-32.8f, f, 42.8f), 10f, 0.5f);
         Kit("Props/Trash/TrashBagA.fbx", null, "Props/Trash/TrashBagBlack.png", g, new Vector3(-33.4f, f, 42.6f), 70f, 0.45f);
-        Kit("Props/Trash/TrashAndDebris.fbx", "Cardboard_Cutout_1", "Props/Trash/CardboardPaper.png", g, new Vector3(-38.5f, f, 50.6f), 90f, 0.02f);
+        Kit("Props/Trash/TrashAndDebris.fbx", "Cardboard_Cutout_1", "Props/Trash/CardboardPaper.png", g, new Vector3(-38.5f, f + 0.015f, 50.6f), 90f, 0.02f);   // lifted off the floor so they don't flicker
         string[] litter = { "Can_1_Crushed", "Can_2", "Can_3_Crushed", "Chip_Bag_1", "Can_5_Crushed", "Chip_Bag_3", "Can_7" };
         string[] litterTex = { "CansRusty", "Cans", "Cans", "Bags", "Cans", "Bags", "Cans" };
         var rng = new System.Random(3);

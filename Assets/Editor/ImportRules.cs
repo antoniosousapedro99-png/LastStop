@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 9;
+    public override uint GetVersion() => 10;
 
     void OnPreprocessTexture()
     {

@@ -41,10 +41,11 @@ public static partial class LookTestBuilder
         Span("SidewalkS_E", street, new Vector3(2.3f, y0, -16), new Vector3(50, y1, -2), pavement);
         Span("SidewalkS_Front", street, new Vector3(-2.3f, y0, -16), new Vector3(2.3f, y1, -12), pavement);
         Span("SidewalkS_Back", street, new Vector3(-2.3f, y0, -4), new Vector3(2.3f, y1, -2), pavement);
-        Span("GroundSouth", street, new Vector3(-50, y0, -2), new Vector3(50, y1, 35), lot);
+        // The ground up to and under the shops is paved like the sidewalk, so the shopfronts stand on it.
+        Span("GroundSouth", street, new Vector3(-50, y0, -2), new Vector3(50, y1, 35), pavement);
         Span("Road", street, new Vector3(-50, y0, -26), new Vector3(50, y1 - 0.15f, -16), asphalt);
         Span("SidewalkN", street, new Vector3(-50, y0, -30), new Vector3(50, y1, -26), pavement);
-        Span("GroundNorth", street, new Vector3(-50, y0, -85), new Vector3(50, y1, -30), lot);
+        Span("GroundNorth", street, new Vector3(-50, y0, -85), new Vector3(50, y1, -30), pavement);
         // Puddles on the wet road and sidewalk.
         var puddle = AssetDatabase.LoadAssetAtPath<Material>(MatDir + "/M_Puddle.mat");
         Puddle("RoadPuddle_1", street, new Vector3(-18, y1 - 0.14f, -18.5f), 3.5f, 1.6f, puddle);
@@ -63,6 +64,7 @@ public static partial class LookTestBuilder
         BuildLore();
         BuildOutdoorLighting();
         BuildCityBeyond(asphalt, pavement, lot);
+        CutOutFoliage();   // trees and bushes: see-through leaf edges instead of black squares
 
         // "I should turn around..." near the invisible walls (the player is linked in Build()).
         boundary = street.gameObject.AddComponent<AreaBoundary>();
@@ -128,7 +130,11 @@ public static partial class LookTestBuilder
         foreach (var r in sixTwelve.GetComponentsInChildren<Renderer>()) if (r.name.StartsWith("Rug")) Object.DestroyImmediate(r.gameObject);
         Anchor(Place(StreetDir + "/GasStation/GasStation.fbx", shops, new Vector3(30f, StreetY, -52f), GasYaw), "Sidewalk");
         // South side, behind the entrance sidewalk.
-        Anchor(Place(StreetDir + "/Pizzeria/Pizzeria.fbx", shops, new Vector3(24f, StreetY, 9f), PizzeriaYaw), "building_01.001");
+        var pizzeria = Place(StreetDir + "/Pizzeria/Pizzeria.fbx", shops, new Vector3(24f, StreetY, 9f), PizzeriaYaw);
+        Anchor(pizzeria, "building_01.001");
+        // Its cellar-door tread hovered just above the pavement: set it down.
+        foreach (var r in pizzeria.GetComponentsInChildren<Renderer>())
+            if (r.name == "metal_tread") r.transform.position += Vector3.up * (StreetY + 0.004f - r.bounds.min.y);
         string blds = StreetDir + "/Buildings/Buildings.fbx";
         PlacePiece(blds, "Building", shops, new Vector3(-36f, StreetY, 9f), 180f);
         PlacePiece(blds, "Building_08", shops, new Vector3(-14f, StreetY, 6f), 180f);
@@ -151,8 +157,9 @@ public static partial class LookTestBuilder
         for (int i = 0; i < 6; i++)
         {
             float x = -40f + i * 16f;
-            Place(u + "street_light.fbx", f, new Vector3(x, StreetY, -15.3f), 90f).name = "StreetLight_S_" + i;
-            Place(u + "street_light_clean.fbx", f, new Vector3(x + 8f, StreetY, -26.7f), -90f).name = "StreetLight_N_" + i;
+            // Set back from the curb (which is at z -16 and -26) so the bases stand fully on the sidewalk.
+            Place(u + "street_light.fbx", f, new Vector3(x, StreetY, -14.5f), 90f).name = "StreetLight_S_" + i;
+            Place(u + "street_light_clean.fbx", f, new Vector3(x + 8f, StreetY, -27.5f), -90f).name = "StreetLight_N_" + i;
         }
         // Trees and hedges.
         string t = StreetDir + "/Trees/";
@@ -208,27 +215,45 @@ public static partial class LookTestBuilder
         Car(cars, c + "Car5_Police.fbx", new Vector3(38.5f, -21f), 70f, "PoliceCar");
     }
 
-    // Places a car body on the road with four wheels, scaled to a normal car size.
+    // Trees and bushes are leaf pictures on flat cards. Their own materials (inside the model files) draw
+    // the see-through parts black, so every one gets a copy that cuts those parts out and shows both sides.
+    static void CutOutFoliage()
+    {
+        var copies = new Dictionary<Material, Material>();
+        foreach (var r in street.GetComponentsInChildren<Renderer>(true))
+        {
+            var mats = r.sharedMaterials;
+            bool changed = false;
+            for (int i = 0; i < mats.Length; i++)
+            {
+                var m = mats[i];
+                if (m == null) continue;
+                string path = AssetDatabase.GetAssetPath(m);
+                if (!path.Contains("/Street/Trees/") && !path.Contains("/Street/Bushes/")) continue;
+                if (!copies.TryGetValue(m, out var cut))
+                {
+                    cut = Mat("Foliage_" + m.name, m.HasProperty("_BaseMap") ? m.GetTexture("_BaseMap") as Texture2D : null, Color.white, 1f, 0.1f);
+                    cut.SetFloat("_AlphaClip", 1f);
+                    cut.SetFloat("_Cutoff", 0.5f);
+                    cut.EnableKeyword("_ALPHATEST_ON");
+                    cut.SetFloat("_Cull", 0f);
+                    cut.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+                    copies[m] = cut;
+                }
+                mats[i] = cut;
+                changed = true;
+            }
+            if (changed) r.sharedMaterials = mats;
+        }
+    }
+
+    // Places a car on the road, scaled to a normal car size. (The car models have their wheels built in;
+    // separate wheels used to be added too, which doubled them.)
     static GameObject Car(Transform parent, string body, Vector2 xz, float yaw, string name)
     {
         const float scale = 0.72f;
         var car = Place(body, parent, new Vector3(xz.x, StreetY - 0.15f, xz.y), yaw, scale);
         car.name = name;
-        var b = Bounds(car);
-        float wheelY = b.min.y + 0.32f;
-        // Wheels go near each end of the car's LONG side (worked out from its size, since the car
-        // models don't all point the same way), just inside its width, axles across the car.
-        bool alongX = b.size.x > b.size.z;
-        Vector3 fwd = alongX ? Vector3.right : Vector3.forward, right = alongX ? Vector3.forward : Vector3.right;
-        float halfLen = Mathf.Max(b.size.x, b.size.z) * 0.5f, halfWid = Mathf.Min(b.size.x, b.size.z) * 0.5f;
-        foreach (int f in new[] { -1, 1 })
-            foreach (int s in new[] { -1, 1 })
-            {
-                var wheel = Place(StreetDir + "/Cars/Wheel.fbx", car.transform, Vector3.zero, (alongX ? 90f : 0f) + (s > 0 ? 0f : 180f), scale);
-                Vector3 c = new Vector3(b.center.x, wheelY, b.center.z) + fwd * (f * halfLen * 0.62f) + right * (s * (halfWid - 0.12f));
-                var wb = Bounds(wheel);
-                wheel.transform.position += c - wb.center;
-            }
         return car;
     }
 

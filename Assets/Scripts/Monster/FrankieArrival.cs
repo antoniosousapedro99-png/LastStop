@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-// Wakes Frankie once the power is back. 15-20 seconds after the fuse box is fixed, every lamp
+// Wakes Frankie once the power is back. 5-10 seconds after the fuse box is fixed, every lamp
 // stutters and a shriek echoes out of the west tunnel. A few seconds later the lamps stutter again, and
 // when they come back he is standing under the lamp at the far end of the platform (the end further
 // from the player), staring. He walks off into that end's tunnel once he's been seen (FrankieAI's Reveal).
@@ -11,7 +11,7 @@ public class FrankieArrival : MonoBehaviour
     public PowerGrid grid;
     public FrankieAI monster;                  // switched off until he arrives
     public AudioSource shriek;                 // sits deep in the west tunnel, heard from far away
-    public float minDelay = 15f, maxDelay = 20f;
+    public float minDelay = 5f, maxDelay = 10f;
     public float revealAfterShriek = 3.5f;     // seconds between the shriek and him appearing
     public Vector3[] revealSpots;              // where he can appear (one per platform end)
     public Vector3[] walkOffSpots;             // where he walks to from each spot (into that end's tunnel)
@@ -59,7 +59,7 @@ public class FrankieArrival : MonoBehaviour
     }
 
     // Loading a save. If he was already awake he's put back where he was; if the power was on but he
-    // hadn't come yet, his 15-20 second countdown starts again.
+    // hadn't come yet, his 5-10 second countdown starts again.
     public void LoadState(bool awake, Vector3 position, float yaw, bool powerOn)
     {
         if (!awake && !powerOn) return;

@@ -11,6 +11,13 @@ using UnityEngine.AI;
 public static partial class LookTestBuilder
 {
     const string FrankieDir = ArtDir + "/Characters/Frankie";
+    // His three textures, by material name. Every copy of his model must pass these (the materials are
+    // shared files, so a copy made without them would wipe them for him too).
+    static readonly System.Collections.Generic.Dictionary<string, string> FrankieTextures = new System.Collections.Generic.Dictionary<string, string>
+    {
+        { "Frankie_Body", "Characters/Frankie/Frankie_Body.png" }, { "Frankie_Bones", "Characters/Frankie/Frankie_Bones.png" },
+        { "Frankie_Face", "Characters/Frankie/Frankie_Face.png" },
+    };
     static readonly Vector3 FrankieSpawn = new Vector3(-70f, -1.3f, 22.7f);   // on the tracks, deep in the west tunnel
 
     static void BuildMonster()
@@ -22,11 +29,7 @@ public static partial class LookTestBuilder
         man.transform.SetParent(root);
         man.transform.position = FrankieSpawn;
         man.transform.rotation = Quaternion.Euler(0f, 90f, 0f);   // facing the station
-        var model = Model(FrankieDir + "/Frankie.fbx", null, man.transform, null, 1f, 0f, new System.Collections.Generic.Dictionary<string, string>
-        {
-            { "Frankie_Body", "Characters/Frankie/Frankie_Body.png" }, { "Frankie_Bones", "Characters/Frankie/Frankie_Bones.png" },
-            { "Frankie_Face", "Characters/Frankie/Frankie_Face.png" },
-        });
+        var model = Model(FrankieDir + "/Frankie.fbx", null, man.transform, null, 1f, 0f, FrankieTextures);
         model.transform.localRotation = Load<GameObject>(FrankieDir + "/Frankie.fbx").transform.localRotation;   // the file already faces forward
         float height = Bounds(model).size.y;
         model.transform.localScale *= 2.1f / height;                   // 2.1 m (the file has him at 4.2 m)
