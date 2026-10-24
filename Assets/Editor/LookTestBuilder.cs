@@ -204,13 +204,15 @@ public static partial class LookTestBuilder
         EnsurePsxFilter();
         BuildPlayerGear(player);
         BuildInventoryScreen();   // needs the player's gear (torch battery)
+        BuildHidingLockers();     // before the walkable area is baked, so he walks round them
         BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildMenus();             // last: the menus switch the player off until "New game"
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
         // (doors, lockers, the inventory's turntable) must NOT be static, or its merged copy stays frozen.
         foreach (var t in root.GetComponentsInChildren<Transform>())
-            t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null;
+            t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
+                                && t.GetComponentInParent<HidingLocker>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 
@@ -272,6 +274,7 @@ public static partial class LookTestBuilder
         var torchAudio = torch.AddComponent<AudioSource>();
         torchAudio.playOnAwake = false; torchAudio.spatialBlend = 0f; torchAudio.volume = 0.6f;
         var flashlight = torch.AddComponent<Flashlight>();
+        flashlight.interference = torch.AddComponent<TorchInterference>();   // stutters near the Pale Man
         flashlight.beam = beam;
         flashlight.spill = spill;
         flashlight.clickOn = Load<AudioClip>(SfxDir + "/SwitchButton1_On.wav");

@@ -9,11 +9,16 @@ using UnityEngine.AI;
 // - Attack: close enough; lunges, and the player takes a hit if still in reach.
 // - Retreat: after a hit, backs off for a few seconds so hits never come back to back.
 // - Repelled: a lit flare is near; he backs away and keeps his distance until it dies.
+// - Reveal: his first appearance. He stands at the end of the platform staring at the player; once
+//   they've noticed him (a sting plays) he stares a moment longer, then...
+// - WalkOff: ...walks away into the tunnel, ignoring the player, and only then starts hunting.
+// A player hiding in a locker is invisible to him, unless he saw them get in: then he walks over,
+// pulls them out and attacks.
 // He walks on the underground navigation mesh only, so the street is safe.
 [RequireComponent(typeof(NavMeshAgent), typeof(PaleManSenses))]
 public class PaleManAI : MonoBehaviour
 {
-    public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled }
+    public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff }
 
     public Animator animator;
     public float walkSpeed = 1.4f, chaseSpeed = 3.8f;
@@ -21,19 +26,26 @@ public class PaleManAI : MonoBehaviour
     public float loseAfter = 8f;               // seconds without seeing the player before giving up the chase
     public float flareKeepAway = 6f;           // metres he stays from a lit flare
     public float clipWalkSpeed = 1.2f, clipRunSpeed = 3.4f;   // how fast the animations' feet move, to match them up
+    public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
 
     [Header("Sounds")]
     public AudioSource voice;                  // breathing, shrieks
     public AudioSource feet;
-    public AudioClip[] breaths, shrieks, steps;
+    public AudioClip[] breaths, shrieks, steps, cracks;   // cracks: his joints snapping as he moves
     public AudioClip hitSound;
+    public AudioSource sting;                  // the music sting when the player first sees him
 
     public Mood Current { get; private set; } = Mood.Wander;
+    public bool SeesPlayer => seesPlayer;
+    public bool SeenByPlayer { get; private set; }   // he's on the player's screen, not hidden behind anything
+
+    // The one Pale Man in the level while he's awake (the torch flicker and the lockers ask about him).
+    public static PaleManAI Active { get; private set; }
 
     NavMeshAgent agent;
     PaleManSenses senses;
-    float moodTime, lastSeen, nextBreath, stepTimer, sightTimer;
-    Vector3 lastSeenAt;
+    float moodTime, lastSeen, nextBreath, nextCrack, stepTimer, sightTimer, noticedAt = -1f;
+    Vector3 lastSeenAt, walkOffTo;
     bool hitDone, seesPlayer;
     string playing;
 
@@ -43,28 +55,30 @@ public class PaleManAI : MonoBehaviour
         senses = GetComponent<PaleManSenses>();
     }
 
-    void OnEnable() => SetMood(Mood.Wander);
+    void OnEnable() { Active = this; SetMood(Mood.Wander); }
+    void OnDisable() { if (Active == this) Active = null; }
 
-    float screamUntil;
-
-    // Used by the arrival: he stands and shrieks before he starts to hunt.
-    public void WakeWithScream()
+    // Used by the arrival: he appears standing at 'standAt', and leaves toward 'leaveTo' once he's been seen.
+    public void StageReveal(Vector3 standAt, Vector3 leaveTo)
     {
-        screamUntil = Time.time + 1.4f;
-        Play("Scream");   // the shriek itself comes from PaleManArrival's far-carrying speaker
+        agent.Warp(standAt);
+        walkOffTo = leaveTo;
+        noticedAt = -1f;
+        if (senses.Player) FaceTowards(senses.Player.position, 1000f);
+        SetMood(Mood.Reveal);
     }
 
     void Update()
     {
-        if (Time.time < screamUntil) { agent.isStopped = true; return; }
         moodTime += Time.deltaTime;
         sightTimer -= Time.deltaTime;
-        if (sightTimer <= 0f) { sightTimer = 0.2f; seesPlayer = senses.CanSeePlayer(); }
+        if (sightTimer <= 0f) { sightTimer = 0.2f; seesPlayer = senses.CanSeePlayer(); SeenByPlayer = senses.PlayerCanSeeMe(); }
         if (seesPlayer) { lastSeen = Time.time; lastSeenAt = senses.Player.position; }
 
-        // A lit flare close by overrides everything else.
+        // A lit flare close by overrides everything else (except his staged first appearance).
         var flare = Flare.NearestLit(transform.position);
-        if (flare && Current != Mood.Repelled && Vector3.Distance(flare.position, transform.position) < flareKeepAway)
+        bool staged = Current == Mood.Reveal || Current == Mood.WalkOff;
+        if (flare && !staged && Current != Mood.Repelled && Vector3.Distance(flare.position, transform.position) < flareKeepAway)
             SetMood(Mood.Repelled);
 
         switch (Current)
@@ -76,8 +90,10 @@ public class PaleManAI : MonoBehaviour
             case Mood.Attack: Attack(); break;
             case Mood.Retreat: Retreat(); break;
             case Mood.Repelled: Repelled(flare); break;
+            case Mood.Reveal: Reveal(); break;
+            case Mood.WalkOff: WalkOff(); break;
         }
-        if (Current != Mood.Attack && agent.isStopped && !Arrived()) agent.isStopped = false;   // after a scream or a look-around
+        if (Current != Mood.Attack && Current != Mood.Reveal && agent.isStopped && !Arrived()) agent.isStopped = false;   // after a look-around
         Animate();
         Sounds();
     }
@@ -93,6 +109,8 @@ public class PaleManAI : MonoBehaviour
         if (mood == Mood.Wander) PickWanderSpot();
         if (mood == Mood.Search) agent.SetDestination(lastSeenAt);
         if (mood == Mood.Attack) { agent.isStopped = true; Play("Attack"); }
+        if (mood == Mood.Reveal) { agent.isStopped = true; agent.SetDestination(transform.position); }
+        if (mood == Mood.WalkOff) agent.SetDestination(walkOffTo);
         if (mood == Mood.Retreat || mood == Mood.Repelled) agent.speed = walkSpeed * 1.5f;
     }
 
@@ -151,6 +169,19 @@ public class PaleManAI : MonoBehaviour
     void Chase(Transform flare)
     {
         if (!senses.Player) { SetMood(Mood.Wander); return; }
+        var locker = HidingLocker.Occupied;
+        if (locker)
+        {
+            // Hidden. If he watched them get in he goes straight for that locker; otherwise he's lost them.
+            if (!HidingLocker.SeenGettingIn) { SetMood(Mood.Search); return; }
+            agent.SetDestination(locker.StandPoint);
+            if (Vector3.Distance(transform.position, locker.StandPoint) < 1.3f)
+            {
+                locker.PullOut();
+                SetMood(Mood.Attack);
+            }
+            return;
+        }
         Vector3 target = senses.Player.position;
         // The player holds a lit flare: circle at a distance instead of closing in.
         if (flare && Vector3.Distance(flare.position, target) < flareKeepAway)
@@ -212,6 +243,34 @@ public class PaleManAI : MonoBehaviour
         FaceTowards(flare.position, 4f);   // backs away, never takes his eyes off it
     }
 
+    // Stands still and stares. When the player notices him a sting plays; a moment later he turns away.
+    // He also leaves if the player walks right up to him, or never comes to look.
+    void Reveal()
+    {
+        if (senses.Player) FaceTowards(senses.Player.position, 3f);
+        if (noticedAt < 0f && SeenByPlayer)
+        {
+            noticedAt = Time.time;
+            if (sting) { sting.volume = GameSettings.MusicLevel; sting.Play(); }
+        }
+        bool close = senses.Player && Vector3.Distance(transform.position, senses.Player.position) < 5f;
+        if ((noticedAt >= 0f && Time.time - noticedAt > revealStare) || close || moodTime > 30f)
+        {
+            if (cracks.Length > 0) Say(cracks[Random.Range(0, cracks.Length)], 0.8f);   // his neck snaps as he turns
+            SetMood(Mood.WalkOff);
+        }
+    }
+
+    // Walks into the tunnel without looking back; only once he's there does the hunt begin.
+    void WalkOff()
+    {
+        if (Arrived() || moodTime > 40f)
+        {
+            senses.ForgetNoise();
+            SetMood(Mood.Wander);
+        }
+    }
+
     bool Arrived() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.3f;
 
     void LookAround() => transform.Rotate(0f, Mathf.Sin(Time.time * 0.8f) * 60f * Time.deltaTime, 0f);
@@ -228,7 +287,7 @@ public class PaleManAI : MonoBehaviour
     // feet match the ground.
     void Animate()
     {
-        if (Current != Mood.Repelled && Current != Mood.Attack) agent.updateRotation = true;
+        if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal) agent.updateRotation = true;
         if (Current == Mood.Attack) return;
         float speed = agent.velocity.magnitude;
         if (speed > 2.4f) { Play("Run"); animator.speed = speed / clipRunSpeed; }
@@ -251,7 +310,13 @@ public class PaleManAI : MonoBehaviour
         if (speed > 0.2f && steps.Length > 0)
         {
             stepTimer -= Time.deltaTime * speed;
-            if (stepTimer <= 0f) { stepTimer = 1.3f; feet.pitch = Random.Range(0.65f, 0.75f); feet.PlayOneShot(steps[Random.Range(0, steps.Length)], 0.9f); }
+            if (stepTimer <= 0f) { stepTimer = 1.3f; feet.pitch = Random.Range(0.92f, 1.05f); feet.PlayOneShot(steps[Random.Range(0, steps.Length)], 0.9f); }
+            // Now and then a joint snaps.
+            if (Time.time > nextCrack && cracks.Length > 0)
+            {
+                if (nextCrack > 0f) Say(cracks[Random.Range(0, cracks.Length)], 0.5f);
+                nextCrack = Time.time + Random.Range(5f, 12f);
+            }
         }
         // Wet, low breathing every few seconds.
         if (Time.time > nextBreath && breaths.Length > 0)
@@ -263,13 +328,7 @@ public class PaleManAI : MonoBehaviour
 
     void Say(AudioClip clip, float volume)
     {
-        voice.pitch = Random.Range(0.5f, 0.6f);   // far below a human voice
+        voice.pitch = Random.Range(0.92f, 1.05f);   // the clips are already pitched down; a little variety
         voice.PlayOneShot(clip, volume);
-    }
-
-    // Used by the arrival: the scream when he first wakes.
-    public void Shriek()
-    {
-        if (shrieks.Length > 0) Say(shrieks[Random.Range(0, shrieks.Length)], 1f);
     }
 }

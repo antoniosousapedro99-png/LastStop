@@ -11,6 +11,8 @@ public class PlayerLook : MonoBehaviour
     public float padSpeed = 140f;      // degrees per second with the controller's right stick fully over
     public float pitch;                // current up/down angle (public so tests can set it)
     public float roll;                 // sideways head tilt, set by PlayerLean
+    public bool limitYaw;              // while hiding in a locker: turning is kept within yawRange of yawCentre
+    public float yawCentre, yawRange = 55f;
 
     void OnEnable() => LockCursor(true);
 
@@ -25,6 +27,11 @@ public class PlayerLook : MonoBehaviour
         delta *= GameSettings.MouseSensitivity;
         if (GameSettings.InvertY) delta.y = -delta.y;
         transform.Rotate(0f, delta.x, 0f);
+        if (limitYaw)
+        {
+            float offset = Mathf.Clamp(Mathf.DeltaAngle(yawCentre, transform.eulerAngles.y), -yawRange, yawRange);
+            transform.rotation = Quaternion.Euler(0f, yawCentre + offset, 0f);
+        }
         pitch = Mathf.Clamp(pitch - delta.y, -85f, 85f);
         Apply();
     }

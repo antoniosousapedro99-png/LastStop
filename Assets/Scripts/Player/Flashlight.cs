@@ -12,6 +12,7 @@ public class Flashlight : MonoBehaviour
     public Light spill;
     public Light viewmodelFill;    // faint light for the held gun/arms (the torch itself skips them)
     public FlashlightBattery battery;
+    public TorchInterference interference;
     public AudioClip clickOn, clickOff;
     public float followSpeed = 14f; // higher = the beam sticks to the view more tightly
     public float fullStrengthDistance = 7f;  // surfaces further than this get the full beam
@@ -47,6 +48,7 @@ public class Flashlight : MonoBehaviour
     void LateUpdate()
     {
         float level = IsOn ? (battery ? battery.Brightness : 1f) : 0f;
+        if (interference) level *= interference.Multiplier;   // stutters when the Pale Man is close
 
         // Light gets stronger the closer a surface is (distance squared), so a torch strong enough to
         // reach 60 m would blind you on a wall 2 m away. Like your eyes adjusting, soften the light when

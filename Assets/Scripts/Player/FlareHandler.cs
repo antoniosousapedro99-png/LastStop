@@ -25,6 +25,7 @@ public class FlareHandler : MonoBehaviour
 
     public void Strike()
     {
+        if (HidingLocker.Occupied) return;   // no room to strike one inside a locker
         if (inventory.flares <= 0) { Hud.Notice("No flares"); return; }
         inventory.flares--;
         held = Instantiate(template, hand);

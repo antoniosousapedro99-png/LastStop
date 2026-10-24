@@ -60,9 +60,11 @@ public static partial class LookTestBuilder
         var ai = man.AddComponent<PaleManAI>();
         ai.animator = animator;
         ai.voice = voice; ai.feet = feet;
-        ai.breaths = Clips("HumanBreathingOut1", "HumanBreathingOut2", "HumanBreathingOut3", "HumanBreathingOut4");
-        ai.shrieks = Clips("HumanInjured4", "HumanInjured5");
-        ai.steps = Clips("FootstepsWetGravelStones1", "FootstepsWetGravelStones2", "FootstepsWetGravelStones3", "FootstepsWetGravelStones4");
+        // His own sounds, made from the Darkworld pack with ffmpeg (see Assets/Art/CREDITS.md).
+        ai.breaths = Clips("PaleMan/PaleManBreath1", "PaleMan/PaleManBreath2", "PaleMan/PaleManBreath3");
+        ai.shrieks = Clips("PaleMan/PaleManShriek1", "PaleMan/PaleManShriek2");
+        ai.steps = Clips("PaleMan/PaleManStep1", "PaleMan/PaleManStep2", "PaleMan/PaleManStep3", "PaleMan/PaleManStep4");
+        ai.cracks = Clips("PaleMan/PaleManCrack1", "PaleMan/PaleManCrack2", "PaleMan/PaleManCrack3");
         ai.hitSound = Load<AudioClip>(SfxDir + "/DesignedPunch1.wav");
         man.SetActive(false);   // nowhere in the level until the power comes back
 
@@ -71,17 +73,29 @@ public static partial class LookTestBuilder
         arrivalObject.transform.SetParent(root);
         var shriek = MonsterAudio(arrivalObject.transform, "Shriek", Vector3.zero, 200f);
         shriek.transform.position = new Vector3(-85f, 0f, 22.7f);
-        shriek.clip = Load<AudioClip>(SfxDir + "/HumanInjured4.wav");
-        shriek.pitch = 0.5f; shriek.minDistance = 15f; shriek.rolloffMode = AudioRolloffMode.Logarithmic;
+        shriek.clip = Load<AudioClip>(SfxDir + "/PaleMan/PaleManShriek1.wav");
+        shriek.pitch = 0.85f; shriek.minDistance = 15f; shriek.rolloffMode = AudioRolloffMode.Logarithmic;
         shriek.gameObject.AddComponent<AudioReverbFilter>().reverbPreset = AudioReverbPreset.SewerPipe;
         var arrival = arrivalObject.AddComponent<PaleManArrival>();
         arrival.grid = grid;
         arrival.monster = ai;
         arrival.shriek = shriek;
+        // He first appears under the lamp at the far end of the platform, then walks into that end's tunnel.
+        arrival.revealSpots = new[] { new Vector3(-12f, 0f, 17.6f), new Vector3(12f, 0f, 17.6f) };
+        arrival.walkOffSpots = new[] { new Vector3(-38f, -1.3f, 22.7f), new Vector3(38f, -1.3f, 22.7f) };
+
+        // The sting when the player first sees him: a music cue, so it follows the Music volume.
+        var sting = arrivalObject.AddComponent<AudioSource>();
+        sting.clip = Load<AudioClip>("Assets/Art/Audio/Music/Jumpscare.ogg");
+        sting.playOnAwake = false; sting.spatialBlend = 0f; sting.ignoreListenerVolume = true;
+        ai.sting = sting;
 
         var musicSource = arrivalObject.AddComponent<AudioSource>();
         musicSource.clip = Load<AudioClip>("Assets/Art/Audio/Music/Svirls/Chase1.ogg");
-        arrivalObject.AddComponent<ChaseMusic>().monster = ai;
+        musicSource.playOnAwake = false;
+        var chaseMusic = arrivalObject.AddComponent<ChaseMusic>();
+        chaseMusic.monster = ai;
+        chaseMusic.music = musicSource;
 
         // ---- the player can be hurt, and painkillers heal
         var player = Object.FindAnyObjectByType<PlayerInventory>(FindObjectsInactive.Include).gameObject;
