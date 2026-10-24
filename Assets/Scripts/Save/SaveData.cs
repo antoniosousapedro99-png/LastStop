@@ -30,6 +30,7 @@ public class SaveData
     public List<string> taken = new List<string>();       // pickups no longer in the level (by hierarchy path)
     public List<string> openDoors = new List<string>();   // doors, lockers and cabinets standing open
     public List<string> openDrawers = new List<string>();
+    public List<string> firedScares = new List<string>();   // one-time scares that already happened
 
     // Frankie
     public bool monsterAwake;

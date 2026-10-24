@@ -206,6 +206,7 @@ public static partial class LookTestBuilder
         BuildInventoryScreen();   // needs the player's gear (torch battery)
         BuildHidingLockers();     // before the walkable area is baked, so he walks round them
         BuildMonster();           // bakes the walkable area, so after everything solid is built
+        BuildScares();            // one-time scares (after the lamps and the monster model exist)
         BuildMenus();             // last: the menus switch the player off until "New game"
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves

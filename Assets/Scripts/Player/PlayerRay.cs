@@ -10,7 +10,8 @@ public static class PlayerRay
                             out RaycastHit nearest, bool includeTriggers)
     {
         var self = fromInsidePlayer.root;
-        int count = Physics.RaycastNonAlloc(origin, direction, hits, range, ~0,
+        int count = Physics.RaycastNonAlloc(origin, direction, hits, range, ~(1 << 2),   // skips the Ignore Raycast layer (scare spots)
+                                           
                                             includeTriggers ? QueryTriggerInteraction.Collide : QueryTriggerInteraction.Ignore);
         nearest = default;
         float best = float.MaxValue;

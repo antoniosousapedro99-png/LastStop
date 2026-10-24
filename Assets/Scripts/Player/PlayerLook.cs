@@ -13,8 +13,11 @@ public class PlayerLook : MonoBehaviour
     public float roll;                 // sideways head tilt, set by PlayerLean
     public bool limitYaw;              // while hiding in a locker: turning is kept within yawRange of yawCentre
     public float yawCentre, yawRange = 55f;
+    public static float Shake;         // degrees of view shake (TrainRumble sets it; 0 = still)
 
     void OnEnable() => LockCursor(true);
+
+    void Awake() => Shake = 0f;   // shared values survive between Play runs here, so start still
 
     void Update()
     {
@@ -36,7 +39,13 @@ public class PlayerLook : MonoBehaviour
         Apply();
     }
 
-    void Apply() => cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, roll);
+    void Apply()
+    {
+        // A rumble shakes the view with a quick, uneven wobble.
+        float t = Time.time * 22f;
+        float shakePitch = Shake * (Mathf.PerlinNoise(t, 0f) - 0.5f) * 2f, shakeYaw = Shake * (Mathf.PerlinNoise(0f, t) - 0.5f) * 2f;
+        cameraPivot.localRotation = Quaternion.Euler(pitch + shakePitch, shakeYaw, roll);
+    }
 
     // Kicks the view upward (used by the shotgun's recoil).
     public void AddRecoil(float upDegrees, float sideDegrees)

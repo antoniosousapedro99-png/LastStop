@@ -52,6 +52,20 @@ public class PoweredLight : MonoBehaviour
         SetLevel(1f);
     }
 
+    // A scare: the lamp pops and stays dark for 'seconds', then stutters back on. Only if it's lit now.
+    public void CutOut(float seconds, AudioClip pop)
+    {
+        if (isActiveAndEnabled && lights.Length > 0 && lights[0].enabled) StartCoroutine(Dark(seconds, pop));
+    }
+
+    IEnumerator Dark(float seconds, AudioClip pop)
+    {
+        if (pop) AudioSource.PlayClipAtPoint(pop, transform.position, 0.9f);
+        SetLevel(0f);
+        yield return new WaitForSeconds(seconds);
+        yield return StutterOn();
+    }
+
     // A single stutter (used when Frankie wakes): off for a moment, a weak blink, then back on.
     public void StutterOnce()
     {

@@ -24,6 +24,7 @@ public static class SaveSystem
     static readonly Dictionary<string, Pickup> pickups = new Dictionary<string, Pickup>();
     static readonly Dictionary<string, HingedDoor> doors = new Dictionary<string, HingedDoor>();
     static readonly Dictionary<string, SlidingDrawer> drawers = new Dictionary<string, SlidingDrawer>();
+    static readonly Dictionary<string, ScareTrigger> scares = new Dictionary<string, ScareTrigger>();
 
     static string Folder => Path.Combine(Application.persistentDataPath, "Saves");
     static string FileFor(int slot) => Path.Combine(Folder, slot == Autosave ? "autosave.json" : "slot" + slot + ".json");
@@ -37,12 +38,15 @@ public static class SaveSystem
         pickups.Clear();
         doors.Clear();
         drawers.Clear();
+        scares.Clear();
         foreach (var p in UnityEngine.Object.FindObjectsByType<Pickup>(FindObjectsInactive.Include))
             pickups[PathOf(p.transform)] = p;
         foreach (var d in UnityEngine.Object.FindObjectsByType<HingedDoor>(FindObjectsInactive.Include))
             doors[PathOf(d.transform)] = d;
         foreach (var d in UnityEngine.Object.FindObjectsByType<SlidingDrawer>(FindObjectsInactive.Include))
             drawers[PathOf(d.transform)] = d;
+        foreach (var s in UnityEngine.Object.FindObjectsByType<ScareTrigger>(FindObjectsInactive.Include))
+            scares[PathOf(s.transform)] = s;
     }
 
     // "Root#0/Pickups#3/Battery#7": names plus their position among their siblings, so two objects
@@ -151,6 +155,7 @@ public static class SaveSystem
         foreach (var pair in pickups) if (pair.Value == null) d.taken.Add(pair.Key);           // destroyed = picked up
         foreach (var pair in doors) if (pair.Value != null && pair.Value.IsOpen) d.openDoors.Add(pair.Key);
         foreach (var pair in drawers) if (pair.Value != null && pair.Value.IsOpen) d.openDrawers.Add(pair.Key);
+        foreach (var pair in scares) if (pair.Value != null && pair.Value.Fired) d.firedScares.Add(pair.Key);
 
         var monster = UnityEngine.Object.FindAnyObjectByType<FrankieAI>();   // only found while he's awake
         if (monster)
@@ -175,6 +180,8 @@ public static class SaveSystem
             if (doors.TryGetValue(path, out var door) && door) door.OpenNow();
         foreach (string path in d.openDrawers)
             if (drawers.TryGetValue(path, out var drawer) && drawer) drawer.OpenNow();
+        foreach (string path in d.firedScares)
+            if (scares.TryGetValue(path, out var scare) && scare) scare.MarkFired();
         PlaySeconds = d.playSeconds;
 
         var inv = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();
