@@ -4,13 +4,14 @@ using UnityEngine;
 // - street: rain and a quiet wind drone; the rain gets muffled and fades as you go down the stairs
 // - station (platform, corridor): the "Too Quiet" drone
 // - tunnels (past the platform ends): a darker drone
-// - service level (below the tunnels, down the spiral stairs): a machine-room hum
+// - service level (below the tunnels, down the stairs): a machine-room drone plus the station drone, quieter
 // Every sound is a looping 2D AudioSource that plays all the time; only its volume changes.
 public class AreaAmbience : MonoBehaviour
 {
     public Transform player;
     public AudioSource rain, streetDrone, stationDrone, tunnelDrone, serviceDrone;
-    public float rainVolume = 0.5f, streetDroneVolume = 0.12f, stationDroneVolume = 0.3f, tunnelDroneVolume = 0.35f, serviceDroneVolume = 0.4f;
+    public float rainVolume = 0.5f, streetDroneVolume = 0.12f, stationDroneVolume = 0.3f, tunnelDroneVolume = 0.35f, serviceDroneVolume = 0.7f;
+    public float serviceStationDroneVolume = 0.25f;           // the station drone carries on, quieter, below
 
     [Header("Where the areas are")]
     public float stairsBottomY = 1.5f, stairsTopY = 5.5f;   // between these heights the street sounds fade in
@@ -42,7 +43,7 @@ public class AreaAmbience : MonoBehaviour
         float rainLevel = Mathf.Max(street, 0.25f * Mathf.InverseLerp(corridorEndZ, stairsBottomZ, p.z) * (1f - tunnel));
         Fade(rain, rainVolume * rainLevel);
         Fade(streetDrone, streetDroneVolume * street);
-        Fade(stationDrone, stationDroneVolume * below * (1f - tunnel));
+        Fade(stationDrone, stationDroneVolume * below * (1f - tunnel) + serviceStationDroneVolume * service);
         Fade(tunnelDrone, tunnelDroneVolume * below * tunnel);
         if (serviceDrone) Fade(serviceDrone, serviceDroneVolume * service);
         rainMuffle.cutoffFrequency = Mathf.Lerp(700f, 22000f, street);

@@ -3,8 +3,8 @@ using UnityEngine;
 
 // The service level under the west tunnel: industrial, run down, and quiet. Psychological horror only
 // (it's below Frankie's walkable area, so he never comes down here).
-// - A rusted maintenance door in the west tunnel's outer wall (x -55) opens onto a landing and a spiral
-//   staircase that winds one and a half turns down, 8 m below the tracks.
+// - A rusted maintenance door in the west tunnel's outer wall (x -55) opens onto a landing and square steel
+//   stairs running down the shaft walls (four flights, corner landings, railings), 8 m below the tracks.
 // - A short corridor leads to the machinery hall (generator, turbine, transformers, pumps, a battery work
 //   light, a pipe you can knock on). West of it a storage room; east of it a squatter camp (mattresses,
 //   candles still burning, a radio hissing static, notes) where the west fuse now lies.
@@ -53,7 +53,7 @@ public static partial class LookTestBuilder
         door.openSound = Load<AudioClip>(SfxDir + "/OldDoorOpen.wav");
     }
 
-    // ---------------------------------------------------------------- landing and spiral stairs
+    // ---------------------------------------------------------------- landing and square steel stairs
     static void BuildStairwell(Transform parent)
     {
         var g = new GameObject("Stairwell").transform;
@@ -69,30 +69,83 @@ public static partial class LookTestBuilder
         Span("ShaftWall_NE", g, new Vector3(-52.5f, -9.5f, 33.8f), new Vector3(-51.7f, -6.3f, 34.1f), svcWall);
         Span("ShaftFloor", g, new Vector3(-57f, -9.5f, 28.8f), new Vector3(-52f, SvcFloor, 33.8f), svcFloor);
         Span("ShaftExitSill", g, new Vector3(-55.5f, -9.5f, 33.8f), new Vector3(-52.5f, SvcFloor, 34.1f), svcFloor);
-        // A rail along the landing's edge where it drops into the shaft (the stairs start at the east half).
-        Prim(PrimitiveType.Cube, "LandingRail", g, new Vector3(-55.95f, -0.8f, 28.75f), new Vector3(2.1f, 1f, 0.06f), svcMetal);
 
-        // The centre pole and 35 steps winding down round it, 15 degrees and 0.22 m apart.
-        var pole = Prim(PrimitiveType.Cylinder, "StairPole", g, new Vector3(StairCentre.x, (SvcFloor + 1.7f) * 0.5f, StairCentre.z),
-                        new Vector3(0.3f, (1.7f - SvcFloor) * 0.5f, 0.3f), svcMetal);
-        float rise = (-1.3f - SvcFloor) / 36f;
-        for (int i = 0; i < 35; i++)
-        {
-            float angle = -82.5f + 15f * i;
-            float top = -1.3f - (i + 1) * rise;
-            Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), 0f, Mathf.Sin(angle * Mathf.Deg2Rad));
-            var step = Prim(PrimitiveType.Cube, "Step" + i, g, StairCentre + dir * 1.375f + Vector3.up * (top - 0.06f), new Vector3(2.15f, 0.12f, 0.62f), svcMetal);
-            step.transform.rotation = Quaternion.Euler(0f, -angle, 0f);
-        }
-        // One dying caged bulb halfway down, on the west wall.
-        var bulb = Prim(PrimitiveType.Sphere, "StairBulb", g, new Vector3(-56.85f, -5.2f, 31.3f), Vector3.one * 0.12f, Mat("BulbYellow", null, new Color(1f, 0.85f, 0.5f), 1f, 0.6f));
+        // Square steel stairs round the shaft: four flights running down the walls (east, north, west, south),
+        // each 2 m down over 3 m (nine 0.2 m steps and the landing), a 1 m square landing in each corner, and a
+        // railing all round the open well in the middle. Start: the south-east corner, level with the landing.
+        var steel = Mat("StairSteel", null, new Color(0.36f, 0.37f, 0.39f), 1f, 0.45f, 0.75f);
+        var rail = Mat("RailSteel", null, new Color(0.2f, 0.2f, 0.21f), 1f, 0.4f, 0.8f);
+        CornerLanding(g, "Landing_SE", -53f, 28.8f, -1.3f, steel);
+        CornerLanding(g, "Landing_NE", -53f, 32.8f, -3.3f, steel);
+        CornerLanding(g, "Landing_NW", -57f, 32.8f, -5.3f, steel);
+        CornerLanding(g, "Landing_SW", -57f, 28.8f, -7.3f, steel);
+        Flight(g, "Flight_E", new Vector3(-52.5f, -1.3f, 29.8f), Vector3.forward, Vector3.left, steel, rail);
+        Flight(g, "Flight_N", new Vector3(-53f, -3.3f, 33.3f), Vector3.left, Vector3.back, steel, rail);
+        Flight(g, "Flight_W", new Vector3(-56.5f, -5.3f, 32.8f), Vector3.back, Vector3.right, steel, rail);
+        Flight(g, "Flight_S", new Vector3(-56f, -7.3f, 29.3f), Vector3.right, Vector3.forward, steel, rail);
+        // Railing along the top landing's edge (and the corner landing beside it), where it drops into the shaft.
+        RailRun(g, "TopRail", new Vector3(-57f, -1.3f, 28.8f), new Vector3(-53f, -1.3f, 28.8f), rail);
+        RailRun(g, "TopRail_SE", new Vector3(-53f, -1.3f, 28.8f), new Vector3(-53f, -1.3f, 29.8f), rail);
+
+        // One dying bulb hanging on a cable in the middle of the well.
+        var cable = Prim(PrimitiveType.Cylinder, "BulbCable", g, new Vector3(StairCentre.x, (1.7f - 4.1f) * 0.5f, StairCentre.z), new Vector3(0.015f, (1.7f + 4.1f) * 0.5f, 0.015f), rail);
+        Object.DestroyImmediate(cable.GetComponent<Collider>());
+        var bulb = Prim(PrimitiveType.Sphere, "StairBulb", g, new Vector3(StairCentre.x, -4.2f, StairCentre.z), Vector3.one * 0.12f, Mat("BulbYellow", null, new Color(1f, 0.85f, 0.5f), 1f, 0.6f));
         Object.DestroyImmediate(bulb.GetComponent<Collider>());
         var light = new GameObject("StairLight").AddComponent<Light>();
         light.transform.SetParent(g);
-        light.transform.position = new Vector3(-56.6f, -5.2f, 31.3f);
-        light.type = LightType.Point; light.color = new Color(1f, 0.8f, 0.5f); light.intensity = 1.6f; light.range = 5.5f; light.shadows = LightShadows.Soft;
+        light.transform.position = new Vector3(StairCentre.x, -4.35f, StairCentre.z);
+        light.type = LightType.Point; light.color = new Color(1f, 0.8f, 0.5f); light.intensity = 2f; light.range = 7f; light.shadows = LightShadows.Soft;
         var flicker = light.gameObject.AddComponent<FlickeringLight>();
         flicker.lamp = light; flicker.minCalm = 2f; flicker.maxCalm = 7f;
+    }
+
+    // A 1 m square steel landing plate with its top at 'top' (x0, z0 = its corner with the smaller x and z).
+    static void CornerLanding(Transform parent, string name, float x0, float z0, float top, Material steel)
+    {
+        Span(name, parent, new Vector3(x0, top - 0.05f, z0), new Vector3(x0 + 1f, top, z0 + 1f), steel);
+    }
+
+    // One straight flight: nine steel steps, 1 m wide, from 'start' (the middle of its top edge, at the landing's
+    // height) along 'along' for 3 m, dropping 0.2 m each; 'inner' points from the flight towards the open well,
+    // where it gets a stringer under the steps and a railing.
+    static void Flight(Transform parent, string name, Vector3 start, Vector3 along, Vector3 inner, Material steel, Material rail)
+    {
+        const int steps = 9;
+        const float run = 3f, drop = 2f, width = 1f, plate = 0.05f;
+        float tread = run / steps;
+        Vector3 across = new Vector3(Mathf.Abs(inner.x), 0f, Mathf.Abs(inner.z));
+        Vector3 lengthwise = new Vector3(Mathf.Abs(along.x), 0f, Mathf.Abs(along.z));
+        for (int k = 0; k < steps; k++)
+        {
+            float top = start.y - drop / (steps + 1) * (k + 1);
+            Vector3 c = new Vector3(start.x, 0f, start.z) + along * (tread * (k + 0.5f));
+            Vector3 half = across * (width * 0.5f) + lengthwise * (tread * 0.5f);
+            Span(name + "_Step" + k, parent, new Vector3(c.x - half.x, top - plate, c.z - half.z), new Vector3(c.x + half.x, top, c.z + half.z), steel);
+        }
+        // Stringer: a steel side plate under the step ends on the well side.
+        Vector3 a = start + inner * (width * 0.5f), b = a + along * run + Vector3.down * drop;
+        var stringer = Prim(PrimitiveType.Cube, name + "_Stringer", parent, (a + b) * 0.5f + Vector3.down * 0.15f, new Vector3(0.04f, 0.25f, Vector3.Distance(a, b)), steel);
+        stringer.transform.rotation = Quaternion.LookRotation(b - a);
+        Object.DestroyImmediate(stringer.GetComponent<Collider>());
+        RailRun(parent, name + "_Rail", a, b, rail, endPost: name == "Flight_S");   // the bottom flight closes the railing
+    }
+
+    // A railing from a to b (points on the walking surface): posts at the start and the middle (the next run's
+    // start post closes this one; 'endPost' adds one for the last run), a handrail at 0.95 m and a middle rail at
+    // 0.5 m running between the posts. Solid, so nobody falls into the well.
+    static void RailRun(Transform parent, string name, Vector3 a, Vector3 b, Material rail, bool endPost = false)
+    {
+        foreach (float t in endPost ? new[] { 0f, 0.5f, 1f } : new[] { 0f, 0.5f })
+        {
+            Vector3 foot = Vector3.Lerp(a, b, t);
+            Prim(PrimitiveType.Cube, name + "_Post", parent, foot + Vector3.up * 0.5f, new Vector3(0.05f, 1f, 0.05f), rail);
+        }
+        foreach (float h in new[] { 0.95f, 0.5f })
+        {
+            var bar = Prim(PrimitiveType.Cube, name + "_Bar", parent, (a + b) * 0.5f + Vector3.up * h, new Vector3(0.04f, 0.04f, Vector3.Distance(a, b) - 0.05f), rail);
+            bar.transform.rotation = Quaternion.LookRotation(b - a);
+        }
     }
 
     // ---------------------------------------------------------------- shells: corridor, hall, storage, camp
@@ -171,6 +224,11 @@ public static partial class LookTestBuilder
         var wide = Place("Assets/Art/Models/Props/Crates/WideCrate.fbx", g, Vector3.zero, -10f, 0.8f);
         StandOn(wide, new Vector3(-55f, f, 49f));
 
+        // The machines are still running: a deep hum from the generator and turbine, a buzz from the transformers.
+        MachineLoop(g, "GeneratorHum", new Vector3(-62f, f + 1f, 51.6f), "MachineHum", 0.75f, 24f, 1f);
+        MachineLoop(g, "TurbineHum", new Vector3(-50f, f + 1f, 51f), "MachineHum", 0.6f, 22f, 0.85f);
+        MachineLoop(g, "TransformerBuzz", new Vector3(-67.2f, f + 1.2f, 50.2f), "TransformerBuzz", 0.35f, 12f, 1f);
+
         // Pipe runs high along the north wall.
         for (int i = 0; i < 6; i++)
         {
@@ -214,6 +272,18 @@ public static partial class LookTestBuilder
         head.transform.rotation = spot.transform.rotation;
         spot.type = LightType.Spot; spot.color = new Color(1f, 0.93f, 0.8f); spot.intensity = 35f; spot.range = 18f; spot.spotAngle = 80f;
         spot.shadows = LightShadows.Soft;
+    }
+
+    // A looping machine sound at a point, fading out by 'reach' metres.
+    static void MachineLoop(Transform parent, string name, Vector3 at, string clip, float volume, float reach, float pitch)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent);
+        go.transform.position = at;
+        var source = go.AddComponent<AudioSource>();
+        source.clip = Load<AudioClip>(SfxDir + "/Scares/" + clip + ".wav");
+        source.loop = true; source.playOnAwake = true; source.volume = volume; source.pitch = pitch;
+        source.spatialBlend = 1f; source.rolloffMode = AudioRolloffMode.Linear; source.minDistance = 2.5f; source.maxDistance = reach;
     }
 
     // ---------------------------------------------------------------- storage room

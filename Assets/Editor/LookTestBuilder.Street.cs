@@ -123,9 +123,11 @@ public static partial class LookTestBuilder
     {
         var shops = StreetGroup("Shops");
         // North side, facing the road (south). Yaw turns each model so its shopfront faces the street.
-        Anchor(Place(StreetDir + "/Laundry/Laundry.fbx", shops, new Vector3(-38f, StreetY, -40f), LaundryYaw), "Laundry_building");
+        // Its fittings (and the vending machine outside) stood above the shell's base: stand it on the vending machine.
+        Anchor(Place(StreetDir + "/Laundry/Laundry.fbx", shops, new Vector3(-38f, StreetY, -40f), LaundryYaw), "Vending_machine");
         // Its shell includes a lower storey meant to sit below the street: stand it on its door instead.
         Anchor(Place(StreetDir + "/VhsShop/VhsShop.fbx", shops, new Vector3(-20f, StreetY, -39f), VhsYaw), "Door");
+        ShopGlass(shops, "VhsGlass", new Vector3(-27.4f, StreetY, -32.75f), new Vector3(-12.6f, StreetY + 3.6f, -32.65f));   // its window frames were empty
         var sixTwelve = Place(StreetDir + "/SixTwelve/SixTwelve.fbx", shops, new Vector3(2f, StreetY, -43f), SixTwelveYaw);
         // Its interior and front stood on a raised shop floor (not brought in): stand the door frames on the pavement.
         Anchor(sixTwelve, "Door_frame");
@@ -135,6 +137,7 @@ public static partial class LookTestBuilder
         // South side, behind the entrance sidewalk.
         var pizzeria = Place(StreetDir + "/Pizzeria/Pizzeria.fbx", shops, new Vector3(24f, StreetY, 9f), PizzeriaYaw);
         Anchor(pizzeria, "building_01.001");
+        ShopGlass(shops, "PizzeriaGlass", new Vector3(19f, StreetY, 0.12f), new Vector3(29f, StreetY + 2.9f, 0.2f));   // the doorway beside its door stood open
         // Its cellar-door tread hovered just above the pavement: set it down.
         foreach (var r in pizzeria.GetComponentsInChildren<Renderer>())
             if (r.name == "metal_tread") r.transform.position += Vector3.up * (StreetY + 0.004f - r.bounds.min.y);
@@ -143,6 +146,9 @@ public static partial class LookTestBuilder
         PlacePiece(blds, "Building_08", shops, new Vector3(-14f, StreetY, 6f), 180f);
         PlacePiece(blds, "Building_09", shops, new Vector3(5f, StreetY, 6f), 180f);
         PlacePiece(blds, "Building_07", shops, new Vector3(42f, StreetY, 8f), 180f);
+        // The gap between Building_09 and the pizzeria showed the edge of the map: fill it with a building set a
+        // little back, its left part hidden inside Building_09 and its right edge meeting the pizzeria.
+        PlacePiece(blds, "Building_08", shops, new Vector3(11.2f, StreetY, 7.3f), 180f).name = "Building_08_Gap";
         // Skyline beyond the north shops.
         PlacePiece(blds, "Building_02", shops, new Vector3(-30f, StreetY, -75f), 0f);
         PlacePiece(blds, "Building_01", shops, new Vector3(8f, StreetY, -78f), 0f);
@@ -172,8 +178,6 @@ public static partial class LookTestBuilder
             TreePit(f, Place(t + trees[i] + ".fbx", f, new Vector3(-44f + i * 17f, StreetY, -3.5f), i * 47f, 1.5f), soil);
         for (int i = 0; i < 5; i++)
             TreePit(f, Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 1.4f), soil);
-        string bush = StreetDir + "/Bushes/bush_connector_straight_autumn.fbx";
-        for (int i = 0; i < 6; i++) Place(bush, f, new Vector3(16f + i * 2f, StreetY, -31f), 0f);
         // Bus stop by the entrance, with the newspaper (see BuildLore).
         var stop = StreetDir + "/BusStop/BusStop.fbx";
         PlacePiece(stop, "Bus_stop", f, new Vector3(-10f, StreetY, -14.6f), 180f);
@@ -217,6 +221,13 @@ public static partial class LookTestBuilder
         Car(cars, c + "Car2.fbx", new Vector3(6f, -24.6f), -88f, "ParkedCar_4");
         Car(cars, c + "Car5_Taxi.fbx", new Vector3(24f, -21.5f), 115f, "AbandonedTaxi");   // stopped at an angle mid-road
         Car(cars, c + "Car5_Police.fbx", new Vector3(38.5f, -21f), 70f, "PoliceCar");
+    }
+
+    // A see-through glass pane (solid to walk into) set just behind a shopfront, filling its empty frames.
+    static void ShopGlass(Transform parent, string name, Vector3 min, Vector3 max)
+    {
+        var glass = Span(name, parent, min, max, TransparentMat("ShopGlass", new Color(0.35f, 0.45f, 0.5f, 0.22f), 0.95f));
+        glass.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
     }
 
     // A square of soil in the pavement round a tree's trunk (found by its bark material), 3 cm proud.
