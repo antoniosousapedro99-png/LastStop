@@ -22,7 +22,7 @@ Gas Station, 6twelve, VHS Shop, Laundry, Pizzeria,
 Buildings, Bus Stop and URBAN packs
 Retro Tree Pack, All Bushes pack
 OFFICE pack, Survival pack, 3D Retro Plumbing & Wiring
-Industrial exterior, NEUROZAM-9 Pill Bottle
+Industrial exterior, NEUROZAM-9 Pill Bottle, Mine pack
 Big Frankie (the monster)
 PSX Derelict Furniture, PSX Old Stuff Pack
 Trash and Debris, Retro PSX Trash bag, Sewer pack

@@ -7,7 +7,8 @@ using UnityEngine.AI;
 // - Chase: sees the player; runs at them (3.8 m/s, a little slower than sprinting).
 // - Search: lost sight; goes to where he last saw them and looks around for a while.
 // - Attack: close enough; lunges, and the player takes a hit if still in reach.
-// - Retreat: after a hit, backs off for a few seconds so hits never come back to back.
+// - Retreat: after a hit, a short breather: he steps back a little, staring, then comes at the player
+//   again (he keeps attacking until they die, escape out of sight or drive him off with a flare).
 // - Repelled: a lit flare is near; he backs away and keeps his distance until it dies.
 // - Reveal: his first appearance. He stands at the end of the platform staring at the player; once
 //   they've noticed him (a sting plays) he stares a moment longer, then...
@@ -35,6 +36,7 @@ public class FrankieAI : MonoBehaviour
     // His attack animation: when the claws land, and how long it lasts.
     public float hitAt = 0.8f, attackLength = 1.5f;
     public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
+    public float breather = 3f;                // seconds between one hit and coming at the player again
 
     [Header("Sounds")]
     public AudioSource voice;                  // breathing, shrieks
@@ -253,13 +255,21 @@ public class FrankieAI : MonoBehaviour
 
     void Retreat()
     {
-        if (moodTime < 0.1f || Arrived())
+        if (!senses.Player) { SetMood(Mood.Search); return; }
+        if (moodTime < 0.1f)
         {
-            // Back off away from the player.
-            Vector3 away = transform.position + (transform.position - (senses.Player ? senses.Player.position : transform.position)).normalized * 8f;
-            if (NavMesh.SamplePosition(away, out var hit, 5f, NavMesh.AllAreas)) agent.SetDestination(hit.position);
+            // A step or two back, away from the player.
+            Vector3 away = transform.position + (transform.position - senses.Player.position).normalized * 2f;
+            if (NavMesh.SamplePosition(away, out var hit, 2f, NavMesh.AllAreas)) agent.SetDestination(hit.position);
         }
-        if (moodTime > 6f) SetMood(Mood.Search);
+        FaceTowards(senses.Player.position, 6f);   // never takes his eyes off them
+        if (moodTime > breather)
+        {
+            // He knows exactly where they are: straight back into the chase.
+            lastSeen = Time.time;
+            lastSeenAt = senses.Player.position;
+            SetMood(HidingLocker.Occupied && !HidingLocker.SeenGettingIn ? Mood.Search : Mood.Chase);
+        }
     }
 
     void Repelled(Transform flare)
@@ -318,7 +328,7 @@ public class FrankieAI : MonoBehaviour
     // feet match the ground.
     void Animate()
     {
-        if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal) agent.updateRotation = true;
+        if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal && Current != Mood.Retreat) agent.updateRotation = true;
         if (Current == Mood.Attack) return;
         smoothedSpeed = Mathf.Lerp(smoothedSpeed, agent.velocity.magnitude, 1f - Mathf.Exp(-8f * Time.deltaTime));
         float speed = smoothedSpeed;

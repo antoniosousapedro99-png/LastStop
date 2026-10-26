@@ -82,8 +82,8 @@ public static partial class LookTestBuilder
         // Track pits (north: a long west tunnel where the train stalled; south: a short dead end).
         Span("PitN", g, new Vector3(-100f, -1.5f, z), new Vector3(55f, -1.3f, z + 5.5f), gravel);
         Span("PitS", g, new Vector3(-60f, -1.5f, z + 15.5f), new Vector3(55f, -1.3f, z + 21f), gravel);
-        Span("TrackN", g, new Vector3(-100f, -1.3f, 301.6f), new Vector3(55f, -1.29f, 304.2f), trackBed, false);   // starts on the texture's repeat
-        Span("TrackS", g, new Vector3(-60f, -1.3f, 317.2f), new Vector3(55f, -1.29f, 319.8f), trackBed, false);
+        CanalTrack(g, "TrackN", -100f, 55f, z + 1.6f);
+        CanalTrack(g, "TrackS", -60f, 55f, z + 17.2f);
         // Island platform between them.
         Span("IslandBase", g, new Vector3(-40f, -1.5f, z + 5.5f), new Vector3(40f, -0.05f, z + 15.5f), concrete);
         Span("IslandTop", g, new Vector3(-40f, -0.05f, z + 5.5f), new Vector3(40f, 0f, z + 15.5f), floorTile);
@@ -104,6 +104,8 @@ public static partial class LookTestBuilder
         Span("EastLintelN", g, new Vector3(40f, 3.2f, z), new Vector3(40.3f, 5.2f, z + 5.5f), concrete);
         Span("EastLintelS", g, new Vector3(40f, 3.2f, z + 15.5f), new Vector3(40.3f, 5.2f, z + 21f), concrete);
         Span("EastLintelEscalator", g, new Vector3(40f, 5f, z + 8f), new Vector3(40.3f, 9.4f, z + 12f), wallTile);
+        Span("EastHeaderN", g, new Vector3(40f, 5.2f, z + 7.7f), new Vector3(40.3f, 9.4f, z + 8f), wallTile);
+        Span("EastHeaderS", g, new Vector3(40f, 5.2f, z + 12f), new Vector3(40.3f, 9.4f, z + 12.3f), wallTile);
 
         // Tunnels beyond the hall (concrete, ceiling 3 m above the platform).
         CanalTunnel(g, "TunnelNW", -100f, -40.3f, z, z + 5.5f, tunnelConcrete, true);
@@ -137,7 +139,7 @@ public static partial class LookTestBuilder
         }
         Prop("trash_can", g, new Vector3(-15f, 0f, z + 9.6f), 0f);
         Prop("trash_can", g, new Vector3(25f, 0f, z + 11.4f), 0f);
-        Prop("Vending_machine", g, new Vector3(-38.8f, 0f, z + 13.5f), 90f);
+        Prop("Vending_machine", g, new Vector3(-38.8f, 0f, z + 13.5f), -90f);
         Note(g, "CanalNotice", new Vector3(37.5f, 0.01f, z + 9.2f), 80f,
              "NOTICE - Canal St Junction\nStation power failure. Escalators out of service.\nBackup generator: mezzanine service room.\n- MTA Line 4");
         HidingLockerAt(g, "HidingLocker_CanalWest", new Vector3(-39.68f, 0f, z + 7.5f), 90f);
@@ -146,6 +148,22 @@ public static partial class LookTestBuilder
         PlaceFuelCan(g, new Vector3(-30.5f, 0f, z + 12.6f), 35f);
         // Fuel can 2: at the end of the south tunnel (down the staff steps).
         PlaceFuelCan(g, new Vector3(-58.6f, -1.3f, z + 19.8f), -20f);
+    }
+
+    // A 2.6 m track bed starting at 'bedZ', its texture lined up with its edge (each bed gets its own copy of
+    // the material for that), and steel rails sitting on the painted ones, like Hollis St's.
+    static void CanalTrack(Transform g, string name, float x0, float x1, float bedZ)
+    {
+        const float width = 2.6f;
+        var bed = Mat("TrackBed_" + name, Tex("road_rails.jpg"), new Color(0.8f, 0.78f, 0.74f), width, 0.1f);
+        tileOrigin[bed] = new Vector3(0f, 0f, bedZ);
+        Span(name, g, new Vector3(x0, -1.3f, bedZ), new Vector3(x1, -1.29f, bedZ + width), bed, false);
+        var rail = Mat("RailMetal", Tex("metal_02.png"), new Color(0.55f, 0.52f, 0.5f), 1f, 0.6f, 0.8f);
+        foreach (float at in new[] { 0.25f, 0.6875f })
+        {
+            float rz = bedZ + width * at;
+            Span(name + "_Rail" + at, g, new Vector3(x0, -1.29f, rz - 0.035f), new Vector3(x1, -1.18f, rz + 0.035f), rail);
+        }
     }
 
     static void CanalTunnel(Transform g, string name, float x0, float x1, float z0, float z1, Material mat, bool capWest)
@@ -271,6 +289,7 @@ public static partial class LookTestBuilder
         Span("MezzWallE_N", g, new Vector3(79.5f, 5.8f, z), new Vector3(79.8f, 10.7f, z + 8f), wallTile);
         Span("MezzWallE_S", g, new Vector3(79.5f, 5.8f, z + 12f), new Vector3(79.8f, 10.7f, z + 21f), wallTile);
         Span("MezzWallE_Lintel", g, new Vector3(79.5f, 9.4f, z + 8f), new Vector3(79.8f, 10.7f, z + 12f), wallTile);
+        Span("MezzWallE_Header", g, new Vector3(79.5f, 10.7f, z + 7.7f), new Vector3(79.8f, 15.2f, z + 12.3f), wallTile);   // above the ceiling, up to escalator 2's roof
         // North wall with the generator room door (x 67..68.2), south wall with the office door (x 57..58.2).
         Span("MezzWallN_W", g, new Vector3(49.2f, 5.8f, z - 0.3f), new Vector3(67f, 10.7f, z), wallTile);
         Span("MezzWallN_E", g, new Vector3(68.2f, 5.8f, z - 0.3f), new Vector3(79.8f, 10.7f, z), wallTile);
@@ -310,7 +329,7 @@ public static partial class LookTestBuilder
         // Ticket machines, seats, a vending machine, a bin; a hiding locker by the exit side.
         Prop("ticket_machine", g, new Vector3(52.5f, f, z + 20.4f), 180f);
         Prop("ticket_machine", g, new Vector3(54.3f, f, z + 20.4f), 180f);
-        Prop("Vending_machine", g, new Vector3(77.5f, f, z + 20.4f), 180f);
+        Prop("Vending_machine", g, new Vector3(77.5f, f, z + 20.4f), 0f);
         Prop("seats", g, new Vector3(71f, f, z + 20.2f), 180f);
         Prop("trash_can", g, new Vector3(60.5f, f, z + 20.5f), 0f);
         HidingLockerAt(g, "HidingLocker_CanalMezz", new Vector3(74.5f, f, z + 20.68f), 180f);
@@ -405,14 +424,10 @@ public static partial class LookTestBuilder
         var chair = Model(ArtDir + "/Props/Office/office_chair_black.fbx", null, g, Tex2("Props/Office/office_chair_black.jpg"), 1f, 200f);
         StandOn(chair, new Vector3(58.1f, f, z + 5f));
         AddMeshColliders(chair);
-        var lantern = ModelPiece(SurvivalFbx, "Lantern", g, Tex2("Props/Survival/Battery.png"), 1f);
-        lantern.transform.localScale *= 0.3f / Mathf.Max(0.01f, Bounds(lantern).size.y);
-        StandOn(lantern, new Vector3(59.6f, top, z + 6.2f));
-        var glow = new GameObject("LanternLight").AddComponent<Light>();
-        glow.transform.SetParent(g);
-        glow.transform.position = new Vector3(59.6f, top + 0.4f, z + 6f);
-        glow.type = LightType.Point; glow.color = new Color(1f, 0.75f, 0.45f); glow.intensity = 1.6f; glow.range = 5f;
-        glow.gameObject.AddComponent<CandleFlicker>().amount = 0.12f;
+        // A candle burning on the desk (left by the station master?) lights the room a little.
+        var candle = Candle(g, new Vector3(58.45f, top, z + 6.35f), true);
+        var flame = candle.GetComponentInChildren<Light>();
+        flame.intensity = 1.6f; flame.range = 4.5f;
     }
 
     // A spark plug made of simple shapes: a white ceramic body, a steel hex nut and electrode.

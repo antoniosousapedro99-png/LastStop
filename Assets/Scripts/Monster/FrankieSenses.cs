@@ -1,13 +1,18 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // What Frankie notices.
-// - Sight: the player within 'sightRange' metres (further while the torch is on, because the light gives
-//   them away), inside a wide cone in front of him, with nothing solid in between.
+// - Sight: depends on light. In pitch black he only sees the player within 'darkSightRange' metres; the
+//   better lit they are (lamps, candles, flares: see LightLevel) the further, up to 'sightRange'; with the
+//   torch on they give themselves away from 'torchSightRange'. Always inside a wide cone in front of him,
+//   with nothing solid in between.
 // - Hearing: any Noise made close enough (running carries far, walking less, crouching makes none).
 public class FrankieSenses : MonoBehaviour
 {
     public Transform eyes;                  // a point at head height
-    public float sightRange = 15f;
+    public float darkSightRange = 4f;       // the player in pitch black, torch off
+    public float sightRange = 15f;          // the player standing in a well-lit spot
+    public float fullyLit = 1f;             // LightLevel that counts as well lit
     public float torchSightRange = 25f;
     public float sightAngle = 120f;         // degrees, the whole cone
 
@@ -16,6 +21,7 @@ public class FrankieSenses : MonoBehaviour
     public Vector3 HeardAt { get; private set; }
 
     Flashlight torch;
+    readonly List<Light> torchLights = new List<Light>();
 
     void OnEnable() => Noise.Made += OnNoise;
     void OnDisable() => Noise.Made -= OnNoise;
@@ -24,7 +30,11 @@ public class FrankieSenses : MonoBehaviour
     {
         if (Player) return;
         var go = GameObject.Find("Player");
-        if (go) { Player = go.transform; torch = go.GetComponentInChildren<Flashlight>(); }
+        if (!go) return;
+        Player = go.transform;
+        torch = go.GetComponentInChildren<Flashlight>(true);
+        torchLights.Clear();
+        if (torch) foreach (var l in new[] { torch.beam, torch.spill, torch.viewmodelFill }) if (l) torchLights.Add(l);
     }
 
     // The player's head, for line-of-sight checks.
@@ -36,13 +46,21 @@ public class FrankieSenses : MonoBehaviour
         if (!Player || !Player.gameObject.activeInHierarchy) return false;
         if (HidingLocker.Occupied) return false;   // hidden in a locker
         Vector3 to = PlayerHead - eyes.position;
-        float range = torch && torch.IsOn ? torchSightRange : sightRange;
+        float range = SightRange();
         if (to.magnitude > range) return false;
         if (Vector3.Angle(transform.forward, new Vector3(to.x, 0f, to.z)) > sightAngle * 0.5f) return false;
         // Walls, the train, crates... anything solid that isn't the player blocks the view.
         if (Physics.Raycast(eyes.position, to.normalized, out var hit, to.magnitude, ~0, QueryTriggerInteraction.Ignore))
             return hit.collider.transform.IsChildOf(Player);
         return true;
+    }
+
+    // How far away he can see the player right now, from how lit they are.
+    public float SightRange()
+    {
+        if (torch && torch.IsOn) return torchSightRange;
+        float lit = Mathf.Clamp01(LightLevel.At(PlayerHead, torchLights) / fullyLit);
+        return Mathf.Lerp(darkSightRange, sightRange, lit);
     }
 
     // The other way round: is he on the player's screen (near the middle of the view, within 30 m, with

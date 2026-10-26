@@ -27,6 +27,9 @@ public static partial class LookTestBuilder
     static readonly Dictionary<Material, float> tileSize = new Dictionary<Material, float>();
     // Where a material's texture grid starts (default: the world origin). Used to line a texture up with a piece.
     static readonly Dictionary<Material, Vector3> tileOrigin = new Dictionary<Material, Vector3>();
+    // Materials for objects (doors, lockers, cabinets, crates): their image is stretched over each face of
+    // each piece instead of tiling in world space, so a texture edge never runs down the middle of one.
+    static readonly HashSet<string> fitToPiece = new HashSet<string> { "M_DoorMetal", "M_LockerSteel", "M_CabinetBlue", "M_CabSteel", "M_DrawerSteel", "M_Crate" };
 
     [MenuItem("Last Stop/Build Look Test")]
     public static void Build()
@@ -513,7 +516,7 @@ public static partial class LookTestBuilder
         go.transform.position = center; // centres are given in world space
         float tile = tileSize.TryGetValue(mat, out var t) ? t : 1f;
         Vector3 origin = tileOrigin.TryGetValue(mat, out var o) ? o : Vector3.zero;
-        go.AddComponent<MeshFilter>().sharedMesh = BoxMesh(center - origin, size, tile, name);
+        go.AddComponent<MeshFilter>().sharedMesh = BoxMesh(center - origin, size, tile, name, fitToPiece.Contains(mat.name));
         go.AddComponent<MeshRenderer>().sharedMaterial = mat;
         var col = go.AddComponent<BoxCollider>();
         col.size = size;
@@ -522,7 +525,8 @@ public static partial class LookTestBuilder
 
     // Builds a box mesh around (0,0,0) whose UVs come from world position, so neighbouring boxes
     // share one continuous tile grid.
-    static Mesh BoxMesh(Vector3 worldCenter, Vector3 size, float tile, string name)
+    // With 'fit', each face shows the whole image once instead.
+    static Mesh BoxMesh(Vector3 worldCenter, Vector3 size, float tile, string name, bool fit = false)
     {
         var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var norms = new List<Vector3>(); var tris = new List<int>();
         Vector3 h = size * 0.5f;
@@ -541,7 +545,12 @@ public static partial class LookTestBuilder
                 norms.Add(n);
                 Vector3 w = worldCenter + p;
                 Vector2 uv = n.x != 0 ? new Vector2(w.z, w.y) : n.y != 0 ? new Vector2(w.x, w.z) : new Vector2(w.x, w.y);
-                uvs.Add(uv / tile);
+                if (fit)
+                {
+                    Vector3 f = new Vector3((p.x + h.x) / size.x, (p.y + h.y) / size.y, (p.z + h.z) / size.z);   // 0..1 across the piece
+                    uvs.Add(n.x != 0 ? new Vector2(f.z, f.y) : n.y != 0 ? new Vector2(f.x, f.z) : new Vector2(f.x, f.y));
+                }
+                else uvs.Add(uv / tile);
             }
             // Make sure the triangles face outward (Unity shows only the front side).
             bool flip = Vector3.Dot(Vector3.Cross(q[1] - q[0], q[2] - q[0]), n) < 0;
