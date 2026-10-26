@@ -23,7 +23,7 @@ public class FrankieAI : MonoBehaviour
 
     public Animator animator;
     public float walkSpeed = 0.9f, chaseSpeed = 3.8f;
-    public float attackRange = 1.6f, hitReach = 2.1f;
+    public float attackRange = 2f, hitReach = 2.5f;   // lunges within 2 m; the hit lands if still within 2.5 m
     public float loseAfter = 8f;               // seconds without seeing the player before giving up the chase
     public float flareKeepAway = 6f;           // metres he stays from a lit flare
     // How fast each animation's planted foot slides back along the ground at normal playback (measured on
