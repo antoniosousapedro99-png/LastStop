@@ -455,35 +455,49 @@ public static partial class LookTestBuilder
         // The light hangs just under the lamp head, at the end of the arm, found from the model itself.
         var head = new GameObject("SodiumLight");
         head.transform.SetParent(lamp, true);
-        head.transform.position = UnderLampHead(lamp.gameObject);
-        head.transform.rotation = Quaternion.Euler(90f, 0, 0);
+        head.transform.position = UnderLampHead(lamp.gameObject, out Vector3 outward);
+        // Aimed down and tilted 25 degrees out toward the road, 90 degrees wide: the pole right behind the
+        // head stays out of the beam near the top, so the light visibly comes from the head, not the pole.
+        head.transform.rotation = Quaternion.LookRotation(Vector3.down + outward * Mathf.Tan(25f * Mathf.Deg2Rad), outward);
         var light = head.AddComponent<Light>();
         light.type = LightType.Spot; light.color = Sodium;
-        light.intensity = 40f; light.range = 16f; light.spotAngle = 110f; light.innerSpotAngle = 40f;
+        light.intensity = 40f; light.range = 16f; light.spotAngle = 90f; light.innerSpotAngle = 40f;
         light.shadows = LightShadows.Soft;
         light.shadowNearPlane = 0.3f;   // skip the lamp head right above it
+        // A glowing lens on the underside of the head, so you can see where the light comes from.
+        var glow = Sodium * 2.2f;
+        var lens = Prim(PrimitiveType.Cube, "SodiumLens", head.transform, head.transform.position + Vector3.up * 0.06f,
+                        new Vector3(0.24f, 0.02f, 0.38f), EmissiveMat("SodiumLens", glow));
+        lens.transform.rotation = Quaternion.LookRotation(outward);   // long side along the arm
+        Object.DestroyImmediate(lens.GetComponent<Collider>());
+        lens.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
         if (flicker)
         {
             var f = head.AddComponent<FlickeringLight>();
             f.lamp = light;
+            f.tube = lens.GetComponent<Renderer>(); f.tubeGlow = glow;   // the lens dims with the light
             f.minCalm = 2f; f.maxCalm = 7f;
         }
     }
 
-    // A point just under a street lamp's head: the top of the model furthest out from the pole's base.
-    static Vector3 UnderLampHead(GameObject lamp)
+    // A point just under a street lamp's head: the top of the model furthest out from the pole. 'outward'
+    // is the flat direction from the pole to the head (along the arm).
+    static Vector3 UnderLampHead(GameObject lamp, out Vector3 outward)
     {
         var points = new List<Vector3>();
         foreach (var mf in lamp.GetComponentsInChildren<MeshFilter>())
             foreach (var v in mf.sharedMesh.vertices) points.Add(mf.transform.TransformPoint(v));
-        float bottom = points.Min(p => p.y), top = points.Max(p => p.y);
+        float top = points.Max(p => p.y), bottom = points.Min(p => p.y);
+        // The pole stands in the middle of the base block.
         var baseVerts = points.Where(p => p.y < bottom + 0.3f).ToList();
         Vector3 pole = new Vector3(baseVerts.Average(p => p.x), 0f, baseVerts.Average(p => p.z));
         System.Func<Vector3, float> reach = p => new Vector2(p.x - pole.x, p.z - pole.z).magnitude;
-        var topVerts = points.Where(p => p.y > top - 0.45f).ToList();
+        var topVerts = points.Where(p => p.y > top - 0.6f).ToList();
         float furthest = topVerts.Max(reach);
-        var headVerts = topVerts.Where(p => reach(p) > furthest * 0.7f).ToList();
-        return new Vector3(headVerts.Average(p => p.x), headVerts.Min(p => p.y) - 0.1f, headVerts.Average(p => p.z));
+        var headVerts = topVerts.Where(p => reach(p) > furthest - 0.45f).ToList();   // the head's last ~half metre
+        var under = new Vector3(headVerts.Average(p => p.x), headVerts.Min(p => p.y) - 0.08f, headVerts.Average(p => p.z));
+        outward = new Vector3(under.x - pole.x, 0f, under.z - pole.z).normalized;
+        return under;
     }
 
     // Light drizzle around the player while they're outdoors. Uses the "Rain Particles" pack (Game Seed
