@@ -12,6 +12,7 @@ public class PoweredLight : MonoBehaviour
     public Color offColour = new Color(0.22f, 0.24f, 0.22f);
     public bool worksWithoutPower;
     public FlickeringLight flicker;        // optional: stopped once the power is back
+    public PowerGrid grid;                 // which station's power it runs on (empty = Hollis St's)
     public float poweredReach = 1.5f;      // with the grid back on, lamps throw light further (range x this)
     public float poweredWiden = 15f;       // ...and spot lamps open wider by this many degrees
 

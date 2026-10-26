@@ -5,12 +5,13 @@ using UnityEngine;
 public class Logbook : MonoBehaviour, IInteractable
 {
     public AudioClip pageSound;
+    public string terminalName = "STATION 1 MAINTENANCE TERMINAL";
 
     public string Prompt => "Use computer (save game)";
 
     public void Interact(Interactor player)
     {
         if (pageSound) AudioSource.PlayClipAtPoint(pageSound, transform.position, 1f);
-        SaveMenu.Current.Open(SaveMenu.Mode.Save, pauseGame: true);
+        SaveMenu.Current.Open(SaveMenu.Mode.Save, pauseGame: true, terminal: terminalName);
     }
 }

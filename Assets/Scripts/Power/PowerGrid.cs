@@ -14,6 +14,7 @@ public class PowerGrid : MonoBehaviour
     public AudioSource hum;               // electrical hum of the station, silent until power returns
     public float humVolume = 0.25f;
     public float delayBetweenLights = 0.18f;
+    public bool ownsUnassignedLamps = true;   // Hollis St's grid also powers lamps with no grid set
 
     public bool IsOn { get; private set; }
     public Vector3 Origin { get; private set; }  // where the power came back from (the fuse box)
@@ -36,7 +37,7 @@ public class PowerGrid : MonoBehaviour
         if (IsOn) return;
         IsOn = true;
         Origin = origin;
-        foreach (var light in FindObjectsByType<PoweredLight>()) light.PowerOn();
+        foreach (var light in FindObjectsByType<PoweredLight>()) if (Powers(light)) light.PowerOn();
         if (hum) { hum.volume = humVolume; hum.Play(); }
     }
 
@@ -58,6 +59,7 @@ public class PowerGrid : MonoBehaviour
 
         // Nearest lights first, so the light visibly spreads away from the fuse box.
         var lights = new List<PoweredLight>(FindObjectsByType<PoweredLight>());
+        lights.RemoveAll(l => !Powers(l));
         lights.Sort((a, b) => Vector3.Distance(a.transform.position, Origin)
                               .CompareTo(Vector3.Distance(b.transform.position, Origin)));
         foreach (var light in lights)
@@ -66,6 +68,8 @@ public class PowerGrid : MonoBehaviour
             yield return new WaitForSeconds(delayBetweenLights);
         }
     }
+
+    bool Powers(PoweredLight light) => light.grid == this || (light.grid == null && ownsUnassignedLamps);
 
     IEnumerator FadeInHum()
     {

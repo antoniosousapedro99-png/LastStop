@@ -23,6 +23,8 @@ public class SaveData
     // What they carry
     public int fuses, spareBatteries, flares, painkillers, shells;
     public bool hasCabinetKey, hasShotgun, hasReverserKey;
+    public int fuelCans;
+    public bool hasSparkPlug, hasOfficeKey;
 
     // The level
     public int fusesInstalled;
@@ -31,6 +33,10 @@ public class SaveData
     public List<string> openDoors = new List<string>();   // doors, lockers and cabinets standing open
     public List<string> openDrawers = new List<string>();
     public List<string> firedScares = new List<string>();   // one-time scares that already happened
+
+    // Canal St Junction
+    public int generatorFuel;
+    public bool generatorPlug, generatorRunning;
 
     // Frankie
     public bool monsterAwake;

@@ -34,7 +34,8 @@ public static partial class LookTestBuilder
         // ---- the menus
         var menus = new GameObject("Menus");
         menus.transform.SetParent(root);
-        menus.AddComponent<EndCard>();    // the end of Station 1, after the train pulls away
+        menus.AddComponent<EndCard>();    // the end of Station 2, out of Canal St's street gate
+        menus.AddComponent<ScreenFade>(); // black fades (the train ride between stations)
         menus.AddComponent<SaveMenu>();   // the save / load screen (the staff PC and Load game open it)
         var system = menus.AddComponent<MenuSystem>();
         system.player = player;

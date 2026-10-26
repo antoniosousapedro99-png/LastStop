@@ -28,6 +28,9 @@ public static partial class LookTestBuilder
         PreviewModel(turntable, "Painkillers", Model(PillBottleFbx, null, turntable, Tex2("Props/PillBottle/T_PillBottle_PSX.png"), 1f, 0f));
         PreviewModel(turntable, "Key", BuildKey(turntable), 0.24f);
         PreviewModel(turntable, "ReverserKey", ReverserKeyModel(turntable), 0.24f);
+        PreviewModel(turntable, "FuelCan", ModelPiece(ArtDir + "/Props/Mine/Mines.fbx", "Petrol_Can", turntable, Tex2("Props/Mine/Petrol_Can.png"), 1f));
+        PreviewModel(turntable, "SparkPlug", SparkPlugModel(turntable), 0.24f);
+        PreviewModel(turntable, "OfficeKey", BuildKey(turntable), 0.24f);
 
         // A warm key light from the front left and a dim red rim from behind; far from anything else.
         PreviewLight(stage, new Vector3(-0.5f, 0.4f, -0.6f), new Color(1f, 0.9f, 0.8f), 1.2f);

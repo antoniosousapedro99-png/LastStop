@@ -14,6 +14,7 @@ public class HingedDoor : MonoBehaviour, IInteractable
     public AudioClip unlockSound, openSound;
     public string doorName = "door";
     public bool needsCabinetKey;           // stays locked until the player has the cabinet key
+    public bool needsOfficeKey;            // ...or the Canal St station master's key
 
     bool open, moving;
     Quaternion closedRotation;
@@ -42,8 +43,8 @@ public class HingedDoor : MonoBehaviour, IInteractable
         {
             if (open || moving) return null;
             if (needsPower && !needsPower.IsOn) return "Locked - no power";
-            if (needsCabinetKey && !HasKey()) return "Locked - needs a key";
-            if (needsCabinetKey) return "Unlock " + doorName;
+            if ((needsCabinetKey || needsOfficeKey) && !HasKey()) return "Locked - needs a key";
+            if (needsCabinetKey || needsOfficeKey) return "Unlock " + doorName;
             return "Open " + doorName;
         }
     }
@@ -51,14 +52,14 @@ public class HingedDoor : MonoBehaviour, IInteractable
     public void Interact(Interactor player)
     {
         if (needsPower && !needsPower.IsOn) { Hud.Notice("The electric lock is dead."); return; }
-        if (needsCabinetKey && !HasKey()) { Hud.Notice("It's locked. There must be a key somewhere."); return; }
+        if ((needsCabinetKey || needsOfficeKey) && !HasKey()) { Hud.Notice("It's locked. There must be a key somewhere."); return; }
         if (!open && !moving) StartCoroutine(Swing(0f));
     }
 
-    static bool HasKey()
+    bool HasKey()
     {
         var inv = FindAnyObjectByType<PlayerInventory>();
-        return inv && inv.hasCabinetKey;
+        return inv && (needsOfficeKey ? inv.hasOfficeKey : inv.hasCabinetKey);
     }
 
     void OnPowerRestored()

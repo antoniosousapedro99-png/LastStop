@@ -8,7 +8,7 @@ using UnityEngine.AI;
 // - Tick: while the player holds the dead man's handle the countdown runs (10 s in total) and the engine
 //   whine climbs; letting go pauses it.
 // - Leave: the player's controls stop, the train lurches off down the tunnel with a screech, Frankie
-//   is left behind at the door, and the screen fades to the end card (EndCard).
+//   is left behind at the door, and the ride carries on to Canal St Junction (StationTransfer).
 // This object is the train car itself; it is not marked static, so it can move.
 public class TrainDeparture : MonoBehaviour
 {
@@ -83,13 +83,14 @@ public class TrainDeparture : MonoBehaviour
         }
 
         if (screech) AudioSource.PlayClipAtPoint(screech, transform.position, 1f);
-        var endCard = FindAnyObjectByType<EndCard>();
+        var transfer = FindAnyObjectByType<StationTransfer>();
+        bool started = false;
         float speed = 0f;
         for (float t = 0f; t < 5f; t += Time.deltaTime)
         {
             speed += 1.2f * Time.deltaTime;                 // a slow, heavy start
             transform.position += Vector3.right * speed * Time.deltaTime;
-            if (t > 1.5f && endCard && !endCard.Showing) endCard.Show();
+            if (t > 1.5f && transfer && !started) { started = true; transfer.Begin(player, transform); }
             yield return null;
         }
     }

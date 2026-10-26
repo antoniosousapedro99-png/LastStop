@@ -110,8 +110,17 @@ public static class SaveSystem
     }
 
     // A plain name for each part of the level, from a position (the layout in LookTestBuilder).
+    // Canal St Junction is built far from Hollis St, beyond z 250.
+    public static bool IsCanal(Vector3 p) => p.z > 250f;
+
     public static string AreaAt(Vector3 p)
     {
+        if (IsCanal(p))
+        {
+            if (p.y > 9f) return "Canal St - Street Exit";
+            if (p.y > 4f) return p.z > 321f ? "Canal St - Station Office" : p.z < 300f ? "Canal St - Generator Room" : "Canal St - Mezzanine";
+            return p.x < -40f || p.x > 40f ? "Canal St - Tunnel" : "Canal St - Platform";
+        }
         if (p.y > 3f) return "Street";
         if (p.x > 40f && p.x < 45.5f && p.z > 25.8f) return "Staff Room";
         if (p.x < -18.3f) return "West Tunnel";
@@ -149,6 +158,9 @@ public static class SaveSystem
         d.fuses = inv.fuses; d.spareBatteries = inv.spareBatteries; d.flares = inv.flares;
         d.painkillers = inv.painkillers; d.shells = inv.shells;
         d.hasCabinetKey = inv.hasCabinetKey; d.hasShotgun = inv.hasShotgun; d.hasReverserKey = inv.hasReverserKey;
+        d.fuelCans = inv.fuelCans; d.hasSparkPlug = inv.hasSparkPlug; d.hasOfficeKey = inv.hasOfficeKey;
+        var generator = UnityEngine.Object.FindAnyObjectByType<GeneratorPuzzle>();
+        if (generator) { d.generatorFuel = generator.FuelPoured; d.generatorPlug = generator.PlugFitted; d.generatorRunning = generator.Running; }
 
         var fuseBox = UnityEngine.Object.FindAnyObjectByType<FuseBox>();
         if (fuseBox) { d.fusesInstalled = fuseBox.Installed; d.powerOn = fuseBox.grid.IsOn; }
@@ -188,6 +200,9 @@ public static class SaveSystem
         inv.fuses = d.fuses; inv.spareBatteries = d.spareBatteries; inv.flares = d.flares;
         inv.painkillers = d.painkillers; inv.shells = d.shells;
         inv.hasCabinetKey = d.hasCabinetKey; inv.hasShotgun = d.hasShotgun; inv.hasReverserKey = d.hasReverserKey;
+        inv.fuelCans = d.fuelCans; inv.hasSparkPlug = d.hasSparkPlug; inv.hasOfficeKey = d.hasOfficeKey;
+        var generator = UnityEngine.Object.FindAnyObjectByType<GeneratorPuzzle>();
+        if (generator) generator.LoadState(d.generatorFuel, d.generatorPlug, d.generatorRunning);
 
         var player = inv.transform;
         var battery = player.GetComponentInChildren<FlashlightBattery>(true);
@@ -209,7 +224,13 @@ public static class SaveSystem
             }
         }
         var arrival = UnityEngine.Object.FindAnyObjectByType<FrankieArrival>();
-        if (arrival) arrival.LoadState(d.monsterAwake, d.monsterPosition, d.monsterYaw, d.powerOn);
+        bool atCanal = IsCanal(d.playerPosition);
+        if (arrival) arrival.LoadState(d.monsterAwake, d.monsterPosition, d.monsterYaw, d.powerOn || atCanal);
+        if (atCanal)
+        {
+            if (!d.monsterAwake && arrival) { arrival.StopAllCoroutines(); arrival.WakeNow(); arrival.monster.gameObject.SetActive(false); }   // not at Hollis St
+            UnityEngine.Object.FindAnyObjectByType<CanalArrival>()?.LoadState(d.monsterAwake);
+        }
 
         // Move the player last; the CharacterController has to be off to be moved directly.
         var controller = player.GetComponent<CharacterController>();

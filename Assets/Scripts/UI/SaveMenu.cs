@@ -31,6 +31,7 @@ public class SaveMenu : MonoBehaviour
     Behaviour[] switchedOff;               // the player's controls, off while saving (typing a name mustn't crouch or jump)
     Vector2 lastMouse;
     [System.NonSerialized] GUIStyle fieldStyle;
+    string terminalName = "";
 
     // Load lists the autosave and slots 1-5, Save only slots 1-5; a BACK row comes last.
     int FirstSlot => mode == Mode.Load ? SaveSystem.Autosave : 1;
@@ -45,9 +46,10 @@ public class SaveMenu : MonoBehaviour
     }
 
     // pauseGame: freeze the game while it's open (the PC). The title and pause menu are already paused.
-    public void Open(Mode openAs, bool pauseGame, bool askFirst = false)
+    public void Open(Mode openAs, bool pauseGame, bool askFirst = false, string terminal = "STATION 1 MAINTENANCE TERMINAL")
     {
         mode = openAs;
+        terminalName = terminal;
         askBeforeLoading = askFirst;
         for (int i = 0; i < saves.Length; i++) saves[i] = SaveSystem.Peek(i);
         IsOpen = true;
@@ -163,7 +165,7 @@ public class SaveMenu : MonoBehaviour
         MenuStyle.Fill(new Rect(0, 0, Screen.width, Screen.height), new Color(0f, 0f, 0f, 0.75f));
         float w = 1100f, x = (VirtualWidth - w) * 0.5f;
         MenuStyle.Label(R(x, 60, w, 80), mode == Mode.Save ? "SAVE GAME" : "LOAD GAME", 70);
-        if (mode == Mode.Save) MenuStyle.Label(R(x, 130, w, 36), "STATION 1 MAINTENANCE TERMINAL", 26, TextAnchor.MiddleLeft, MenuStyle.Faint);
+        if (mode == Mode.Save) MenuStyle.Label(R(x, 130, w, 36), terminalName, 26, TextAnchor.MiddleLeft, MenuStyle.Faint);
         float panelHeight = RowCount * RowHeight + 40f;
         MenuStyle.DrawPanel(R(x, 170, w, panelHeight));
 

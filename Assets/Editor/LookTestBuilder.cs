@@ -215,6 +215,7 @@ public static partial class LookTestBuilder
         BuildServiceLevel();      // the service tunnels under the west tunnel
         BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildScares();            // one-time scares (after the lamps and the monster model exist)
+        BuildCanal();             // Station 2, Canal St Junction, far beyond z 300 (needs the monster)
         BuildMenus();             // last: the menus switch the player off until "New game"
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
@@ -222,7 +223,8 @@ public static partial class LookTestBuilder
         foreach (var t in root.GetComponentsInChildren<Transform>())
             t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
                                 && t.GetComponentInParent<HidingLocker>(true) == null && t.GetComponentInParent<SlidingDrawer>(true) == null
-                                && t.GetComponentInParent<TrainDeparture>(true) == null && t.GetComponentInParent<LookAwayChange>(true) == null;
+                                && t.GetComponentInParent<TrainDeparture>(true) == null && t.GetComponentInParent<LookAwayChange>(true) == null
+                                && t.GetComponentInParent<RollerShutter>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 

@@ -1,11 +1,12 @@
 using System.Globalization;
 using UnityEngine;
 
-// The end of Station 1 (until Station 2 exists): the screen fades to black, then shows
-// "END OF STATION 1 / HOLLIS ST", the time played and "TO BE CONTINUED", and goes back to the title.
+// The end of the game so far: the screen fades to black, then shows "END OF STATION 2 / CANAL ST JUNCTION"
+// (set by the builder), the time played and "TO BE CONTINUED", and goes back to the title.
 public class EndCard : MonoBehaviour
 {
     public float fadeSeconds = 2f, holdSeconds = 7f;
+    public string title = "END OF STATION 2", subtitle = "CANAL ST JUNCTION";
 
     public bool Showing { get; private set; }
     float shownAt;
@@ -38,8 +39,8 @@ public class EndCard : MonoBehaviour
         if (text <= 0f) return;
         Hud.Hidden = true;
         float s = MenuStyle.Scale, w = Screen.width;
-        MenuStyle.Label(new Rect(0, 360 * s, w, 110 * s), "END OF STATION 1", 90, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, text));
-        MenuStyle.Label(new Rect(0, 470 * s, w, 50 * s), "HOLLIS ST", 40, TextAnchor.MiddleCenter, new Color(MenuStyle.Dim.r, MenuStyle.Dim.g, MenuStyle.Dim.b, text));
+        MenuStyle.Label(new Rect(0, 360 * s, w, 110 * s), title, 90, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, text));
+        MenuStyle.Label(new Rect(0, 470 * s, w, 50 * s), subtitle, 40, TextAnchor.MiddleCenter, new Color(MenuStyle.Dim.r, MenuStyle.Dim.g, MenuStyle.Dim.b, text));
         MenuStyle.Label(new Rect(0, 580 * s, w, 44 * s), "TIME   " + time, 32, TextAnchor.MiddleCenter, new Color(MenuStyle.Dim.r, MenuStyle.Dim.g, MenuStyle.Dim.b, text));
         MenuStyle.Label(new Rect(0, 760 * s, w, 44 * s), "TO BE CONTINUED", 30, TextAnchor.MiddleCenter, new Color(MenuStyle.Faint.r, MenuStyle.Faint.g, MenuStyle.Faint.b, text));
     }

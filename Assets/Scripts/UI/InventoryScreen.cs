@@ -112,6 +112,9 @@ public class InventoryScreen : MonoBehaviour
         Add("Painkillers", "Painkillers", inventory.painkillers, "Strong painkillers. Press " + (Controls.UsingGamepad ? "A" : "ENTER") + " to take them after you've been hurt.");
         if (inventory.hasCabinetKey) Add("Key", "Cabinet key", 1, "A small key. Its tag reads 'PLATFORM CABINET'.");
         if (inventory.hasReverserKey) Add("ReverserKey", "Reverser key", 1, "A train driver's key. It slots into a cab's controls and wakes the train.");
+        Add("FuelCan", "Fuel can", inventory.fuelCans, "A can of petrol. The backup generator runs dry without it.");
+        if (inventory.hasSparkPlug) Add("SparkPlug", "Spark plug", 1, "A new spark plug, still in its wrapper. The generator won't fire without one.");
+        if (inventory.hasOfficeKey) Add("OfficeKey", "Office key", 1, "A small key. Its tag reads 'STATION MASTER'.");
         if (entries.Count > 0) selected = Mathf.Clamp(selected, 0, entries.Count - 1);
     }
 
@@ -173,7 +176,7 @@ public class InventoryScreen : MonoBehaviour
             var row = new Rect(list.x, list.y + (i - first) * rowH, list.width, rowH);
             rowStyle.normal.textColor = i == selected ? new Color(0.97f, 0.93f, 0.9f) : new Color(0.75f, 0.68f, 0.68f);
             GUI.Label(new Rect(row.x + 20 * scale, row.y, row.width, row.height), entries[i].name, rowStyle);
-            if (entries[i].count > 1 || (entries[i].kind != "Key" && entries[i].kind != "ReverserKey"))
+            if (entries[i].count > 1 || (entries[i].kind != "Key" && entries[i].kind != "ReverserKey" && entries[i].kind != "SparkPlug" && entries[i].kind != "OfficeKey"))
             {
                 rowStyle.alignment = TextAnchor.MiddleRight;
                 GUI.Label(new Rect(row.x, row.y, row.width - 20 * scale, row.height), "x " + entries[i].count, rowStyle);

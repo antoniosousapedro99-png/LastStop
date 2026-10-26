@@ -34,13 +34,15 @@ public class AreaAmbience : MonoBehaviour
     void Update()
     {
         Vector3 p = player.position;
-        float street = Mathf.InverseLerp(stairsBottomY, stairsTopY, p.y);   // 0 underground, 1 on the street
-        float tunnel = Mathf.InverseLerp(platformEndX - tunnelBlend * 0.5f, platformEndX + tunnelBlend * 0.5f, Mathf.Abs(p.x));
-        float service = Mathf.InverseLerp(serviceTopY, serviceBottomY, p.y);   // 0 above, 1 on the service level
+        bool canal = SaveSystem.IsCanal(p);   // Canal St Junction: all underground, its tunnels past x -40
+        float street = canal ? 0f : Mathf.InverseLerp(stairsBottomY, stairsTopY, p.y);   // 0 underground, 1 on the street
+        float tunnel = canal ? Mathf.InverseLerp(38f, 42f, -p.x) * Mathf.InverseLerp(4f, 2f, p.y)
+                             : Mathf.InverseLerp(platformEndX - tunnelBlend * 0.5f, platformEndX + tunnelBlend * 0.5f, Mathf.Abs(p.x));
+        float service = canal ? 0f : Mathf.InverseLerp(serviceTopY, serviceBottomY, p.y);   // 0 above, 1 on the service level
         float below = (1f - street) * (1f - service);
 
         // The rain can still be heard faintly at the bottom of the stairs, dying away along the corridor.
-        float rainLevel = Mathf.Max(street, 0.25f * Mathf.InverseLerp(corridorEndZ, stairsBottomZ, p.z) * (1f - tunnel));
+        float rainLevel = canal ? 0f : Mathf.Max(street, 0.25f * Mathf.InverseLerp(corridorEndZ, stairsBottomZ, p.z) * (1f - tunnel));
         Fade(rain, rainVolume * rainLevel);
         Fade(streetDrone, streetDroneVolume * street);
         Fade(stationDrone, stationDroneVolume * below * (1f - tunnel) + serviceStationDroneVolume * service);
