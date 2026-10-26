@@ -90,7 +90,7 @@ public static partial class LookTestBuilder
         }
         var b = Bounds(car);
         if (b.size.z > b.size.x) { car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation; b = Bounds(car); }
-        car.transform.localScale *= 17.5f / b.size.x;                // same size as the other stalled car
+        car.transform.localScale *= CarLength / b.size.x;                // same size as the other stalled car
         b = Bounds(car);
         float centreX = -(tunnelEnd - 1f - b.size.x * 0.5f);
         StandOn(car, new Vector3(centreX, -1.3f, 22.75f));

@@ -21,7 +21,7 @@ public static partial class LookTestBuilder
         if (b.size.z > b.size.x) car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation;
         car.transform.rotation = Quaternion.Euler(0, 180f, 0) * car.transform.rotation;   // open end toward the platform (west)
         b = Bounds(car);
-        car.transform.localScale *= 17.5f / b.size.x;
+        car.transform.localScale *= CarLength / b.size.x;
         b = Bounds(car);
         float centreX = tunnelEnd - 1f - b.size.x * 0.5f;
         StandOn(car, new Vector3(centreX, -1.3f, 22.75f));
@@ -36,8 +36,8 @@ public static partial class LookTestBuilder
 
         // Pieces made in world space under the tunnel, then moved onto the car so they ride along with it.
         var onCar = new System.Collections.Generic.List<Transform>();
-        var steel = Mat("CabSteel", Tex("metal_04.png"), new Color(0.42f, 0.44f, 0.46f), 1f, 0.4f, 0.5f);
-        onCar.Add(Span("CabBulkhead", tunnel, new Vector3(faceX + cabDepth, floorY, wallN), new Vector3(faceX + cabDepth + 0.05f, floorY + 2.3f, wallS), steel).transform);
+        // The cab's back wall: the carriage's own end wall with a closed door (LookTestBuilder.TrainCab.cs).
+        onCar.Add(CabPartition(tunnel, car, faceX + cabDepth, floorY, -1));
         foreach (var w in new[] { wallN - 0.05f, wallS + 0.05f })
         {
             var inner = new GameObject("CabInnerWall").AddComponent<BoxCollider>();   // the thin car sides don't stop the player

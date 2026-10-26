@@ -474,9 +474,9 @@ public static partial class LookTestBuilder
         }
         var b = Bounds(car);
         if (b.size.z > b.size.x) { car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation; b = Bounds(car); }
-        car.transform.localScale *= 17.5f / b.size.x;
+        car.transform.localScale *= CarLength / b.size.x;
         b = Bounds(car);
-        StandOn(car, new Vector3(-82f - b.size.x * 0.5f, -1.3f, CanalZ + 2.75f));   // open end (east) at x -82
+        StandOn(car, new Vector3(-81.2f - b.size.x * 0.5f, -1.3f, CanalZ + 2.75f));   // open end (east) at x -81.2, back end just inside the tunnel's end wall
         b = Bounds(car);
         float faceX = b.max.x;
         Physics.SyncTransforms();
@@ -491,10 +491,7 @@ public static partial class LookTestBuilder
             inner.transform.position = new Vector3(faceX - 2.5f, floorY + 1.2f, w);
             inner.size = new Vector3(5f, 2.4f, 0.1f);
         }
-        var back = new GameObject("CarInteriorBlocker").AddComponent<BoxCollider>();
-        back.transform.SetParent(tunnel, true);
-        back.transform.position = new Vector3(faceX - 5f, floorY + 1.2f, CanalZ + 2.75f);
-        back.size = new Vector3(0.3f, 2.4f, 4f);
+        CabPartition(tunnel, car, faceX - 5f, floorY, 1);   // the carriage's end wall, door shut, keeps the player at the front
         foreach (var gap in new[] { (CanalZ, b.min.z), (b.max.z, CanalZ + 5.5f) })
         {
             var side = new GameObject("CarSideBlocker").AddComponent<BoxCollider>();
