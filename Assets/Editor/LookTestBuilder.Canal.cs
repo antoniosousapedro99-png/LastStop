@@ -525,6 +525,12 @@ public static partial class LookTestBuilder
         arrival.dropPoint = new Vector3(faceX + 2f, -1.3f, CanalZ + 2.75f);
         arrival.dropYaw = 90f;
         arrival.thud = thud;
+        // His far-away scream from back down the tunnel, a few seconds before he lands on the roof.
+        var far = MonsterAudio(tunnel, "CanalFarScream", Vector3.zero, 200f);
+        far.transform.position = new Vector3(-99f, 0.5f, CanalZ + 2.75f);
+        far.clip = Load<AudioClip>(CharacterSfx + "/FrankieScreamFar.ogg");
+        far.minDistance = 15f; far.rolloffMode = AudioRolloffMode.Logarithmic;
+        arrival.farScream = far;
         var transfer = canal.gameObject.AddComponent<StationTransfer>();
         transfer.spawn = spawn;
         transfer.ride = ride;

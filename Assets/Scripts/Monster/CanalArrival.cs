@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-// Frankie follows the player to Canal St Junction: about a minute after they arrive, a heavy thud sounds
+// Frankie follows the player to Canal St Junction: about a minute after they arrive his scream echoes from
+// far back down the tunnel, then a few seconds later a heavy thud sounds
 // from the stalled train behind them (he rode on its roof), and he drops onto the tracks and hunts as usual.
 // The arrival is also the moment the game autosaves.
 public class CanalArrival : MonoBehaviour
@@ -11,6 +12,8 @@ public class CanalArrival : MonoBehaviour
     public float dropYaw = 90f;
     public float delay = 60f;
     public AudioSource thud;               // on the car's roof
+    public AudioSource farScream;          // far back down the tunnel, behind the train
+    public float screamLead = 6f;          // seconds between the scream and the thud
 
     public static bool Arrived { get; private set; }
 
@@ -35,7 +38,9 @@ public class CanalArrival : MonoBehaviour
 
     IEnumerator Drop(float wait)
     {
-        yield return new WaitForSeconds(wait);
+        yield return new WaitForSeconds(Mathf.Max(0f, wait - screamLead));
+        if (farScream) farScream.Play();
+        yield return new WaitForSeconds(Mathf.Min(wait, screamLead));
         if (thud) thud.Play();
         yield return new WaitForSeconds(0.6f);
         FindAnyObjectByType<FrankieArrival>()?.WakeNow();

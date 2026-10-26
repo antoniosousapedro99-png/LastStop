@@ -17,6 +17,7 @@ public static partial class LookTestBuilder
     const string MatDir = "Assets/Art/Materials/LookTest";
     const string SfxDir = "Assets/Art/Audio/SFX/Darkworld";
     const string AmbienceDir = "Assets/Art/Audio/Ambience/HeltonYan";
+    const string CharacterSfx = "Assets/Art/Audio/SFX/Characters";   // Frankie's screams and the player's breathing
 
     // Light colours chosen with the creative director: sickly green fluorescent, red in tunnels.
     static readonly Color Fluorescent = new Color(0.78f, 0.95f, 0.80f);
@@ -305,6 +306,11 @@ public static partial class LookTestBuilder
             Load<AudioClip>(SfxDir + "/FootstepsConcrete3.wav"), Load<AudioClip>(SfxDir + "/FootstepsConcrete4.wav"),
         };
         steps.splashes = new[] { Load<AudioClip>(SfxDir + "/WaterSplash1.wav"), Load<AudioClip>(SfxDir + "/WaterSplash2.wav") };
+
+        // Breathing: out of breath after sprinting, held breath in a locker (PlayerBreathing).
+        var breathing = player.AddComponent<PlayerBreathing>();
+        breathing.heavy = BreathLoop(player, "PlayerBreathHeavy");
+        breathing.slow = BreathLoop(player, "PlayerBreathSlow");
         return player;
     }
 
@@ -440,6 +446,15 @@ public static partial class LookTestBuilder
         return go;
     }
 
+
+    // A quiet, looping breath sound heard in both ears (it's the player's own).
+    static AudioSource BreathLoop(GameObject player, string clip)
+    {
+        var source = player.AddComponent<AudioSource>();
+        source.clip = Load<AudioClip>(CharacterSfx + "/" + clip + ".ogg");
+        source.loop = true; source.playOnAwake = false; source.spatialBlend = 0f; source.volume = 0f;
+        return source;
+    }
 
     static Bounds Bounds(GameObject go)
     {

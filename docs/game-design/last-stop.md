@@ -52,7 +52,8 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **One-shot effects:** Darkworld Audio – Survival Effects (footsteps, doors, switches, water, breathing, gun handling).
 - **Music:** "PSX Horror Music" by Svirls, used **rarely**: chases, big reveals, power coming back, and credits.
 - **Shotgun blast:** silent until a real shotgun sound is found.
-- **Still missing:** BagMan sounds (breathing, footsteps, screams), a shotgun blast, and footsteps on metal grates.
+- **Character sounds (2026-10-26):** Frankie's **scream when he spots you** (start of every chase) is now a real monster scream: the strongest 3 s of one of two close screams, with a quick fade. His **far-away echoing scream** plays when he wakes deep in Hollis St's west tunnel, and at Canal St from far back down the arrival tunnel about **6 s before** the thud on the train roof. The **player breathes**: heavy breathing builds up after a few seconds of sprinting (full after 4 s) and dies away over about 7 s once you stop; in a **locker** a slow, held breath plays, louder the closer Frankie is (from 10 m in). His breaths, footsteps and joint cracks are still the reshaped Darkworld sounds.
+- **Still missing:** a shotgun blast, footsteps on metal grates, and real breathing/footstep sounds for Frankie.
 
 ## Built so far
 

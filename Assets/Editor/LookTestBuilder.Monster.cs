@@ -74,7 +74,8 @@ public static partial class LookTestBuilder
         ai.voice = voice; ai.feet = feet;
         // His own sounds, made from the Darkworld pack with ffmpeg (see Assets/Art/CREDITS.md).
         ai.breaths = Clips("Frankie/FrankieBreath1", "Frankie/FrankieBreath2", "Frankie/FrankieBreath3");
-        ai.shrieks = Clips("Frankie/FrankieShriek1", "Frankie/FrankieShriek2");
+        // His scream when he spots you (the strongest 3 s of each close scream).
+        ai.shrieks = new[] { Load<AudioClip>(CharacterSfx + "/FrankieScreamClose1.ogg"), Load<AudioClip>(CharacterSfx + "/FrankieScreamClose2.ogg") };
         ai.steps = Clips("Frankie/FrankieStep1", "Frankie/FrankieStep2", "Frankie/FrankieStep3", "Frankie/FrankieStep4");
         ai.cracks = Clips("Frankie/FrankieCrack1", "Frankie/FrankieCrack2", "Frankie/FrankieCrack3");
         ai.hitSound = Load<AudioClip>(SfxDir + "/DesignedPunch1.wav");
@@ -85,9 +86,8 @@ public static partial class LookTestBuilder
         arrivalObject.transform.SetParent(root);
         var shriek = MonsterAudio(arrivalObject.transform, "Shriek", Vector3.zero, 200f);
         shriek.transform.position = new Vector3(-85f, 0f, 22.7f);
-        shriek.clip = Load<AudioClip>(SfxDir + "/Frankie/FrankieShriek1.wav");
-        shriek.pitch = 0.85f; shriek.minDistance = 15f; shriek.rolloffMode = AudioRolloffMode.Logarithmic;
-        shriek.gameObject.AddComponent<AudioReverbFilter>().reverbPreset = AudioReverbPreset.SewerPipe;
+        shriek.clip = Load<AudioClip>(CharacterSfx + "/FrankieScreamFar.ogg");   // already echoing, so no reverb on top
+        shriek.minDistance = 15f; shriek.rolloffMode = AudioRolloffMode.Logarithmic;
         var arrival = arrivalObject.AddComponent<FrankieArrival>();
         arrival.grid = grid;
         arrivalObject.AddComponent<AutosaveOnPower>().grid = grid;   // the autosave, a few seconds after the power returns
