@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 // Mouse look: moving the mouse sideways turns the whole body, up/down tilts only the camera.
 // The cursor is hidden and locked to the window (the pause menu frees it; clicking the game locks it again).
 // Speed and up/down direction come from the Mouse options (GameSettings); a controller's right stick also looks.
+// Look back (hold Left Alt / R3): only the head swings round to look behind; the body keeps facing (and
+// running) the way it was, and the mouse can glance a little to the sides. Letting go swings the head back.
 public class PlayerLook : MonoBehaviour
 {
     public Transform cameraPivot;      // the camera (child of the player)
@@ -14,9 +16,13 @@ public class PlayerLook : MonoBehaviour
     public bool limitYaw;              // while hiding in a locker: turning is kept within yawRange of yawCentre
     public float yawCentre, yawRange = 55f;
     public static float Shake;         // degrees of view shake (TrainRumble sets it; 0 = still)
-    public float turnTime = 0.25f;     // seconds for the Turn around control's half-turn
+    public float turnTime = 0.25f;     // seconds for the head to swing round to look back (and back again)
+    public float glanceRange = 30f;    // degrees the mouse can glance sideways while looking back
 
-    float turnLeft;                    // degrees of the half-turn still to go
+    float headYaw;                     // how far the head is turned from the body (0 = forward, 180 = looking back)
+    float glance;                      // sideways glance while looking back
+
+    public bool LookingBack => headYaw > 90f;
 
     void OnEnable() => LockCursor(true);
 
@@ -32,14 +38,18 @@ public class PlayerLook : MonoBehaviour
         delta += Controls.PadLook() * padSpeed * Time.deltaTime;   // controller right stick
         delta *= GameSettings.MouseSensitivity;
         if (GameSettings.InvertY) delta.y = -delta.y;
-        transform.Rotate(0f, delta.x, 0f);
-        // Turn around (Left Alt / R3): a quick, smooth half-turn. Not inside a locker.
-        if (Controls.Pressed(GameAction.TurnAround) && !limitYaw && turnLeft <= 0f) turnLeft = 180f;
-        if (turnLeft > 0f)
+        // Look back while held (not inside a locker): the head swings round, the body doesn't turn.
+        bool lookBack = Controls.Held(GameAction.TurnAround) && !limitYaw;
+        headYaw = Mathf.MoveTowards(headYaw, lookBack ? 180f : 0f, 180f / turnTime * Time.deltaTime);
+        if (headYaw > 0f)
         {
-            float step = Mathf.Min(turnLeft, 180f / turnTime * Time.deltaTime);
-            transform.Rotate(0f, step, 0f);
-            turnLeft -= step;
+            // Sideways mouse movement only glances; it never changes the running direction.
+            glance = lookBack ? Mathf.Clamp(glance + delta.x, -glanceRange, glanceRange) : Mathf.MoveTowards(glance, 0f, 180f / turnTime * Time.deltaTime);
+        }
+        else
+        {
+            glance = 0f;
+            transform.Rotate(0f, delta.x, 0f);
         }
         if (limitYaw)
         {
@@ -55,7 +65,7 @@ public class PlayerLook : MonoBehaviour
         // A rumble shakes the view with a quick, uneven wobble.
         float t = Time.time * 22f;
         float shakePitch = Shake * (Mathf.PerlinNoise(t, 0f) - 0.5f) * 2f, shakeYaw = Shake * (Mathf.PerlinNoise(0f, t) - 0.5f) * 2f;
-        cameraPivot.localRotation = Quaternion.Euler(pitch + shakePitch, shakeYaw, roll);
+        cameraPivot.localRotation = Quaternion.Euler(pitch + shakePitch, headYaw + glance + shakeYaw, roll);
     }
 
     // Kicks the view upward (used by the shotgun's recoil).

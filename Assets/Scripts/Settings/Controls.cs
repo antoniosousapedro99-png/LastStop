@@ -18,7 +18,7 @@ public static class Controls
     {
         (GameAction.Forward, "MOVE FORWARD"), (GameAction.Back, "MOVE BACK"), (GameAction.Left, "MOVE LEFT"), (GameAction.Right, "MOVE RIGHT"),
         (GameAction.Sprint, "SPRINT"), (GameAction.Crouch, "CROUCH"), (GameAction.Jump, "JUMP"),
-        (GameAction.LeanLeft, "LEAN LEFT"), (GameAction.LeanRight, "LEAN RIGHT"), (GameAction.TurnAround, "TURN AROUND"), (GameAction.Use, "USE / PICK UP"),
+        (GameAction.LeanLeft, "LEAN LEFT"), (GameAction.LeanRight, "LEAN RIGHT"), (GameAction.TurnAround, "LOOK BACK (HOLD)"), (GameAction.Use, "USE / PICK UP"),
         (GameAction.Torch, "FLASHLIGHT"), (GameAction.SwapBattery, "SWAP BATTERY"), (GameAction.Flare, "FLARE"),
         (GameAction.Inventory, "INVENTORY"), (GameAction.Pause, "PAUSE"),
     };
