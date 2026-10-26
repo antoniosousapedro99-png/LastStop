@@ -53,6 +53,7 @@ public static partial class LookTestBuilder
         CanalGeneratorRoom(canal, concrete, ceiling, housing, tubeLit);
         CanalOffice(canal, wallTile, floorTile, ceiling);
         CanalArrivalTrain(canal);
+        CanalDressing(canal);     // rubbish, cones, posters, blood (LookTestBuilder.CanalDressing.cs)
         BakeCanal(canal);
     }
 
