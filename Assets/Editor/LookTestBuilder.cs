@@ -311,6 +311,12 @@ public static partial class LookTestBuilder
         var breathing = player.AddComponent<PlayerBreathing>();
         breathing.heavy = BreathLoop(player, "PlayerBreathHeavy");
         breathing.slow = BreathLoop(player, "PlayerBreathSlow");
+
+        // Vaulting: hold Jump at a ledge up to 1.4 m (PlayerVault); an effort breath, then a step on landing.
+        var vault = player.AddComponent<PlayerVault>();
+        vault.voice = stepAudio;
+        vault.efforts = new[] { Load<AudioClip>(SfxDir + "/HumanBreathingOut1.wav"), Load<AudioClip>(SfxDir + "/HumanBreathingOut3.wav") };
+        vault.landing = Load<AudioClip>(SfxDir + "/FootstepsConcrete2.wav");
         return player;
     }
 

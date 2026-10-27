@@ -25,7 +25,8 @@ public class PlayerCrouch : MonoBehaviour
         if (Controls.Pressed(GameAction.Crouch))
         {
             if (!IsCrouched) IsCrouched = true;
-            else if (HasHeadroom()) IsCrouched = false;
+            // Inside a locker there is always room to stand (it is narrower than the body, which would fool the check).
+            else if (HidingLocker.Occupied || HasHeadroom()) IsCrouched = false;
         }
 
         // Ease the body height toward the target, keeping the feet on the ground.

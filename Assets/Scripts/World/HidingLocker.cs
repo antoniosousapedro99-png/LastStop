@@ -173,12 +173,12 @@ public class HidingLocker : MonoBehaviour, IInteractable
         if (frankie.SeesPlayer || (frankie.Current == FrankieAI.Mood.Chase && Time.time - frankie.LastSeenTime < 3f)) SeenGettingIn = true;
     }
 
-    // Walking, crouching, leaning and footsteps are switched off while hiding (and while stepping in or out).
+    // Walking, leaning and footsteps are switched off while hiding (and while stepping in or out). Crouching
+    // stays on, so you can duck down or stand up inside.
     void SetControls(bool on)
     {
         player.GetComponent<CharacterController>().enabled = on;
-        foreach (var part in new MonoBehaviour[] { player.GetComponent<PlayerMovement>(), player.GetComponent<PlayerCrouch>(),
-                                                   player.GetComponent<PlayerLean>(), player.GetComponent<Footsteps>() })
+        foreach (var part in new MonoBehaviour[] { player.GetComponent<PlayerMovement>(), player.GetComponent<PlayerLean>(), player.GetComponent<Footsteps>() })
             if (part) part.enabled = on;
         if (on) return;
         look.roll = 0f;                    // undo any lean, so the head is upright in the middle of the locker

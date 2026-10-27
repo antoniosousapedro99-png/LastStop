@@ -3,8 +3,8 @@ using UnityEditor;
 using UnityEngine;
 
 // The atmosphere pass: one-time scares at set spots (ScareTrigger + an IScare each).
-// - Before the power: the PA crackles on as you first step onto the platform; a train rumbles through
-//   the west tunnel.
+// - Before the power: a train rumbles through the west tunnel. (The PA announcement is switched off until
+//   the creative director records a proper one: PaAnnouncement and its clip are kept for then.)
 // - After the power: lamps pop and die behind you (corridor, platform, east tunnel); a black figure
 //   stands far down the east tunnel and vanishes when you look; another rumble near the east train.
 public static partial class LookTestBuilder
@@ -16,17 +16,10 @@ public static partial class LookTestBuilder
         var group = Group("Scares");
         var pop = Load<AudioClip>(ScareSfx + "/LampPop.wav");
 
-        // ---- the PA, before the power: at the corridor's platform end
-        var pa = ScareSpot(group, "Scare_PA", new Vector3(0f, 1.5f, 13.1f), new Vector3(4f, 3f, 1f), ScareTrigger.PowerRule.BeforePower);
-        var announcement = pa.AddComponent<PaAnnouncement>();
-        announcement.clip = Load<AudioClip>(ScareSfx + "/PaAnnouncement.wav");
-        announcement.speakers = new[] { Speaker(group, new Vector3(-6f, 3.6f, 14.13f)), Speaker(group, new Vector3(6f, 3.6f, 14.13f)) };
-        announcement.lines = new[]
-        {
-            "[PA]   ...attention... all... night staff...",
-            "[PA]   ...Hollis Street is... closed... closed...",
-            "[PA]   ...do not... go past... the trains...",
-        };
+        // ---- the PA speakers on the platform's back wall (silent for now: no announcement until a proper
+        //      one is recorded; to bring it back, add a ScareSpot with a PaAnnouncement using these speakers)
+        Speaker(group, new Vector3(-6f, 3.6f, 14.13f));
+        Speaker(group, new Vector3(6f, 3.6f, 14.13f));
 
         // ---- train rumbles: the west tunnel before the power, near the east train after it
         Rumble(group, "Scare_RumbleWest", -24f, ScareTrigger.PowerRule.BeforePower);

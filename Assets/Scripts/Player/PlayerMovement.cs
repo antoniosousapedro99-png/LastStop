@@ -22,6 +22,8 @@ public class PlayerMovement : MonoBehaviour
 
     CharacterController controller;
     PlayerCrouch crouch;
+    PlayerVault vault;
+    bool queuedJump;                   // a jump asked for by PlayerVault (Jump tapped at a ledge)
     float verticalSpeed;
     float stamina = 1f;
 
@@ -38,14 +40,20 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         crouch = GetComponent<PlayerCrouch>();
+        vault = GetComponent<PlayerVault>();
     }
+
+    // Jump on the next frame (PlayerVault: Jump was only tapped at a ledge, not held to vault).
+    public void QueueJump() => queuedJump = true;
 
     void Update()
     {
         // Keys (or the left stick) from Controls, so they follow the player's bindings.
         Vector2 input = Controls.Move();
         bool running = Controls.Sprinting() && !IsCrouched;
-        bool jump = Controls.Pressed(GameAction.Jump) && !IsCrouched;
+        // At a vaultable ledge the jump waits: holding Jump vaults (PlayerVault), letting go jumps (QueueJump).
+        bool jump = (Controls.Pressed(GameAction.Jump) && !(vault && vault.LedgeAhead) || queuedJump) && !IsCrouched;
+        queuedJump = false;
 
         // Move relative to where the body faces (the body turns left/right with the mouse).
         // Stamina drains only while actually sprinting somewhere, and refills otherwise.
