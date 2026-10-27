@@ -180,8 +180,9 @@ public static partial class LookTestBuilder
             TreePit(f, TrunkOnly(Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 1.4f)), soil);
         // Bus stop by the entrance, with the newspaper (see BuildLore).
         var stop = StreetDir + "/BusStop/BusStop.fbx";
-        PlacePiece(stop, "Bus_stop", f, new Vector3(-10f, StreetY, -14.6f), 180f);
-        PlacePiece(stop, "Bus_stop_sign", f, new Vector3(-13.5f, StreetY, -15.4f), 180f);
+        // 1.2 m west of where it first stood, so its end clears the lamp post at x -8 (StreetLight_S_2).
+        PlacePiece(stop, "Bus_stop", f, new Vector3(-11.2f, StreetY, -14.6f), 180f);
+        PlacePiece(stop, "Bus_stop_sign", f, new Vector3(-14.8f, StreetY, -15.4f), 180f);
         // Bins, bags and a dumpster by the shops.
         Place(u + "metaltrashcan_beaten_overflowing.fbx", f, new Vector3(-5f, StreetY, -14.8f), 20f);
         Place(u + "trash_can_overflowing.fbx", f, new Vector3(9f, StreetY, -27.8f), 0f);
@@ -355,7 +356,7 @@ public static partial class LookTestBuilder
         // A soaked newspaper lying on the bus shelter's bench.
         var newspaper = Prim(PrimitiveType.Cube, "Newspaper", lore, Vector3.zero, new Vector3(0.5f, 0.012f, 0.35f), Mat("Newsprint", PosterTexture(), new Color(0.8f, 0.8f, 0.78f), 1f, 0.2f));
         newspaper.transform.rotation = Quaternion.Euler(0, 20f, 0);
-        if (Physics.Raycast(new Vector3(-10.3f, StreetY + 3f, -14.4f), Vector3.down, out var benchHit, 4f))
+        if (Physics.Raycast(new Vector3(-11.5f, StreetY + 3f, -14.4f), Vector3.down, out var benchHit, 4f))
             newspaper.transform.position = benchHit.point + Vector3.up * 0.006f;
         newspaper.AddComponent<ReadableNote>().text = "THIRD TRANSIT WORKER VANISHES ON LINE 4\nRosa Mendez, 31, is the third maintenance worker in five weeks to disappear during a night shift. MTA officials dismissed staff reports of 'something wrapped up in the tunnels' as stress.";
 
