@@ -28,10 +28,10 @@ public static partial class LookTestBuilder
         Scatter(g, new Vector3(-68f, -1.3f, z + 1.2f), new Vector2(8f, 0.4f), 3, 17);    // blown down the arrival tunnel
         Scatter(g, new Vector3(-105f, -1.3f, z + 1.2f), new Vector2(8f, 0.4f), 3, 18);
 
-        // ---- snacks and drinks left behind on the benches
+        // ---- snacks and drinks left behind on the benches (a chip bag on just two of them)
         int bench = 0;
         foreach (var t in canal.GetComponentsInChildren<Transform>())
-            if (t.name == "seats") BenchSnacks(g, t.gameObject, bench++);
+            if (t.name == "seats") { BenchSnacks(g, t.gameObject, bench, bench == 1 || bench == 4); bench++; }
 
         // Knocked-over bins spilling their bags.
         TippedBin(g, new Vector3(8f, 0f, z + 12.9f), 30f);
@@ -99,18 +99,19 @@ public static partial class LookTestBuilder
             if (r.name.StartsWith("Blood_Canal")) Matte(r.sharedMaterial);
     }
 
-    // A few things left on a bench: unopened soda cans standing up and chip bags lying flat, on every other
-    // bench (and the odd one more), found by casting rays down onto its seats.
-    static void BenchSnacks(Transform parent, GameObject seats, int index)
+    // A few unopened soda cans left on a bench (on every other bench, and the odd one more): some still
+    // standing, some knocked over; 'chips' adds one chip bag, dropped flat and a little crooked. Spots are
+    // found by casting rays down onto the seats.
+    static void BenchSnacks(Transform parent, GameObject seats, int index, bool chips)
     {
         var rng = new System.Random(40 + index);
-        if (index % 2 == 1 && rng.NextDouble() < 0.6) return;
+        if (!chips && index % 2 == 1 && rng.NextDouble() < 0.6) return;
         string[] brands = { "generic_cola", "pepso", "sprit", "fantom_orange", "dr_piper", "red_bullet" };
         string[] cans = { "Can_Standard330", "Can_Standard330", "Can_Slim250", "Can_Fat500" };
         var b = Bounds(seats);
         bool alongX = b.size.x > b.size.z;
-        int count = 1 + rng.Next(3);
-        for (int i = 0; i < count; i++)
+        int count = (chips ? 1 : 0) + 1 + rng.Next(2);
+        for (int i = 0, tries = 0; i < count && tries < 12; tries++)
         {
             float t = 0.1f + 0.8f * (float)rng.NextDouble();
             float across = (float)rng.NextDouble() * 0.2f - 0.1f;
@@ -118,33 +119,45 @@ public static partial class LookTestBuilder
                                : new Vector3(b.center.x + across, b.max.y + 0.5f, Mathf.Lerp(b.min.z, b.max.z, t));
             if (!Physics.Raycast(p, Vector3.down, out var hit, 2f) || hit.point.y > b.min.y + 0.65f) continue;   // missed, or hit a backrest
             GameObject item;
-            if (rng.NextDouble() < 0.6)
-            {
-                item = Model(ArtDir + "/Props/SodaCans/" + cans[rng.Next(cans.Length)] + ".fbx", null, parent,
-                             Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, (float)rng.NextDouble() * 360f);
-                item.transform.localScale *= 0.12f / Mathf.Max(0.001f, Bounds(item).size.y);
-            }
-            else
+            if (chips && i == 0)
             {
                 item = ModelPiece(TrashFbx, rng.NextDouble() < 0.5 ? "Chip_Bag_1" : "Chip_Bag_3", parent, Tex2("Props/Trash/Bags.png"), 1f);
                 var ib = Bounds(item);
                 item.transform.localScale *= 0.22f / Mathf.Max(0.001f, Mathf.Max(ib.size.x, ib.size.y, ib.size.z));
-                item.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f) * item.transform.rotation;
+                item.transform.rotation = Messy(rng, 6f) * item.transform.rotation;
+            }
+            else
+            {
+                item = Model(ArtDir + "/Props/SodaCans/" + cans[rng.Next(cans.Length)] + ".fbx", null, parent,
+                             Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, (float)rng.NextDouble() * 360f);
+                item.transform.localScale *= 0.12f / Mathf.Max(0.001f, Bounds(item).size.y);
+                if (rng.NextDouble() < 0.4) item.transform.rotation = OnItsSide(rng) * item.transform.rotation;   // knocked over
             }
             StandOn(item, hit.point + Vector3.up * 0.003f);
+            i++;
         }
     }
 
-    // Litter dropped at random (but always the same: 'seed') over an oval area around 'centre'.
+    // A random turn, tipped up to 'tilt' degrees off level: nothing on the floor lies perfectly square.
+    static Quaternion Messy(System.Random rng, float tilt) =>
+        Quaternion.Euler(((float)rng.NextDouble() * 2f - 1f) * tilt, (float)rng.NextDouble() * 360f, ((float)rng.NextDouble() * 2f - 1f) * tilt);
+
+    // Lying on its side (or upside down, now and then), pointing any way, a little skewed.
+    static Quaternion OnItsSide(System.Random rng) =>
+        Messy(rng, 8f) * Quaternion.Euler(0f, 0f, rng.NextDouble() < 0.15 ? 180f : (rng.NextDouble() < 0.5 ? 90f : -90f));
+
+    // Litter dropped at random (but always the same: 'seed') over an oval area around 'centre'. It's all
+    // been kicked about: papers lie skewed, and cups, cans, boxes and bags are always knocked over, never
+    // left standing (no chip bags down here: those are only on two benches).
     static void Scatter(Transform parent, Vector3 centre, Vector2 radius, int count, int seed)
     {
-        // Piece, texture, size in metres (its longest side).
-        (string piece, string tex, float size)[] kinds =
+        // Piece, texture, size in metres (its longest side), lies flat already (paper) or must be knocked over.
+        (string piece, string tex, float size, bool flat)[] kinds =
         {
-            ("News_1", "NewsPapers", 0.45f), ("News_2", "NewsPapers", 0.45f), ("News_3", "NewsPapers", 0.45f), ("Paper_1", "NewsPapers", 0.3f),
-            ("Paper_2", "NewsPapers", 0.3f), ("Coffee_Cup_Crushed", "FastFoodTrash", 0.12f), ("Soda_Cup", "FastFoodTrash", 0.16f),
-            ("Fry_Container", "FastFoodTrash", 0.14f), ("Chip_Bag_2", "Bags", 0.24f), ("Can_2_Crushed", "Cans", 0.11f),
-            ("Can_4", "Cans", 0.12f), ("Paper_Bag_1", "Bags", 0.28f), ("News_Stack", "NewsPapers", 0.4f), ("Coffee_Cup_WithLid", "FastFoodTrash", 0.13f),
+            ("News_1", "NewsPapers", 0.45f, true), ("News_2", "NewsPapers", 0.45f, true), ("News_3", "NewsPapers", 0.45f, true), ("Paper_1", "NewsPapers", 0.3f, true),
+            ("Paper_2", "NewsPapers", 0.3f, true), ("Coffee_Cup_Crushed", "FastFoodTrash", 0.12f, false), ("Soda_Cup", "FastFoodTrash", 0.16f, false),
+            ("Fry_Container", "FastFoodTrash", 0.14f, false), ("Can_2_Crushed", "Cans", 0.11f, false),
+            ("Can_4", "Cans", 0.12f, false), ("Paper_Bag_1", "Bags", 0.28f, false), ("Coffee_Cup_WithLid", "FastFoodTrash", 0.13f, false),
         };
         var rng = new System.Random(seed);
         for (int i = 0; i < count; i++)
@@ -154,9 +167,7 @@ public static partial class LookTestBuilder
             var go = ModelPiece(TrashFbx, k.piece, parent, Tex2("Props/Trash/" + k.tex + ".png"), 1f);
             var b = Bounds(go);
             go.transform.localScale *= k.size / Mathf.Max(0.001f, Mathf.Max(b.size.x, b.size.y, b.size.z));
-            go.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f) * go.transform.rotation;
-            // Cups and cans sometimes lie on their side.
-            if (k.size < 0.2f && rng.NextDouble() < 0.5) go.transform.rotation = Quaternion.Euler(0f, 0f, 90f) * go.transform.rotation;
+            go.transform.rotation = (k.flat ? Messy(rng, 5f) : OnItsSide(rng)) * go.transform.rotation;
             StandOn(go, centre + new Vector3(p.x, 0.008f, p.y));   // a hair above the floor, so flat paper doesn't flicker
         }
     }

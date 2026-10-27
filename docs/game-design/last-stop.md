@@ -144,6 +144,11 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **The ceiling gives way** in the north-east tunnel (about 5 m ahead as you walk east past x 62): concrete crashes onto the tracks with dust and a shake, a dark gap is left in the ceiling and the rubble stays (the big slab is solid; vault it or walk round).
   - **Lower level, banging locker:** the storeroom locker bangs twice from inside as you come down the corridor to its door. It's empty.
   - **Lower level, bulbs die toward you:** coming up from the stairs into the first corridor, its bulbs go out one by one from the far end toward you, the last one right overhead; about 4 s of darkness, then they stutter back on.
+- **Polish pass (2026-10-27):**
+  - **Street stairwell:** the metal railings round the subway stairs are now a chest-high (1.3 m) **rough stone wall** (the library's stonewall texture) with a concrete capstone.
+  - **Lower levels (both stations):** the floor is grimy grey **concrete** (was a brown, wood-like texture).
+  - **Pipes and machinery (Canal St lower level, and the shared builders):** rusty pipes now wrap one rusted plate from the Pipes sheet (seams show as rings), not the whole patchwork sheet; pump feeds come down the wall, along the floor and into each pump's rusty head; corridor pipes that reach the hall bend up into its ceiling; wall conduits that stop at a doorway's edge end in a junction box with the cables rising into the ceiling; electrical cabinets show their door picture on the front only (plain grey sides).
+  - **Canal St litter:** everything on the floor is knocked about: cups, cans, boxes and bags always lie on their side (now and then upside down), papers lie skewed. No chip bags on the floor; just **two** on benches, dropped flat. Some bench cans are knocked over.
 - **Hollis St's shadow figure removed (2026-10-27).**
 - **Vaulting, locker crouch, PA off (2026-10-27):**
   - **Vault:** hold **Jump (Space)** while facing a ledge between 0.5 and **1.4 m** high (the platform edge from the tracks, crates, low walls) and you heave yourself up onto it in **0.7 s** (an effort breath, a step as you land). A quick tap is still a normal jump. It's **loud** (Frankie hears it like running, 15 m) and **impossible while winded** (out of sprint stamina).

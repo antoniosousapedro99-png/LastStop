@@ -27,7 +27,7 @@ public static partial class LookTestBuilder
         var level = Group("ServiceLevel");
         // Tints chosen so the surfaces end up about as bright as the tunnels' concrete (darkness comes from missing light).
         svcWall = Mat("SvcConcrete", Tex2(SewerTex + "concrete_dirty.jpg"), new Color(1f, 0.97f, 0.92f), 2.5f, 0.1f);
-        svcFloor = Mat("SvcFloor", Tex2(SewerTex + "concrete_base_03.jpg"), new Color(0.75f, 0.72f, 0.68f), 2f, 0.15f);
+        svcFloor = Mat("SvcFloor", Tex2(SewerTex + "concrete_dirty_2.jpg"), new Color(0.78f, 0.78f, 0.76f), 3f, 0.15f);   // grimy bare concrete
         svcCeiling = Mat("SvcCeiling", Tex2(SewerTex + "concrete_bare_01.jpg"), new Color(0.8f, 0.78f, 0.75f), 2.5f, 0.05f);
         svcBrick = Mat("SvcBrick", Tex2(SewerTex + "brick_modern.jpg"), new Color(0.72f, 0.66f, 0.62f), 2f, 0.1f);
         svcMetal = Mat("SvcMetal", Tex2(SewerTex + "Metal.jpg"), new Color(0.7f, 0.64f, 0.58f), 1f, 0.3f, 0.5f);

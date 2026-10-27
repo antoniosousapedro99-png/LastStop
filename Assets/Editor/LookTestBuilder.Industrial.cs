@@ -16,7 +16,10 @@ using UnityEngine.AI;
 public static partial class LookTestBuilder
 {
     const string IndustrialTex = "Assets/Art/Textures/Industrial/";
-    static Material chainLink, fencePost, pipeRust, pipeSteel, pipeGreen, conduit, cabinetGrey, cabinetVent, bulbCage, bulbGlow, wireBundle;
+    static Material chainLink, fencePost, pipeRust, pipeSteel, pipeGreen, conduit, cabinetGrey, cabinetVent, cabinetBody, bulbCage, bulbGlow, wireBundle;
+    // Pipe images that are sheets of several metal pieces: only this column (left and right edge, 0..1) is
+    // wrapped round the pipe, so every pipe shows the same piece, with its seams as rings along it.
+    static readonly Dictionary<Material, Vector2> pipeStrip = new Dictionary<Material, Vector2>();
 
     static void IndustrialMaterials()
     {
@@ -27,12 +30,14 @@ public static partial class LookTestBuilder
         chainLink.SetFloat("_Cull", 2f);                 // normal culling: the mesh has its own face for each side
         chainLink.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
         fencePost = Mat("FencePost", null, new Color(0.5f, 0.52f, 0.53f), 1f, 0.4f, 0.7f);
-        pipeRust = Mat("PipeRust", Load<Texture2D>(IndustrialTex + "Pipes.png"), new Color(0.9f, 0.86f, 0.8f), 1.5f, 0.25f, 0.4f);
+        pipeRust = Mat("PipeRust", Load<Texture2D>(IndustrialTex + "Pipes.png"), new Color(0.9f, 0.86f, 0.8f), 3f, 0.25f, 0.4f);
+        pipeStrip[pipeRust] = new Vector2(0.835f, 0.985f);   // the rusted plate on the right of the sheet
         pipeSteel = Mat("PipeSteel", Tex2(SewerTex + "Metal.jpg"), new Color(0.62f, 0.62f, 0.6f), 1f, 0.35f, 0.6f);
         pipeGreen = Mat("PipeGreen", null, new Color(0.33f, 0.42f, 0.36f), 1f, 0.3f, 0.3f);
         conduit = Mat("Conduit", null, new Color(0.18f, 0.18f, 0.19f), 1f, 0.3f, 0.3f);
         cabinetGrey = Mat("ElecCabinet", Load<Texture2D>(IndustrialTex + "Metal_cabinet_2.png"), Color.white, 1f, 0.3f, 0.4f);
         cabinetVent = Mat("ElecCabinetVent", Load<Texture2D>(IndustrialTex + "Metal_cabinet_1.png"), Color.white, 1f, 0.3f, 0.4f);
+        cabinetBody = Mat("ElecCabinetBody", null, new Color(0.66f, 0.67f, 0.66f), 1f, 0.3f, 0.4f);   // plain sides and top
         bulbCage = Mat("BulbCage", null, new Color(0.15f, 0.15f, 0.15f), 1f, 0.3f, 0.6f);
         bulbGlow = EmissiveMat("BulbGlow", new Color(1f, 0.75f, 0.45f) * 2f);
         wireBundle = Mat("WireBundle", Tex2("Props/Plumbing/Wires.png"), Color.white, 4f, 0.3f);   // coloured stripes round the bundle
@@ -167,14 +172,16 @@ public static partial class LookTestBuilder
         go.transform.SetParent(parent);
         go.transform.SetPositionAndRotation(a, Quaternion.LookRotation(dir, Mathf.Abs(dir.y) > 0.9f ? Vector3.forward : Vector3.up));
         float tile = tileSize.TryGetValue(mat, out var t) ? t : 1f;
+        Vector2 strip = pipeStrip.TryGetValue(mat, out var st) ? st : new Vector2(0f, 1f);
         const int sides = 8;
         var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
+        // The image goes round the pipe (u) and repeats along it every 'tile' metres (v).
         for (int i = 0; i <= sides; i++)
         {
-            float ang = i * Mathf.PI * 2f / sides;
+            float ang = i * Mathf.PI * 2f / sides, u = Mathf.Lerp(strip.x, strip.y, (float)i / sides);
             var ring = new Vector3(Mathf.Cos(ang), Mathf.Sin(ang), 0f) * radius;
-            verts.Add(ring); uvs.Add(new Vector2((float)i / sides, 0f));
-            verts.Add(ring + Vector3.forward * length); uvs.Add(new Vector2((float)i / sides, length / tile));
+            verts.Add(ring); uvs.Add(new Vector2(u, 0f));
+            verts.Add(ring + Vector3.forward * length); uvs.Add(new Vector2(u, length / tile));
         }
         for (int i = 0; i < sides; i++)
         {
@@ -271,22 +278,50 @@ public static partial class LookTestBuilder
     }
 
     // A grey electrical cabinet standing on the floor against a wall (its back 1 cm off the wall).
-    // 'floorPoint' is on the floor at the wall, the middle of the cabinet's width.
+    // 'floorPoint' is on the floor at the wall, the middle of the cabinet's width. Plain grey all round, with
+    // its door picture (and warning sign) on the front only, the right way round.
     static void ElectricCabinet(Transform parent, Vector3 floorPoint, Vector3 normal, float width = 1f, float height = 1.9f, float depth = 0.45f, bool vents = false)
     {
         Vector3 across = Vector3.Cross(Vector3.up, normal);
         Vector3 c = floorPoint + normal * (depth * 0.5f + 0.01f) + Vector3.up * (height * 0.5f);
         Vector3 size = new Vector3(Mathf.Abs(across.x) * width + Mathf.Abs(normal.x) * depth, height, Mathf.Abs(across.z) * width + Mathf.Abs(normal.z) * depth);
-        Box("ElectricCabinet", parent, c, size, vents ? cabinetVent : cabinetGrey);
+        var body = Box("ElectricCabinet", parent, c, size, cabinetBody);
+        // A quad shows its picture on the side facing its -Z, so it is turned to look into the wall.
+        var front = Prim(PrimitiveType.Quad, "Front", body.transform, c + normal * (depth * 0.5f + 0.002f), new Vector3(width, height, 1f), vents ? cabinetVent : cabinetGrey);
+        front.transform.rotation = Quaternion.LookRotation(-normal);
+        Object.DestroyImmediate(front.GetComponent<Collider>());
     }
 
     // A bundle of black cable conduits running along a wall between two points (on the wall surface).
-    static void Conduits(Transform parent, Vector3 a, Vector3 b, Vector3 normal, int count = 3)
+    // Where a run stops in the middle of a wall (at a doorway's edge) rather than in a corner, 'boxAtA' /
+    // 'boxAtB' end it in a junction box, from which the cables carry on straight up into the ceiling.
+    static void Conduits(Transform parent, Vector3 a, Vector3 b, Vector3 normal, int count = 3, bool boxAtA = false, bool boxAtB = false)
     {
+        Vector3 along = (b - a).normalized;
+        Vector3 aa = boxAtA ? a + along * 0.2f : a, bb = boxAtB ? b - along * 0.2f : b;   // the box stands just in from the end
         for (int i = 0; i < count; i++)
         {
             Vector3 off = normal * 0.05f + Vector3.up * (i * 0.07f);
-            Pipe(parent, "Conduit", a + off, b + off, 0.025f, conduit);
+            Pipe(parent, "Conduit", aa + off, bb + off, 0.025f, conduit);
+        }
+        if (boxAtA) JunctionBox(parent, aa, normal, along, count);
+        if (boxAtB) JunctionBox(parent, bb, normal, along, count);
+    }
+
+    // A small grey junction box on the wall where a bundle of 'count' conduits ends ('point' on the wall at
+    // the lowest conduit), with the cables rising from its top to the ceiling.
+    static void JunctionBox(Transform parent, Vector3 point, Vector3 normal, Vector3 along, int count)
+    {
+        float spread = (count - 1) * 0.07f, h = spread + 0.26f, d = 0.13f, w = spread + 0.2f;
+        Vector3 c = point + normal * (d * 0.5f) + Vector3.up * (spread * 0.5f);
+        Vector3 size = new Vector3(Mathf.Abs(along.x) * w + Mathf.Abs(normal.x) * d, h, Mathf.Abs(along.z) * w + Mathf.Abs(normal.z) * d);
+        Object.DestroyImmediate(Box("JunctionBox", parent, c, size, cabinetBody).GetComponent<Collider>());
+        Physics.SyncTransforms();
+        for (int i = 0; i < count; i++)
+        {
+            Vector3 foot = c + Vector3.up * (h * 0.5f) + along * ((i - (count - 1) * 0.5f) * 0.07f);
+            float top = Physics.Raycast(foot + Vector3.up * 0.02f, Vector3.up, out var hit, 6f) ? hit.point.y : foot.y + 1f;
+            Pipe(parent, "Conduit", foot, new Vector3(foot.x, top, foot.z), 0.025f, conduit);
         }
     }
 

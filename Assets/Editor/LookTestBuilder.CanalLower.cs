@@ -85,8 +85,18 @@ public static partial class LookTestBuilder
                 while (e + 1 < cols && Corridor(LowerMap[r][e + 1])) e++;
                 if (e - c >= 2)
                 {
-                    float z = LowerOrigin.z + (r + 0.5f) * LowerCell + 0.45f;
-                    Pipe(g, "PipeX", new Vector3(LowerOrigin.x + c * LowerCell, SvcFloor + 2.72f, z), new Vector3(LowerOrigin.x + (e + 1) * LowerCell, SvcFloor + 2.72f, z), 0.09f, (r % 2 == 0) ? pipeRust : pipeSteel);
+                    float z = LowerOrigin.z + (r + 0.5f) * LowerCell + 0.45f, y = SvcFloor + 2.72f, hallTop = SvcFloor + 5.5f;
+                    float x0 = LowerOrigin.x + c * LowerCell, x1 = LowerOrigin.x + (e + 1) * LowerCell;
+                    var mat = (r % 2 == 0) ? pipeRust : pipeSteel;
+                    // Where the corridor opens into the hall, the pipe comes out through the hall wall and
+                    // bends up into the hall's (higher) ceiling instead of stopping in mid-air.
+                    bool hallW = c > 0 && LowerMap[r][c - 1] == 'H', hallE = e + 1 < cols && LowerMap[r][e + 1] == 'H';
+                    var pts = new System.Collections.Generic.List<Vector3>();
+                    if (hallW) pts.Add(new Vector3(x0 - 0.5f, hallTop, z));
+                    pts.Add(new Vector3(hallW ? x0 - 0.5f : x0, y, z));
+                    pts.Add(new Vector3(hallE ? x1 + 0.5f : x1, y, z));
+                    if (hallE) pts.Add(new Vector3(x1 + 0.5f, hallTop, z));
+                    PipeRun(g, "PipeX", 0.09f, mat, pts.ToArray());
                 }
                 c = e + 1;
             }
@@ -107,9 +117,10 @@ public static partial class LookTestBuilder
             }
 
         // Conduits along a few corridor walls, and dim bulbs here and there (big dark stretches between).
-        Conduits(g, new Vector3(-78f, SvcFloor + 2.2f, 338f), new Vector3(-68f, SvcFloor + 2.2f, 338f), Vector3.back);           // corridor A, north wall
-        Conduits(g, new Vector3(-94f, SvcFloor + 2.2f, 346f), new Vector3(-84f, SvcFloor + 2.2f, 346f), Vector3.forward);        // corridor B, south wall
-        Conduits(g, new Vector3(-96f, SvcFloor + 2.2f, 358f), new Vector3(-88f, SvcFloor + 2.2f, 358f), Vector3.forward);        // corridor C, south wall
+        // (Runs that stop at a doorway's edge end in a junction box, the cables going up into the ceiling.)
+        Conduits(g, new Vector3(-78f, SvcFloor + 2.2f, 338f), new Vector3(-68f, SvcFloor + 2.2f, 338f), Vector3.back, 3, true, true);       // corridor A, north wall
+        Conduits(g, new Vector3(-94f, SvcFloor + 2.2f, 346f), new Vector3(-84f, SvcFloor + 2.2f, 346f), Vector3.forward, 3, true, true);    // corridor B, south wall
+        Conduits(g, new Vector3(-96f, SvcFloor + 2.2f, 358f), new Vector3(-88f, SvcFloor + 2.2f, 358f), Vector3.forward, 3, false, true);   // corridor C, south wall
         CagedBulb(g, "LowerBulb_Stairs", Cell(10, 1) + Vector3.up * 2.75f, 1.6f, 5f);
         // Corridor A's bulbs (with the stairs one) go out one by one toward the player: LookTestBuilder.CanalScares.cs.
         CagedBulb(g, "LowerBulb_A", Cell(18, 2) + Vector3.up * 2.75f, 1.4f, 5f);
@@ -134,7 +145,7 @@ public static partial class LookTestBuilder
         foreach (float x in new[] { -89.6f, -87.6f })
         {
             Kit("Props/Plumbing/Pump.fbx", null, "Props/Plumbing/Pump.png", g, new Vector3(x, f, 343f), 0f, 0.6f, true);
-            Pipe(g, "PumpDrop", new Vector3(x, f + 2f, 343.78f), new Vector3(x, f + 0.55f, 343.78f), 0.06f, pipeRust);
+            PumpFeed(g, x, 343f, 343.78f, f + 2f, f);
         }
         Pipe(g, "PumpHeader", new Vector3(-92f, f + 2f, 343.78f), new Vector3(-86f, f + 2f, 343.78f), 0.1f, pipeRust);
         ControlPanel(g, new Vector3(-86f, f + 1.5f, 340.9f), Vector3.left);
@@ -159,6 +170,15 @@ public static partial class LookTestBuilder
         HidingLockerAt(g, "HidingLocker_CanalLowerStore", new Vector3(-95.68f, f, 353.4f), 90f);
     }
 
+    // A pump's feed pipe: down from the wall pipe (at height 'fromY', 'wallZ') beside the pump, along the floor
+    // and into the rusty pump head on its east end (the pump, 0.6 scale, stands at x, pumpZ; head 0.3 m up).
+    static void PumpFeed(Transform parent, float x, float pumpZ, float wallZ, float fromY, float floorY)
+    {
+        float px = x + 0.9f, y = floorY + PumpHeadHeight;
+        PipeRun(parent, "PumpFeed", 0.06f, pipeRust, new Vector3(px, fromY, wallZ), new Vector3(px, y, wallZ), new Vector3(px, y, pumpZ), new Vector3(x + 0.6f, y, pumpZ));
+    }
+    const float PumpHeadHeight = 0.3f;
+
     // ---------------------------------------------------------------- machinery hall (x -62..-30, z 338..364)
     static void LowerHall(Transform parent)
     {
@@ -179,7 +199,7 @@ public static partial class LookTestBuilder
         foreach (float x in new[] { -58f, -55.5f, -52.5f, -50f })
         {
             Kit("Props/Plumbing/Pump.fbx", null, "Props/Plumbing/Pump.png", g, new Vector3(x, f, 339.2f), 0f, 0.6f, true);
-            Pipe(g, "PumpDrop", new Vector3(x, f + 1.7f, 338.25f), new Vector3(x, f + 0.5f, 338.25f), 0.06f, pipeRust);
+            PumpFeed(g, x, 339.2f, 338.25f, f + 1.7f, f);
         }
         FencedCage(g, "PumpBay", -60f, -48f, 338f, 342.4f, f, 2, 1.6f, 0);
         Pipe(g, "SouthWallPipe", new Vector3(-62f, f + 1.7f, 338.25f), new Vector3(-36f, f + 1.7f, 338.25f), 0.09f, pipeRust);

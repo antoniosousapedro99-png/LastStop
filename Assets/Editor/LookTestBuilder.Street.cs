@@ -102,13 +102,18 @@ public static partial class LookTestBuilder
         }
         Span("Wall_Front", well, new Vector3(-2.3f, -0.2f, -12.3f), new Vector3(2.3f, StreetY - 0.4f, -12), wallTile);
 
-        // Railings around the opening and globe lamps at the top of the stairs.
-        var rail = StreetDir + "/Urban/metalfence_one_side_topbar.fbx";
+        // A chest-high rough stone wall round the opening (1.3 m, on top of the stairwell's side walls and along
+        // the back on the sidewalk), with a concrete capstone overhanging it a little; globe lamps at the top.
+        var stone = Mat("StairStoneWall", Load<Texture2D>(StreetDir + "/Urban/stonewall.jpg"), new Color(0.62f, 0.6f, 0.58f), 1.2f, 0.1f);
+        const float wallTop = 1.22f, capTop = 1.3f, lip = 0.04f;
         foreach (int side in new[] { -1, 1 })
-            for (int k = 0; k < 3; k++)
-                Place(rail, well, new Vector3(2.15f * side, StreetY, -5.4f - k * 2.7f), 90f);
-        Place(rail, well, new Vector3(-1.1f, StreetY, -4.05f), 0f, 0.8f);
-        Place(rail, well, new Vector3(1.1f, StreetY, -4.05f), 0f, 0.8f);
+        {
+            string s = side < 0 ? "W" : "E";
+            Span("StoneWall_" + s, well, Mirror(new Vector3(2f, StreetY, -12f), side), Mirror(new Vector3(2.3f, StreetY + wallTop, -4f), side), stone);
+            Span("StoneCap_" + s, well, Mirror(new Vector3(2f - lip, StreetY + wallTop, -12f - lip), side), Mirror(new Vector3(2.3f + lip, StreetY + capTop, -4f), side), concrete);
+        }
+        Span("StoneWall_Back", well, new Vector3(-2.3f, StreetY, -4f), new Vector3(2.3f, StreetY + wallTop, -3.7f), stone);
+        Span("StoneCap_Back", well, new Vector3(-2.3f - lip, StreetY + wallTop, -4f), new Vector3(2.3f + lip, StreetY + capTop, -3.7f + lip), concrete);
         foreach (int side in new[] { -1, 1 })
         {
             var post = Prim(PrimitiveType.Cylinder, "GlobePost", well, new Vector3(2.6f * side, StreetY + 1.4f, -12.4f), new Vector3(0.12f, 1.4f, 0.12f), Mat("GlobePost", null, new Color(0.1f, 0.18f, 0.12f), 1f, 0.5f, 0.6f));
