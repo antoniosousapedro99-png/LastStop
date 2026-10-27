@@ -2,10 +2,11 @@ using UnityEditor;
 using UnityEngine;
 
 // Canal St Junction, dressed as a busy station everyone fled in a panic: newspapers, cups and cans
-// strewn toward the exits (thickest near the escalators and jammed against the ticket gates), bins
-// knocked over, "out of service" cones and barriers kicked aside (never blocking the way), old ads
-// and Line 4 notices on the walls, a few graffiti tags, and a little blood: a spatter by the west
-// staff steps and a drag trail along the south track into the dead-end tunnel.
+// strewn thinly across the platform and mezzanine (a little more by the ticket gates), snacks and
+// unopened soda cans left behind on the benches, bins knocked over, "out of service" cones and barriers
+// kicked aside (never blocking the way), old ads and Line 4 notices on the walls, a few graffiti tags,
+// and a little blood: a spatter by the west staff steps and a drag trail along the south track to the
+// maintenance door.
 public static partial class LookTestBuilder
 {
     const string TrashFbx = ArtDir + "/Props/Trash/TrashAndDebris.fbx";
@@ -18,14 +19,19 @@ public static partial class LookTestBuilder
         Physics.SyncTransforms();   // the wall rays must see everything just built
         float z = CanalZ, mezz = 6f;
 
-        // ---- rubbish, thicker toward the escalator (where the crowd ran)
-        Scatter(g, new Vector3(-25f, 0f, z + 10.5f), new Vector2(12f, 3.6f), 22, 11);
-        Scatter(g, new Vector3(5f, 0f, z + 10.5f), new Vector2(14f, 3.6f), 28, 12);
-        Scatter(g, new Vector3(30f, 0f, z + 10f), new Vector2(8f, 3.6f), 36, 13);
-        Scatter(g, new Vector3(56f, mezz, z + 10.5f), new Vector2(5f, 8f), 32, 14);      // mezzanine, platform side
-        Scatter(g, new Vector3(64f, mezz, z + 10.5f), new Vector2(1.2f, 1.6f), 18, 15);  // piled up in the gate aisle
-        Scatter(g, new Vector3(72f, mezz, z + 10.5f), new Vector2(6f, 8f), 20, 16);      // street side
-        Scatter(g, new Vector3(-68f, -1.3f, z + 1.2f), new Vector2(8f, 0.4f), 6, 17);    // blown down the arrival tunnel
+        // ---- rubbish, thinly spread (half what it was, over a wider area)
+        Scatter(g, new Vector3(-19f, 0f, z + 10.5f), new Vector2(19f, 4.2f), 20, 11);
+        Scatter(g, new Vector3(19f, 0f, z + 10.5f), new Vector2(19f, 4.2f), 23, 12);
+        Scatter(g, new Vector3(56.5f, mezz, z + 10.5f), new Vector2(6.5f, 9f), 15, 14);  // mezzanine, platform side
+        Scatter(g, new Vector3(64f, mezz, z + 10.5f), new Vector2(1.2f, 1.6f), 5, 15);   // a few in the gate aisle
+        Scatter(g, new Vector3(72f, mezz, z + 10.5f), new Vector2(6.5f, 9f), 15, 16);    // street side
+        Scatter(g, new Vector3(-68f, -1.3f, z + 1.2f), new Vector2(8f, 0.4f), 3, 17);    // blown down the arrival tunnel
+        Scatter(g, new Vector3(-105f, -1.3f, z + 1.2f), new Vector2(8f, 0.4f), 3, 18);
+
+        // ---- snacks and drinks left behind on the benches
+        int bench = 0;
+        foreach (var t in canal.GetComponentsInChildren<Transform>())
+            if (t.name == "seats") BenchSnacks(g, t.gameObject, bench++);
 
         // Knocked-over bins spilling their bags.
         TippedBin(g, new Vector3(8f, 0f, z + 12.9f), 30f);
@@ -82,9 +88,51 @@ public static partial class LookTestBuilder
         Decal("Blood_CanalDrag4", g, "BloodFabric11", new Vector3(-52f, pit, z + 16.6f), 0.55f, 100f);
         Decal("Blood_CanalDrop1", g, "BloodDrop01", new Vector3(-55.2f, pit, z + 16.5f), 0.22f, 40f);
         Decal("Blood_CanalDrop2", g, "BloodDrop02", new Vector3(-57.3f, -1.284f, z + 18.4f), 0.18f, 160f);   // on the track bed
+        // ...on down the tunnel to the maintenance door.
+        Decal("Blood_CanalDrag5", g, "BloodFabric11", new Vector3(-63f, pit, z + 16.5f), 0.6f, 92f);
+        Decal("Blood_CanalDrop3", g, "BloodDrop01", new Vector3(-68.5f, pit, z + 16.4f), 0.2f, 15f);
+        Decal("Blood_CanalDrag6", g, "BloodFabric07", new Vector3(-73f, pit, z + 16.6f), 0.55f, 85f);
+        Decal("Blood_CanalDrop4", g, "BloodDrop02", new Vector3(-77.2f, -1.284f, z + 18.3f), 0.18f, 60f);
+        Decal("Blood_CanalDrag7", g, "BloodFabric11", new Vector3(-79.4f, pit, z + 20.45f), 0.5f, 5f);   // at the door
         Decal("Blood_CanalBoothDrop", g, "BloodDrop20", new Vector3(58.7f, mezz + 0.006f, z + 2.2f), 0.2f, 70f);
         foreach (var r in g.GetComponentsInChildren<Renderer>())
             if (r.name.StartsWith("Blood_Canal")) Matte(r.sharedMaterial);
+    }
+
+    // A few things left on a bench: unopened soda cans standing up and chip bags lying flat, on every other
+    // bench (and the odd one more), found by casting rays down onto its seats.
+    static void BenchSnacks(Transform parent, GameObject seats, int index)
+    {
+        var rng = new System.Random(40 + index);
+        if (index % 2 == 1 && rng.NextDouble() < 0.6) return;
+        string[] brands = { "generic_cola", "pepso", "sprit", "fantom_orange", "dr_piper", "red_bullet" };
+        string[] cans = { "Can_Standard330", "Can_Standard330", "Can_Slim250", "Can_Fat500" };
+        var b = Bounds(seats);
+        bool alongX = b.size.x > b.size.z;
+        int count = 1 + rng.Next(3);
+        for (int i = 0; i < count; i++)
+        {
+            float t = 0.1f + 0.8f * (float)rng.NextDouble();
+            float across = (float)rng.NextDouble() * 0.2f - 0.1f;
+            Vector3 p = alongX ? new Vector3(Mathf.Lerp(b.min.x, b.max.x, t), b.max.y + 0.5f, b.center.z + across)
+                               : new Vector3(b.center.x + across, b.max.y + 0.5f, Mathf.Lerp(b.min.z, b.max.z, t));
+            if (!Physics.Raycast(p, Vector3.down, out var hit, 2f) || hit.point.y > b.min.y + 0.65f) continue;   // missed, or hit a backrest
+            GameObject item;
+            if (rng.NextDouble() < 0.6)
+            {
+                item = Model(ArtDir + "/Props/SodaCans/" + cans[rng.Next(cans.Length)] + ".fbx", null, parent,
+                             Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, (float)rng.NextDouble() * 360f);
+                item.transform.localScale *= 0.12f / Mathf.Max(0.001f, Bounds(item).size.y);
+            }
+            else
+            {
+                item = ModelPiece(TrashFbx, rng.NextDouble() < 0.5 ? "Chip_Bag_1" : "Chip_Bag_3", parent, Tex2("Props/Trash/Bags.png"), 1f);
+                var ib = Bounds(item);
+                item.transform.localScale *= 0.22f / Mathf.Max(0.001f, Mathf.Max(ib.size.x, ib.size.y, ib.size.z));
+                item.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f) * item.transform.rotation;
+            }
+            StandOn(item, hit.point + Vector3.up * 0.003f);
+        }
     }
 
     // Litter dropped at random (but always the same: 'seed') over an oval area around 'centre'.

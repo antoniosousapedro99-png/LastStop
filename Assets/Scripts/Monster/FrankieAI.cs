@@ -65,7 +65,8 @@ public class FrankieAI : MonoBehaviour
     float huntUntil;                           // until then he never gives up a chase (the train finale)
     float smoothedSpeed, lastCycle;            // his speed, eased so the animation doesn't flick between walk and run
     Vector3 lastSeenAt, walkOffTo;
-    bool hitDone, landed, leaping, seesPlayer;
+    bool hitDone, landed, leaping, seesPlayer, stingPlayed;
+    float searchArrivedAt = -1f;               // when a search reached its spot (moodTime), or -1
     string playing;
 
     void Awake()
@@ -101,6 +102,14 @@ public class FrankieAI : MonoBehaviour
         SetMood(Mood.Chase);
     }
 
+    // Told roughly where the player is (Station 1: they've gone down to the service level). He walks
+    // over and searches, without knowing exactly where they are.
+    public void SearchFor(Vector3 near)
+    {
+        lastSeenAt = NavMesh.SamplePosition(near, out var hit, 4f, NavMesh.AllAreas) ? hit.position : near;
+        SetMood(Mood.Search);
+    }
+
     // Loading a save: back where he was, wandering.
     public void PutBack(Vector3 position, float yaw)
     {
@@ -116,6 +125,12 @@ public class FrankieAI : MonoBehaviour
         sightTimer -= Time.deltaTime;
         if (sightTimer <= 0f) { sightTimer = 0.2f; seesPlayer = senses.CanSeePlayer(); SeenByPlayer = senses.PlayerCanSeeMe(); }
         if (seesPlayer) { lastSeen = Time.time; lastSeenAt = senses.Player.position; }
+        // The first time the player gets a clear look at him (outside his staged reveal), the sting plays.
+        if (SeenByPlayer && !stingPlayed && Current != Mood.Reveal)
+        {
+            stingPlayed = true;
+            if (sting) { sting.volume = GameSettings.MusicLevel; sting.Play(); }
+        }
 
         // Reached a jump link (a platform edge): leap across it; nothing else happens mid-air.
         if (agent.isOnOffMeshLink)
@@ -155,6 +170,7 @@ public class FrankieAI : MonoBehaviour
         moodTime = 0f;
         hitDone = false;
         landed = false;
+        searchArrivedAt = -1f;
         agent.isStopped = false;
         agent.speed = mood == Mood.Chase ? chaseSpeed : walkSpeed;
         if (mood == Mood.Wander) PickWanderSpot();
@@ -247,11 +263,18 @@ public class FrankieAI : MonoBehaviour
         if (Time.time - lastSeen > loseAfter && Time.time > huntUntil) SetMood(Mood.Search);
     }
 
+    // Walks to where he last saw (or was told about) the player, then looks around there for 10 seconds
+    // before giving up (or gives up after a minute if he never gets there).
     void Search()
     {
         if (StartChaseIfSeen()) return;
-        if (Arrived()) { agent.isStopped = true; LookAround(); }
-        if (moodTime > 10f) SetMood(Mood.Wander);
+        if (Arrived())
+        {
+            if (searchArrivedAt < 0f) searchArrivedAt = moodTime;
+            agent.isStopped = true;
+            LookAround();
+        }
+        if ((searchArrivedAt >= 0f && moodTime - searchArrivedAt > 10f) || moodTime > 60f) SetMood(Mood.Wander);
     }
 
     void Attack()
@@ -326,6 +349,7 @@ public class FrankieAI : MonoBehaviour
         if (noticedAt < 0f && SeenByPlayer)
         {
             noticedAt = Time.time;
+            stingPlayed = true;
             if (sting) { sting.volume = GameSettings.MusicLevel; sting.Play(); }
         }
         bool close = senses.Player && Vector3.Distance(transform.position, senses.Player.position) < 5f;
@@ -346,13 +370,42 @@ public class FrankieAI : MonoBehaviour
         }
     }
 
-    // One jump along a link: an arc from where he stands to the link's far end, then back to walking.
+    // Crossing a link. Along a staircase or through a doorway (a LinkPath) he walks its points; anywhere
+    // else (a platform edge) it's one jump: an arc from where he stands to the link's far end.
     IEnumerator Leap()
     {
         leaping = true;
         var link = agent.currentOffMeshLinkData;
+        var route = LinkPath.Find(link.startPos, link.endPos);
+        if (route) yield return WalkRoute(route, link.startPos);
+        else yield return Jump(link.endPos);
+        agent.CompleteOffMeshLink();
+        leaping = false;
+    }
+
+    IEnumerator WalkRoute(LinkPath route, Vector3 from)
+    {
+        var points = route.points;
+        bool backwards = (from - points[points.Length - 1]).sqrMagnitude < (from - points[0]).sqrMagnitude;
+        float speed = Mathf.Max(agent.speed, 1.2f);
+        agent.updateRotation = false;
+        for (int i = 0; i < points.Length; i++)
+        {
+            Vector3 target = points[backwards ? points.Length - 1 - i : i] + Vector3.up * agent.baseOffset;
+            Vector3 flat = target - transform.position; flat.y = 0f;
+            if (flat.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(flat);
+            while ((transform.position - target).sqrMagnitude > 0.0004f)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+                yield return null;
+            }
+        }
+    }
+
+    IEnumerator Jump(Vector3 to)
+    {
         Vector3 start = transform.position;
-        Vector3 end = link.endPos + Vector3.up * agent.baseOffset;
+        Vector3 end = to + Vector3.up * agent.baseOffset;
         Vector3 flat = end - start; flat.y = 0f;
         agent.updateRotation = false;
         if (flat.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(flat);
@@ -363,8 +416,6 @@ public class FrankieAI : MonoBehaviour
             transform.position = Vector3.Lerp(start, end, t) + Vector3.up * (leapHeight * 4f * t * (1f - t));
             yield return null;
         }
-        agent.CompleteOffMeshLink();
-        leaping = false;
     }
 
     void StopLeap()

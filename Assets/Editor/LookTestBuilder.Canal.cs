@@ -6,15 +6,18 @@ using UnityEngine.AI;
 
 // Station 2: Canal St Junction, a big interchange gone dead. Built in the same scene as Hollis St but far
 // away (beyond z 300), reached by the train ride (StationTransfer).
-// - Lower level (y 0): an 80 m platform hall with an island platform between two tracks, columns, benches.
-//   The arrival train stalls 40 m into the north track's west tunnel; staff steps at the west end lead
-//   down to both track beds. One fuel can on the platform, the other at the end of the south tunnel.
+// - Platform level (y 0): an 80 m platform hall with an island platform between two tracks, columns,
+//   benches. Every tunnel runs on 40 m further than it used to: the arrival train stalls at the far end of
+//   the north track's west tunnel, 80 m out; staff steps at the west end lead down to both track beds.
+//   A rusted maintenance door in the south track's west tunnel leads down to the lower level
+//   (LookTestBuilder.CanalLower.cs): service corridors, a machinery hall, and the emergency latch.
+//   Fuel cans: one in the station master's office, one in a cage in the lower level's machinery hall.
 // - Escalator 1 climbs from the island's east end to the mezzanine (y 6): ticket gates, a ticket booth
 //   (the office key lies on its back counter), ticket machines, the generator room (north) and the locked
 //   station master's office (south: the spark plug and a save PC).
 // - The backup generator (GeneratorPuzzle) brings Canal St's own power back: lights come on in a wave, the
-//   escalators start, and the roller shutter at the top of escalator 2 rolls up: the street exit and the
-//   end card (CanalExit).
+//   escalators start, and the emergency latch on the lower level opens: the way on (the end card for now).
+//   The street shutter at the top of escalator 2 stays jammed.
 public static partial class LookTestBuilder
 {
     const float CanalZ = 300f;              // the station's north wall; everything here is offset from Hollis St
@@ -54,6 +57,7 @@ public static partial class LookTestBuilder
         CanalOffice(canal, wallTile, floorTile, ceiling);
         CanalArrivalTrain(canal);
         CanalDressing(canal);     // rubbish, cones, posters, blood (LookTestBuilder.CanalDressing.cs)
+        CanalLowerLevel(canal);   // the service level under the south tunnel (LookTestBuilder.CanalLower.cs)
         BakeCanal(canal);
     }
 
@@ -81,10 +85,10 @@ public static partial class LookTestBuilder
         g.SetParent(canal);
         float z = CanalZ;
         // Track pits (north: a long west tunnel where the train stalled; south: a short dead end).
-        Span("PitN", g, new Vector3(-100f, -1.5f, z), new Vector3(55f, -1.3f, z + 5.5f), gravel);
-        Span("PitS", g, new Vector3(-60f, -1.5f, z + 15.5f), new Vector3(55f, -1.3f, z + 21f), gravel);
-        CanalTrack(g, "TrackN", -100f, 55f, z + 1.6f);
-        CanalTrack(g, "TrackS", -60f, 55f, z + 17.2f);
+        Span("PitN", g, new Vector3(-140f, -1.5f, z), new Vector3(95f, -1.3f, z + 5.5f), gravel);
+        Span("PitS", g, new Vector3(-100f, -1.5f, z + 15.5f), new Vector3(95f, -1.3f, z + 21f), gravel);
+        CanalTrack(g, "TrackN", -140f, 95f, z + 1.6f);
+        CanalTrack(g, "TrackS", -100f, 95f, z + 17.2f);
         // Island platform between them.
         Span("IslandBase", g, new Vector3(-40f, -1.5f, z + 5.5f), new Vector3(40f, -0.05f, z + 15.5f), concrete);
         Span("IslandTop", g, new Vector3(-40f, -0.05f, z + 5.5f), new Vector3(40f, 0f, z + 15.5f), floorTile);
@@ -109,10 +113,10 @@ public static partial class LookTestBuilder
         Span("EastHeaderS", g, new Vector3(40f, 5.2f, z + 12f), new Vector3(40.3f, 9.4f, z + 12.3f), wallTile);
 
         // Tunnels beyond the hall (concrete, ceiling 3 m above the platform).
-        CanalTunnel(g, "TunnelNW", -100f, -40.3f, z, z + 5.5f, tunnelConcrete, true);
-        CanalTunnel(g, "TunnelSW", -60f, -40.3f, z + 15.5f, z + 21f, tunnelConcrete, true);
-        CanalTunnel(g, "TunnelNE", 40.3f, 55f, z, z + 5.5f, tunnelConcrete, false);
-        CanalTunnel(g, "TunnelSE", 40.3f, 55f, z + 15.5f, z + 21f, tunnelConcrete, false);
+        CanalTunnel(g, "TunnelNW", -140f, -40.3f, z, z + 5.5f, tunnelConcrete, true);
+        CanalTunnel(g, "TunnelSW", -100f, -40.3f, z + 15.5f, z + 21f, tunnelConcrete, true, CanalServiceDoorX);
+        CanalTunnel(g, "TunnelNE", 40.3f, 95f, z, z + 5.5f, tunnelConcrete, false);
+        CanalTunnel(g, "TunnelSE", 40.3f, 95f, z + 15.5f, z + 21f, tunnelConcrete, false);
 
         // Staff steps at the west end, down from the island to each track bed.
         for (int k = 0; k < 5; k++)
@@ -130,7 +134,9 @@ public static partial class LookTestBuilder
         }
         for (int i = 0; i < 7; i++) CanalLamp(g, "CanalHallLamp_" + i, new Vector3(-30f + i * 10f, 4.98f, z + 10.5f), tubeLit, housing);
         EmergencyLight(g, new Vector3(-39.8f, 3.6f, z + 10.5f));
-        EmergencyLight(g, new Vector3(-60f, 2.7f, z + 0.25f), 2f, 6f);   // in the arrival tunnel, a red marker to walk towards
+        EmergencyLight(g, new Vector3(-100f, 2.7f, z + 0.25f), 2f, 6f);  // in the arrival tunnel, red markers to walk towards
+        EmergencyLight(g, new Vector3(-60f, 2.7f, z + 0.25f), 2f, 6f);
+        EmergencyLight(g, new Vector3(CanalServiceDoorX + 0.5f, 1.4f, z + 20.75f), 1.5f, 5f);   // over the maintenance door
 
         // Benches, bins, a vending machine, and the notice at the escalator.
         foreach (float bx in new[] { -27f, -7f, 13f })
@@ -140,15 +146,19 @@ public static partial class LookTestBuilder
         }
         Prop("trash_can", g, new Vector3(-15f, 0f, z + 9.6f), 0f);
         Prop("trash_can", g, new Vector3(25f, 0f, z + 11.4f), 0f);
-        Prop("Vending_machine", g, new Vector3(-38.8f, 0f, z + 13.5f), -90f);
+        BackToWall(Prop("Vending_machine", g, new Vector3(-38.8f, 0f, z + 13.5f), -90f), Vector3.left, -40f);
         Note(g, "CanalNotice", new Vector3(37.5f, 0.01f, z + 9.2f), 80f,
              "NOTICE - Canal St Junction\nStation power failure. Escalators out of service.\nBackup generator: mezzanine service room.\n- MTA Line 4");
         HidingLockerAt(g, "HidingLocker_CanalWest", new Vector3(-39.68f, 0f, z + 7.5f), 90f);
+        // (The fuel cans are in the station master's office and on the lower level.)
+    }
 
-        // Fuel can 1: on the platform by the west benches.
-        PlaceFuelCan(g, new Vector3(-30.5f, 0f, z + 12.6f), 35f);
-        // Fuel can 2: at the end of the south tunnel (down the staff steps).
-        PlaceFuelCan(g, new Vector3(-58.6f, -1.3f, z + 19.8f), -20f);
+    // Pushes an object along 'towards' until its back is 1 cm from the wall plane at 'wall' (x or z).
+    static void BackToWall(GameObject go, Vector3 towards, float wall)
+    {
+        var b = Bounds(go);
+        if (towards.x != 0f) go.transform.position += Vector3.right * (wall - (towards.x < 0 ? b.min.x - 0.01f : b.max.x + 0.01f));
+        else go.transform.position += Vector3.forward * (wall - (towards.z < 0 ? b.min.z - 0.01f : b.max.z + 0.01f));
     }
 
     // A 2.6 m track bed starting at 'bedZ', its texture lined up with its edge (each bed gets its own copy of
@@ -167,10 +177,18 @@ public static partial class LookTestBuilder
         }
     }
 
-    static void CanalTunnel(Transform g, string name, float x0, float x1, float z0, float z1, Material mat, bool capWest)
+    // A tunnel x0..x1 between walls at z0 and z1; 'doorX' (if given) leaves a 1 m doorway in the south wall.
+    static void CanalTunnel(Transform g, string name, float x0, float x1, float z0, float z1, Material mat, bool capWest, float doorX = float.NaN)
     {
         Span(name + "_WallN", g, new Vector3(x0, -1.5f, z0 - 0.3f), new Vector3(x1, 3.2f, z0), mat);
-        Span(name + "_WallS", g, new Vector3(x0, -1.5f, z1), new Vector3(x1, 3.2f, z1 + 0.3f), mat);
+        if (float.IsNaN(doorX)) Span(name + "_WallS", g, new Vector3(x0, -1.5f, z1), new Vector3(x1, 3.2f, z1 + 0.3f), mat);
+        else
+        {
+            Span(name + "_WallS_W", g, new Vector3(x0, -1.5f, z1), new Vector3(doorX, 3.2f, z1 + 0.3f), mat);
+            Span(name + "_WallS_E", g, new Vector3(doorX + 1f, -1.5f, z1), new Vector3(x1, 3.2f, z1 + 0.3f), mat);
+            Span(name + "_DoorLintel", g, new Vector3(doorX, 0.9f, z1), new Vector3(doorX + 1f, 3.2f, z1 + 0.3f), mat);
+            Span(name + "_DoorThreshold", g, new Vector3(doorX, -1.5f, z1), new Vector3(doorX + 1f, -1.3f, z1 + 0.3f), mat);
+        }
         Span(name + "_Ceiling", g, new Vector3(x0, 3f, z0), new Vector3(x1, 3.2f, z1), mat);
         if (capWest) Span(name + "_Cap", g, new Vector3(x0 - 0.3f, -1.5f, z0 - 0.3f), new Vector3(x0, 3.2f, z1 + 0.3f), mat);
         else Span(name + "_Cap", g, new Vector3(x1, -1.5f, z0 - 0.3f), new Vector3(x1 + 0.3f, 3.2f, z1 + 0.3f), mat);
@@ -206,17 +224,9 @@ public static partial class LookTestBuilder
         CanalLamp(g, "CanalEscalatorLamp2", new Vector3(85f, 14.98f, z + 10f), tubeLit, housing);
         CanalLamp(g, "CanalExitLamp", new Vector3(92f, 14.98f, z + 10f), tubeLit, housing);
 
-        // The roller shutter over the street exit, and the way out behind it.
+        // The roller shutter over the street exit: jammed for good (the way on is the emergency latch below).
         var shutter = Span("ExitShutter", g, new Vector3(95f, 12f, z + 8f), new Vector3(95.1f, 15f, z + 12f), Mat("ShutterMetal", Tex("Door_01.jpg"), new Color(0.55f, 0.55f, 0.55f), 1f, 0.3f, 0.5f));
-        var roller = shutter.AddComponent<RollerShutter>();
-        roller.grid = canalGrid;
-        roller.rattle = Load<AudioClip>(SfxDir + "/CrowbarDrag1.wav");
-        var exit = new GameObject("CanalExit");
-        exit.transform.SetParent(g);
-        exit.transform.position = new Vector3(97.5f, 13f, z + 10f);
-        exit.layer = 2;
-        var box = exit.AddComponent<BoxCollider>(); box.isTrigger = true; box.size = new Vector3(2f, 2f, 4f);
-        exit.AddComponent<CanalExit>().shutter = roller;
+        shutter.AddComponent<JammedShutter>().rattle = Load<AudioClip>(SfxDir + "/CrowbarDrag1.wav");
         EmergencyLight(g, new Vector3(94.6f, 14.6f, z + 10f), 1.5f, 5f);
     }
 
@@ -330,7 +340,7 @@ public static partial class LookTestBuilder
         // Ticket machines, seats, a vending machine, a bin; a hiding locker by the exit side.
         Prop("ticket_machine", g, new Vector3(52.5f, f, z + 20.4f), 180f);
         Prop("ticket_machine", g, new Vector3(54.3f, f, z + 20.4f), 180f);
-        Prop("Vending_machine", g, new Vector3(77.5f, f, z + 20.4f), 0f);
+        BackToWall(Prop("Vending_machine", g, new Vector3(77.5f, f, z + 20.4f), 0f), Vector3.forward, z + 21f);
         Prop("seats", g, new Vector3(71f, f, z + 20.2f), 180f);
         Prop("trash_can", g, new Vector3(60.5f, f, z + 20.5f), 0f);
         HidingLockerAt(g, "HidingLocker_CanalMezz", new Vector3(74.5f, f, z + 20.68f), 180f);
@@ -376,7 +386,7 @@ public static partial class LookTestBuilder
         log.transform.rotation = Quaternion.LookRotation(Vector3.left);   // faces into the room
         Object.DestroyImmediate(log.GetComponent<Collider>());
         log.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
-        log.AddComponent<ReadableNote>().text = "BACKUP GENERATOR - CANAL ST\nTank: EMPTY. Two cans left: one on the platform, one down the south tunnel.\nSpark plug: shot. Spare is in the station master's office.\nOffice key is on the ticket booth's back counter.\n- Line 4 Maintenance";
+        log.AddComponent<ReadableNote>().text = "BACKUP GENERATOR - CANAL ST\nTank: EMPTY. Two cans left: one in the station master's office, one in the stores cage on the lower level (maintenance door, south tunnel).\nSpark plug: shot. Spare is in the station master's office.\nOffice key is on the ticket booth's back counter.\nNB: backup power also releases the emergency latch on the lower level.\n- Line 4 Maintenance";
     }
 
     // ---------------------------------------------------------------- station master's office (south, locked)
@@ -427,6 +437,7 @@ public static partial class LookTestBuilder
         AddMeshColliders(chair);
         // A candle burning on the desk (left by the station master?) lights the room a little.
         var candle = Candle(g, new Vector3(58.45f, top, z + 6.35f), true);
+        PlaceFuelCan(g, new Vector3(54.6f, f, z + 4.2f), 60f);   // fuel can 1, on the floor by the west wall
         var flame = candle.GetComponentInChildren<Light>();
         flame.intensity = 1.6f; flame.range = 4.5f;
     }
@@ -476,7 +487,7 @@ public static partial class LookTestBuilder
         if (b.size.z > b.size.x) { car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation; b = Bounds(car); }
         car.transform.localScale *= CarLength / b.size.x;
         b = Bounds(car);
-        StandOn(car, new Vector3(-81.2f - b.size.x * 0.5f, -1.3f, CanalZ + 2.75f));   // open end (east) at x -81.2, back end just inside the tunnel's end wall
+        StandOn(car, new Vector3(-121.2f - b.size.x * 0.5f, -1.3f, CanalZ + 2.75f));  // open end (east) at x -121.2, back end just inside the tunnel's end wall
         b = Bounds(car);
         float faceX = b.max.x;
         Physics.SyncTransforms();
@@ -527,7 +538,7 @@ public static partial class LookTestBuilder
         arrival.thud = thud;
         // His far-away scream from back down the tunnel, a few seconds before he lands on the roof.
         var far = MonsterAudio(tunnel, "CanalFarScream", Vector3.zero, 200f);
-        far.transform.position = new Vector3(-99f, 0.5f, CanalZ + 2.75f);
+        far.transform.position = new Vector3(-139f, 0.5f, CanalZ + 2.75f);
         far.clip = Load<AudioClip>(CharacterSfx + "/FrankieScreamFar.ogg");
         far.minDistance = 15f; far.rolloffMode = AudioRolloffMode.Logarithmic;
         arrival.farScream = far;
@@ -546,8 +557,8 @@ public static partial class LookTestBuilder
         go.transform.SetParent(canal);
         var surface = go.AddComponent<NavMeshSurface>();
         surface.collectObjects = CollectObjects.Volume;
-        surface.center = new Vector3(0f, 6f, CanalZ + 10f);
-        surface.size = new Vector3(205f, 18f, 40f);
+        surface.center = new Vector3(-22.5f, 2.5f, CanalZ + 30f);
+        surface.size = new Vector3(245f, 26f, 80f);       // x -145..100, y -10.5..15.5, z 290..370
         surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
         surface.layerMask = ~((1 << PreviewLayer) | (1 << 2));
         surface.BuildNavMesh();

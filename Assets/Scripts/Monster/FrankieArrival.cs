@@ -1,11 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
-// Wakes Frankie once the power is back. 5-10 seconds after the fuse box is fixed, every lamp
-// stutters and a shriek echoes out of the west tunnel. A few seconds later the lamps stutter again, and
-// when they come back he is standing under the lamp at the far end of the platform (the end further
-// from the player), staring. He walks off into that end's tunnel once he's been seen (FrankieAI's Reveal).
-// Until then he is switched off and nowhere in the level.
+// Wakes Frankie. Until then he is switched off and nowhere in the level.
+// - Normally: the first time the player reaches the bottom of the service-level stairs (BelowTrigger),
+//   5 seconds later a shriek echoes from deep in the west tunnel above and he appears there. He doesn't
+//   know exactly where they are: he heads for the stairs and searches (both levels, see FrankieAI).
+// - If the power somehow came back first: 5-10 seconds after it, every lamp stutters, the shriek, the
+//   lamps stutter again and he is standing under the lamp at the far end of the platform, staring;
+//   he walks off into that end's tunnel once he's been seen (FrankieAI's Reveal).
 public class FrankieArrival : MonoBehaviour
 {
     public PowerGrid grid;
@@ -15,6 +17,10 @@ public class FrankieArrival : MonoBehaviour
     public float revealAfterShriek = 3.5f;     // seconds between the shriek and him appearing
     public Vector3[] revealSpots;              // where he can appear (one per platform end)
     public Vector3[] walkOffSpots;             // where he walks to from each spot (into that end's tunnel)
+    public float belowDelay = 5f;              // seconds after the player first reaches the service level
+    public Vector3 belowAppearSpot;            // where he appears then (upstairs, deep in the west tunnel)
+
+    bool waking;
 
     public static bool Arrived { get; private set; }
 
@@ -27,7 +33,25 @@ public class FrankieArrival : MonoBehaviour
 
     void OnDestroy() { if (grid) grid.Restored -= OnPower; }
 
-    void OnPower() => StartCoroutine(Arrive(Random.Range(minDelay, maxDelay)));
+    void OnPower() { if (!Arrived && !waking) StartCoroutine(Arrive(Random.Range(minDelay, maxDelay))); }
+
+    // The player has reached the bottom of the service stairs ('where').
+    public void PlayerWentBelow(Vector3 where)
+    {
+        if (Arrived || waking) return;
+        waking = true;
+        StartCoroutine(AppearAndSearch(where));
+    }
+
+    IEnumerator AppearAndSearch(Vector3 where)
+    {
+        yield return new WaitForSeconds(belowDelay);
+        shriek.Play();
+        Arrived = true;
+        monster.gameObject.SetActive(true);
+        monster.PutBack(belowAppearSpot, 90f);
+        monster.SearchFor(where);
+    }
 
     IEnumerator Arrive(float delay)
     {
@@ -62,7 +86,7 @@ public class FrankieArrival : MonoBehaviour
     // hadn't come yet, his 5-10 second countdown starts again.
     public void LoadState(bool awake, Vector3 position, float yaw, bool powerOn)
     {
-        if (!awake && !powerOn) return;
+        if (!awake && !powerOn) return;   // (if the player is below, BelowTrigger notices them again)
         grid.Restored -= OnPower;
         if (awake)
         {

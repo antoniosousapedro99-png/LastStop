@@ -79,7 +79,7 @@ public static partial class LookTestBuilder
         ai.steps = Clips("Frankie/FrankieStep1", "Frankie/FrankieStep2", "Frankie/FrankieStep3", "Frankie/FrankieStep4");
         ai.cracks = Clips("Frankie/FrankieCrack1", "Frankie/FrankieCrack2", "Frankie/FrankieCrack3");
         ai.hitSound = Load<AudioClip>(SfxDir + "/DesignedPunch1.wav");
-        man.SetActive(false);   // nowhere in the level until the power comes back
+        man.SetActive(false);   // nowhere in the level until he wakes (see FrankieArrival)
 
         // ---- his arrival: a shriek from deep in the west tunnel, heard from far away
         var arrivalObject = new GameObject("FrankieArrival");
@@ -96,6 +96,17 @@ public static partial class LookTestBuilder
         // He first appears under the lamp at the far end of the platform, then walks into that end's tunnel.
         arrival.revealSpots = new[] { new Vector3(-12f, 0f, 17.6f), new Vector3(12f, 0f, 17.6f) };
         arrival.walkOffSpots = new[] { new Vector3(-38f, -1.3f, 22.7f), new Vector3(38f, -1.3f, 22.7f) };
+        // Normally he wakes 5 s after the player first reaches the bottom of the service stairs, deep in the
+        // west tunnel above (where the shriek comes from), and comes searching.
+        arrival.belowDelay = 5f;
+        arrival.belowAppearSpot = FrankieSpawn;
+        var below = new GameObject("ServiceStairsBottom");
+        below.transform.SetParent(arrivalObject.transform);
+        below.transform.position = new Vector3(StairCentre.x, SvcFloor + 1f, StairCentre.z);
+        below.layer = 2;
+        var belowBox = below.AddComponent<BoxCollider>();
+        belowBox.isTrigger = true; belowBox.size = new Vector3(4.6f, 2f, 4.6f);
+        below.AddComponent<BelowTrigger>().arrival = arrival;
 
         // The sting when the player first sees him: a music cue, so it follows the Music volume.
         var sting = arrivalObject.AddComponent<AudioSource>();
@@ -124,16 +135,18 @@ public static partial class LookTestBuilder
     }
 
     // The area Frankie can walk: everything solid underground (corridor, platform, tracks, tunnels,
-    // the lower stairs), but not the street. The staff room door is shut when this is made, so the room
-    // behind it is cut off: a safe room. Links let him climb between the platform and the tracks.
+    // the lower stairs, the service level), but not the street. The staff room door is shut when this is
+    // made, so the room behind it is cut off: a safe room. Links let him climb between the platform and
+    // the tracks; walking routes (LookTestBuilder.Service.cs) take him through the maintenance door and
+    // down the service stairs.
     static void BakeUnderground()
     {
         var go = new GameObject("NavMesh");
         go.transform.SetParent(root);
         var surface = go.AddComponent<NavMeshSurface>();
         surface.collectObjects = CollectObjects.Volume;
-        surface.center = new Vector3(7.5f, 0.25f, 13.5f);
-        surface.size = new Vector3(226f, 5.5f, 37f);       // x -105..120, y -2.5..3, z -5..32
+        surface.center = new Vector3(7.5f, -3.5f, 25.5f);
+        surface.size = new Vector3(226f, 13f, 61f);        // x -105..120, y -10..3, z -5..56
         surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
         surface.layerMask = ~(1 << PreviewLayer);
         surface.BuildNavMesh();

@@ -1,8 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 
-// Lockers the player can hide in (HidingLocker): a pair against the platform's back wall, and one on the
-// outer wall of each tunnel. Plain steel boxes with a slatted door, built from simple shapes.
+// Lockers the player can hide in (HidingLocker): a pair against the platform's back wall here; three more
+// on the service level (LookTestBuilder.ServiceIndustrial.cs). Plain steel boxes with a slatted door, built from simple shapes.
 public static partial class LookTestBuilder
 {
     static void BuildHidingLockers()
@@ -11,8 +11,6 @@ public static partial class LookTestBuilder
         // Positions are the centre of each locker's floor; yaw is the way its door faces.
         HidingLockerAt(group, "HidingLocker_Platform_A", new Vector3(5.5f, 0f, 14.32f), 0f);
         HidingLockerAt(group, "HidingLocker_Platform_B", new Vector3(6.15f, 0f, 14.32f), 0f);
-        HidingLockerAt(group, "HidingLocker_TunnelW", new Vector3(-48f, -1.3f, 25.18f), 180f);
-        HidingLockerAt(group, "HidingLocker_TunnelE", new Vector3(66f, -1.3f, 25.18f), 180f);
     }
 
     // Built at the world origin facing +Z (so the world-space helpers work), then moved into place.

@@ -1,8 +1,9 @@
 using System.Linq;
 using UnityEngine;
 
-// The service level under the west tunnel: industrial, run down, and quiet. Psychological horror only
-// (it's below Frankie's walkable area, so he never comes down here).
+// The service level under the west tunnel: industrial, run down, a little "backrooms". The first time the
+// player reaches the bottom of the stairs, Frankie wakes upstairs and comes searching; he can follow
+// down the stairs while the maintenance door is open (LookTestBuilder.Monster.cs bakes this level too).
 // - A rusted maintenance door in the west tunnel's outer wall (x -55) opens onto a landing and square steel
 //   stairs running down the shaft walls (four flights, corner landings, railings), 8 m below the tracks.
 // - A short corridor leads to the machinery hall (generator, turbine, transformers, pumps, a battery work
@@ -10,6 +11,8 @@ using UnityEngine;
 //   candles still burning, a radio hissing static, notes) where the west fuse now lies.
 // - Sounds with no source (footsteps overhead, a cough from the empty camp, a whisper on the stairs) and
 //   things that change when you look away (the camp chair, a candle).
+// - Industrial dressing (BuildServiceIndustrial): pipes along the ceilings and walls, breaker boards and
+//   cabinets, chain-link cages round the transformers and the pumps, dim caged bulbs; three hiding lockers.
 public static partial class LookTestBuilder
 {
     const float ServiceDoorX = -55f;        // west edge of the maintenance doorway in the west tunnel
@@ -29,75 +32,87 @@ public static partial class LookTestBuilder
         svcBrick = Mat("SvcBrick", Tex2(SewerTex + "brick_modern.jpg"), new Color(0.72f, 0.66f, 0.62f), 2f, 0.1f);
         svcMetal = Mat("SvcMetal", Tex2(SewerTex + "Metal.jpg"), new Color(0.7f, 0.64f, 0.58f), 1f, 0.3f, 0.5f);
 
-        BuildMaintenanceDoor(level);
-        BuildStairwell(level);
+        IndustrialMaterials();
+        var door = BuildMaintenanceDoor(level, Vector3.zero);
+        BuildStairwell(level, Vector3.zero, door);
         BuildServiceRooms(level);
         BuildMachineryHall(level);
         BuildStorage(level);
         BuildSquatterCamp(level);
         BuildServiceScares(level);
+        BuildServiceIndustrial(level);
     }
 
     // ---------------------------------------------------------------- the door in the tunnel wall
-    static void BuildMaintenanceDoor(Transform parent)
+    // 'o' shifts the whole door, landing and staircase (Canal St reuses them: see LookTestBuilder.CanalLower.cs).
+    static HingedDoor BuildMaintenanceDoor(Transform parent, Vector3 o)
     {
         var hinge = new GameObject("MaintenanceDoor");
         hinge.transform.SetParent(parent);
-        hinge.transform.position = new Vector3(ServiceDoorX, -1.3f, 25.65f);
-        Box("Door", hinge.transform, new Vector3(ServiceDoorX + 0.5f, -1.3f + 1.09f, 25.65f), new Vector3(0.96f, 2.18f, 0.05f),
+        hinge.transform.position = o + new Vector3(ServiceDoorX, -1.3f, 25.65f);
+        Box("Door", hinge.transform, o + new Vector3(ServiceDoorX + 0.5f, -1.3f + 1.09f, 25.65f), new Vector3(0.96f, 2.18f, 0.05f),
             Mat("SvcDoorMetal", Tex2(SewerTex + "door_metal.jpg"), Color.white, 2.2f, 0.25f, 0.4f));
         var door = hinge.AddComponent<HingedDoor>();
         door.openAngle = -95f;                     // swings in, away from the tracks
         door.openTime = 1.8f;
         door.doorName = "maintenance door";
         door.openSound = Load<AudioClip>(SfxDir + "/OldDoorOpen.wav");
+        return door;
     }
 
     // ---------------------------------------------------------------- landing and square steel stairs
-    static void BuildStairwell(Transform parent)
+    static void BuildStairwell(Transform parent, Vector3 o, HingedDoor door)
     {
         var g = new GameObject("Stairwell").transform;
         g.SetParent(parent);
         // Landing behind the door (floor at the tracks' level), opening straight onto the stair shaft.
-        Span("LandingFloor", g, new Vector3(-57f, -1.5f, 25.8f), new Vector3(-52f, -1.3f, 28.8f), svcFloor);
-        Span("ShaftWall_W", g, new Vector3(-57.3f, -9.5f, 25.8f), new Vector3(-57f, 1.9f, 33.8f), svcWall);
-        Span("ShaftWall_E", g, new Vector3(-52f, -9.5f, 25.8f), new Vector3(-51.7f, 1.9f, 33.8f), svcWall);
-        Span("ShaftCeiling", g, new Vector3(-57f, 1.7f, 25.8f), new Vector3(-52f, 1.9f, 33.8f), svcCeiling);
-        Span("ShaftWall_S", g, new Vector3(-57f, -9.5f, 28.5f), new Vector3(-52f, -1.5f, 28.8f), svcWall);   // under the landing
-        Span("ShaftWall_N", g, new Vector3(-57.3f, -6.3f, 33.8f), new Vector3(-51.7f, 1.9f, 34.1f), svcWall);
-        Span("ShaftWall_NW", g, new Vector3(-57.3f, -9.5f, 33.8f), new Vector3(-55.5f, -6.3f, 34.1f), svcWall);
-        Span("ShaftWall_NE", g, new Vector3(-52.5f, -9.5f, 33.8f), new Vector3(-51.7f, -6.3f, 34.1f), svcWall);
-        Span("ShaftFloor", g, new Vector3(-57f, -9.5f, 28.8f), new Vector3(-52f, SvcFloor, 33.8f), svcFloor);
-        Span("ShaftExitSill", g, new Vector3(-55.5f, -9.5f, 33.8f), new Vector3(-52.5f, SvcFloor, 34.1f), svcFloor);
+        Span("LandingFloor", g, o + new Vector3(-57f, -1.5f, 25.8f), o + new Vector3(-52f, -1.3f, 28.8f), svcFloor);
+        Span("ShaftWall_W", g, o + new Vector3(-57.3f, -9.5f, 25.8f), o + new Vector3(-57f, 1.9f, 33.8f), svcWall);
+        Span("ShaftWall_E", g, o + new Vector3(-52f, -9.5f, 25.8f), o + new Vector3(-51.7f, 1.9f, 33.8f), svcWall);
+        Span("ShaftCeiling", g, o + new Vector3(-57f, 1.7f, 25.8f), o + new Vector3(-52f, 1.9f, 33.8f), svcCeiling);
+        Span("ShaftWall_S", g, o + new Vector3(-57f, -9.5f, 28.5f), o + new Vector3(-52f, -1.5f, 28.8f), svcWall);   // under the landing
+        Span("ShaftWall_N", g, o + new Vector3(-57.3f, -6.3f, 33.8f), o + new Vector3(-51.7f, 1.9f, 34.1f), svcWall);
+        Span("ShaftWall_NW", g, o + new Vector3(-57.3f, -9.5f, 33.8f), o + new Vector3(-55.5f, -6.3f, 34.1f), svcWall);
+        Span("ShaftWall_NE", g, o + new Vector3(-52.5f, -9.5f, 33.8f), o + new Vector3(-51.7f, -6.3f, 34.1f), svcWall);
+        Span("ShaftFloor", g, o + new Vector3(-57f, -9.5f, 28.8f), o + new Vector3(-52f, SvcFloor, 33.8f), svcFloor);
+        Span("ShaftExitSill", g, o + new Vector3(-55.5f, -9.5f, 33.8f), o + new Vector3(-52.5f, SvcFloor, 34.1f), svcFloor);
 
         // Square steel stairs round the shaft: four flights running down the walls (east, north, west, south),
         // each 2 m down over 3 m (nine 0.2 m steps and the landing), a 1 m square landing in each corner, and a
         // railing all round the open well in the middle. Start: the south-east corner, level with the landing.
         var steel = Mat("StairSteel", null, new Color(0.36f, 0.37f, 0.39f), 1f, 0.45f, 0.75f);
         var rail = Mat("RailSteel", null, new Color(0.2f, 0.2f, 0.21f), 1f, 0.4f, 0.8f);
-        CornerLanding(g, "Landing_SE", -53f, 28.8f, -1.3f, steel);
-        CornerLanding(g, "Landing_NE", -53f, 32.8f, -3.3f, steel);
-        CornerLanding(g, "Landing_NW", -57f, 32.8f, -5.3f, steel);
-        CornerLanding(g, "Landing_SW", -57f, 28.8f, -7.3f, steel);
-        Flight(g, "Flight_E", new Vector3(-52.5f, -1.3f, 29.8f), Vector3.forward, Vector3.left, steel, rail);
-        Flight(g, "Flight_N", new Vector3(-53f, -3.3f, 33.3f), Vector3.left, Vector3.back, steel, rail);
-        Flight(g, "Flight_W", new Vector3(-56.5f, -5.3f, 32.8f), Vector3.back, Vector3.right, steel, rail);
-        Flight(g, "Flight_S", new Vector3(-56f, -7.3f, 29.3f), Vector3.right, Vector3.forward, steel, rail);
+        CornerLanding(g, "Landing_SE", o.x + -53f, o.z + 28.8f, -1.3f, steel);
+        CornerLanding(g, "Landing_NE", o.x + -53f, o.z + 32.8f, -3.3f, steel);
+        CornerLanding(g, "Landing_NW", o.x + -57f, o.z + 32.8f, -5.3f, steel);
+        CornerLanding(g, "Landing_SW", o.x + -57f, o.z + 28.8f, -7.3f, steel);
+        Flight(g, "Flight_E", o + new Vector3(-52.5f, -1.3f, 29.8f), Vector3.forward, Vector3.left, steel, rail);
+        Flight(g, "Flight_N", o + new Vector3(-53f, -3.3f, 33.3f), Vector3.left, Vector3.back, steel, rail);
+        Flight(g, "Flight_W", o + new Vector3(-56.5f, -5.3f, 32.8f), Vector3.back, Vector3.right, steel, rail);
+        Flight(g, "Flight_S", o + new Vector3(-56f, -7.3f, 29.3f), Vector3.right, Vector3.forward, steel, rail);
         // Railing along the top landing's edge (and the corner landing beside it), where it drops into the shaft.
-        RailRun(g, "TopRail", new Vector3(-57f, -1.3f, 28.8f), new Vector3(-53f, -1.3f, 28.8f), rail);
-        RailRun(g, "TopRail_SE", new Vector3(-53f, -1.3f, 28.8f), new Vector3(-53f, -1.3f, 29.8f), rail);
+        RailRun(g, "TopRail", o + new Vector3(-57f, -1.3f, 28.8f), o + new Vector3(-53f, -1.3f, 28.8f), rail);
+        RailRun(g, "TopRail_SE", o + new Vector3(-53f, -1.3f, 28.8f), o + new Vector3(-53f, -1.3f, 29.8f), rail);
 
         // One dying bulb hanging on a cable in the middle of the well.
-        var cable = Prim(PrimitiveType.Cylinder, "BulbCable", g, new Vector3(StairCentre.x, (1.7f - 4.1f) * 0.5f, StairCentre.z), new Vector3(0.015f, (1.7f + 4.1f) * 0.5f, 0.015f), rail);
+        var cable = Prim(PrimitiveType.Cylinder, "BulbCable", g, new Vector3((StairCentre.x + o.x), (1.7f - 4.1f) * 0.5f, (StairCentre.z + o.z)), new Vector3(0.015f, (1.7f + 4.1f) * 0.5f, 0.015f), rail);
         Object.DestroyImmediate(cable.GetComponent<Collider>());
-        var bulb = Prim(PrimitiveType.Sphere, "StairBulb", g, new Vector3(StairCentre.x, -4.2f, StairCentre.z), Vector3.one * 0.12f, Mat("BulbYellow", null, new Color(1f, 0.85f, 0.5f), 1f, 0.6f));
+        var bulb = Prim(PrimitiveType.Sphere, "StairBulb", g, new Vector3((StairCentre.x + o.x), -4.2f, (StairCentre.z + o.z)), Vector3.one * 0.12f, Mat("BulbYellow", null, new Color(1f, 0.85f, 0.5f), 1f, 0.6f));
         Object.DestroyImmediate(bulb.GetComponent<Collider>());
         var light = new GameObject("StairLight").AddComponent<Light>();
         light.transform.SetParent(g);
-        light.transform.position = new Vector3(StairCentre.x, -4.35f, StairCentre.z);
+        light.transform.position = new Vector3((StairCentre.x + o.x), -4.35f, (StairCentre.z + o.z));
         light.type = LightType.Point; light.color = new Color(1f, 0.8f, 0.5f); light.intensity = 2f; light.range = 7f; light.shadows = LightShadows.Soft;
         var flicker = light.gameObject.AddComponent<FlickeringLight>();
         flicker.lamp = light; flicker.minCalm = 2f; flicker.maxCalm = 7f;
+
+        // Frankie's way down: through the maintenance door (only while it's open), then down the flights.
+        // His walkable area can't fit through the 1 m doorway or along the narrow flights by itself.
+        WalkLink(g, "DoorRoute", door, o + new Vector3(ServiceDoorX + 0.5f, -1.3f, 24.5f), o + new Vector3(ServiceDoorX + 0.5f, -1.3f, 27.2f));
+        WalkLink(g, "StairRoute", null,
+                 o + new Vector3(-53.6f, -1.3f, 28.1f), o + new Vector3(-52.5f, -1.3f, 29.3f), o + new Vector3(-52.5f, -3.3f, 32.8f), o + new Vector3(-52.5f, -3.3f, 33.3f),
+                 o + new Vector3(-56f, -5.3f, 33.3f), o + new Vector3(-56.5f, -5.3f, 33.3f), o + new Vector3(-56.5f, -7.3f, 29.8f), o + new Vector3(-56.5f, -7.3f, 29.3f),
+                 o + new Vector3(-53f, -9.3f, 29.3f), o + new Vector3(-54.5f, -9.3f, 31.6f));
     }
 
     // A 1 m square steel landing plate with its top at 'top' (x0, z0 = its corner with the smaller x and z).
@@ -332,7 +347,7 @@ public static partial class LookTestBuilder
         MakePickup(ModelPiece(BreakerFbx, "Fuse", g, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
                    new Vector3(-37f, tableTop, 48f), 40f, "SmallGlassBottles1");
         Note(g, "CampNote_Fuse", new Vector3(-36.35f, f + 0.008f, 48.55f), 25f,   // on the floor beside the crate
-             "Took the fuse so the maintenance guys can't turn the lights back on.\nWhen the lights come back on, IT wakes up.\nDon't let them.");
+             "Took the fuse so the maintenance guys can't turn the lights back on.\nFrankie can smell you.\nDon't let them.");
         Note(g, "CampNote_Ray", Bounds(mattressA).center + Vector3.up * (Bounds(mattressA).extents.y + 0.003f), -15f,
              "Day 9 down here.\nRay swears he hears it walking the tracks at night.\nNot a train. Feet.\nRay went up to look on Tuesday.");
 

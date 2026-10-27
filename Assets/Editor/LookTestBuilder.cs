@@ -30,7 +30,7 @@ public static partial class LookTestBuilder
     static readonly Dictionary<Material, Vector3> tileOrigin = new Dictionary<Material, Vector3>();
     // Materials for objects (doors, lockers, cabinets, crates): their image is stretched over each face of
     // each piece instead of tiling in world space, so a texture edge never runs down the middle of one.
-    static readonly HashSet<string> fitToPiece = new HashSet<string> { "M_DoorMetal", "M_LockerSteel", "M_CabinetBlue", "M_CabSteel", "M_DrawerSteel", "M_Crate" };
+    static readonly HashSet<string> fitToPiece = new HashSet<string> { "M_DoorMetal", "M_LockerSteel", "M_CabinetBlue", "M_CabSteel", "M_DrawerSteel", "M_Crate", "M_ElecCabinet", "M_ElecCabinetVent" };
 
     [MenuItem("Last Stop/Build Look Test")]
     public static void Build()
@@ -228,7 +228,7 @@ public static partial class LookTestBuilder
             t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
                                 && t.GetComponentInParent<HidingLocker>(true) == null && t.GetComponentInParent<SlidingDrawer>(true) == null
                                 && t.GetComponentInParent<TrainDeparture>(true) == null && t.GetComponentInParent<LookAwayChange>(true) == null
-                                && t.GetComponentInParent<RollerShutter>(true) == null;
+                                && t.GetComponentInParent<EmergencyLatch>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 
