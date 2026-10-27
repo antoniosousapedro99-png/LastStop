@@ -175,9 +175,9 @@ public static partial class LookTestBuilder
         string[] trees = { "tree_rt_2", "dead_tree_rt_1", "tree_rt_4", "tree_rt_3", "dead_tree_rt_2", "tree_rt_2_1" };
         var soil = Mat("TreeSoil", Load<Texture2D>("Assets/Art/Models/Environment/Sewer/soil_mud.jpg"), new Color(0.6f, 0.52f, 0.45f), 1.5f, 0.2f);
         for (int i = 0; i < 6; i++)
-            TreePit(f, Place(t + trees[i] + ".fbx", f, new Vector3(-44f + i * 17f, StreetY, -3.5f), i * 47f, 1.5f), soil);
+            TreePit(f, TrunkOnly(Place(t + trees[i] + ".fbx", f, new Vector3(-44f + i * 17f, StreetY, -3.5f), i * 47f, 1.5f)), soil);
         for (int i = 0; i < 5; i++)
-            TreePit(f, Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 1.4f), soil);
+            TreePit(f, TrunkOnly(Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 1.4f)), soil);
         // Bus stop by the entrance, with the newspaper (see BuildLore).
         var stop = StreetDir + "/BusStop/BusStop.fbx";
         PlacePiece(stop, "Bus_stop", f, new Vector3(-10f, StreetY, -14.6f), 180f);
@@ -185,9 +185,10 @@ public static partial class LookTestBuilder
         // Bins, bags and a dumpster by the shops.
         Place(u + "metaltrashcan_beaten_overflowing.fbx", f, new Vector3(-5f, StreetY, -14.8f), 20f);
         Place(u + "trash_can_overflowing.fbx", f, new Vector3(9f, StreetY, -27.8f), 0f);
-        Place(u + "dumpster_full_lid_open.fbx", f, new Vector3(-28f, StreetY, -33f), 10f);
-        Place(u + "trashbag_1.fbx", f, new Vector3(-26f, StreetY, -31f), 30f);
-        Place(u + "trashbag_3.fbx", f, new Vector3(-25f, StreetY, -30.6f), 70f);
+        // (4 m clear of the laundry, whose corner and vending machine it used to poke into)
+        Place(u + "dumpster_full_lid_open.fbx", f, new Vector3(-24f, StreetY, -33f), 10f);
+        Place(u + "trashbag_1.fbx", f, new Vector3(-22f, StreetY, -31f), 30f);
+        Place(u + "trashbag_3.fbx", f, new Vector3(-21f, StreetY, -30.6f), 70f);
         Place(u + "trashpile_2.fbx", f, new Vector3(4f, StreetY, -8f), 0f);
         // Dead ends: an abandoned bus and concrete barriers to the west; police barriers to the east.
         PlacePiece(stop, "Bus", f, new Vector3(-45f, StreetY - 0.15f, -21f), 90f);
@@ -231,6 +232,44 @@ public static partial class LookTestBuilder
     }
 
     // A square of soil in the pavement round a tree's trunk (found by its bark material), 3 cm proud.
+    // A tree's model is one mesh (bark and leaves together), so its mesh collider made the whole crown solid.
+    // Swap it for an upright capsule round the trunk only, measured from the bark near the ground.
+    static GameObject TrunkOnly(GameObject tree)
+    {
+        float ground = Bounds(tree).min.y;          // the model's pivot isn't always at its foot
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue), max = new Vector2(float.MinValue, float.MinValue);
+        float top = ground + 3f;
+        foreach (var mf in tree.GetComponentsInChildren<MeshFilter>())
+        {
+            foreach (var col in mf.GetComponents<MeshCollider>()) Object.DestroyImmediate(col);
+            var mesh = mf.sharedMesh;
+            var r = mf.GetComponent<Renderer>();
+            if (!mesh || !r) continue;
+            var verts = mesh.vertices;
+            for (int sub = 0; sub < mesh.subMeshCount && sub < r.sharedMaterials.Length; sub++)
+            {
+                var m = r.sharedMaterials[sub];
+                if (!m || !m.name.ToLower().Contains("bark")) continue;
+                foreach (int i in mesh.GetIndices(sub))
+                {
+                    Vector3 w = mf.transform.TransformPoint(verts[i]);
+                    if (w.y < ground + 0.1f || w.y > ground + 1.2f) continue;   // the lower trunk only
+                    min = Vector2.Min(min, new Vector2(w.x, w.z));
+                    max = Vector2.Max(max, new Vector2(w.x, w.z));
+                }
+            }
+        }
+        if (min.x > max.x) { min = max = new Vector2(tree.transform.position.x, tree.transform.position.z); }
+        var trunk = new GameObject("Trunk");
+        trunk.transform.SetParent(tree.transform, true);
+        trunk.transform.SetPositionAndRotation(new Vector3((min.x + max.x) * 0.5f, ground + 1.5f, (min.y + max.y) * 0.5f), Quaternion.identity);
+        trunk.transform.localScale = new Vector3(1f / tree.transform.lossyScale.x, 1f / tree.transform.lossyScale.y, 1f / tree.transform.lossyScale.z);
+        var capsule = trunk.AddComponent<CapsuleCollider>();
+        capsule.radius = Mathf.Clamp(Mathf.Max(max.x - min.x, max.y - min.y) * 0.5f, 0.12f, 0.45f);
+        capsule.height = top - ground;
+        return tree;
+    }
+
     static void TreePit(Transform parent, GameObject tree, Material soil)
     {
         Vector3 at = tree.transform.position;
