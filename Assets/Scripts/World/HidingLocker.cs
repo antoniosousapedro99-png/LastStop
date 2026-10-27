@@ -3,8 +3,9 @@ using UnityEngine;
 
 // A tall locker the player can hide in. Use it to step inside: the door shuts behind you and you peek
 // out through its slats, able to turn your head a little. Use it again to step out.
-// While you're inside, Frankie can't see you, unless he watched you get in: then he walks over,
-// yanks the door open and drags you out (FrankieAI does the walking and calls PullOut).
+// While you're inside, Frankie can't see you, unless he knows you got in (he saw you, or he was right
+// behind you, having seen you in the last 3 seconds): then he walks over, slams the door a few times
+// (Bang: it shudders and your view jolts) and tears it open, dragging you out (FrankieAI calls PullOut).
 // This object sits at the centre of the locker's floor, facing out through the door.
 public class HidingLocker : MonoBehaviour, IInteractable
 {
@@ -95,6 +96,29 @@ public class HidingLocker : MonoBehaviour, IInteractable
         busy = false;
     }
 
+    // Frankie slamming the door from outside: a bang, the door shudders in its frame, your view jolts.
+    public void Bang()
+    {
+        if (slamSound) AudioSource.PlayClipAtPoint(slamSound, door.position, 1f);
+        if (Occupied == this && look) look.AddRecoil(-2.5f, Random.Range(-2.5f, 2.5f));
+        if (!busy) StartCoroutine(Shudder());
+    }
+
+    IEnumerator Shudder()
+    {
+        Quaternion shut = closedRotation;
+        foreach (float angle in new[] { -7f, 3f, -1.5f, 0f })
+        {
+            Quaternion from = door.localRotation, to = shut * Quaternion.Euler(0f, angle, 0f);
+            for (float t = 0f; t < 0.05f; t += Time.deltaTime)
+            {
+                door.localRotation = Quaternion.Slerp(from, to, t / 0.05f);
+                yield return null;
+            }
+        }
+        door.localRotation = shut;
+    }
+
     // Frankie found you: the door flies open and you're dragged out in front of him.
     public void PullOut()
     {
@@ -140,10 +164,13 @@ public class HidingLocker : MonoBehaviour, IInteractable
         door.localRotation = to;
     }
 
-    // Remembers if Frankie catches sight of the player while they're climbing in.
+    // Remembers if Frankie knows the player is climbing in: he sees them, or he's chasing and saw them in the
+    // last 3 seconds (right on their heels, he'd hear the door).
     static void Watch()
     {
-        if (FrankieAI.Active && FrankieAI.Active.SeesPlayer) SeenGettingIn = true;
+        var frankie = FrankieAI.Active;
+        if (!frankie) return;
+        if (frankie.SeesPlayer || (frankie.Current == FrankieAI.Mood.Chase && Time.time - frankie.LastSeenTime < 3f)) SeenGettingIn = true;
     }
 
     // Walking, crouching, leaning and footsteps are switched off while hiding (and while stepping in or out).

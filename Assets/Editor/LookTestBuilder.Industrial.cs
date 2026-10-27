@@ -10,12 +10,13 @@ using UnityEngine.AI;
 // - ChainFence: chain-link fencing (the Industrial Exterior pack's see-through fence image) on steel posts;
 // - Pipe / PipeRun: round pipes along walls and ceilings (8-sided, PS1 style), joints filled in;
 // - CagedBulb: a dim bulb in a wire cage, the only light down there;
-// - BreakerPanel and ElectricCabinet: circuit boards and switch cabinets on the walls;
+// - ControlPanel and ElectricCabinet: control boxes (with cable bundles up to the ceiling) and cabinets on
+//   the walls (not the circuit-breaker model, which is kept for the real fuse box, the objective);
 // - WalkLink: a walking route for Frankie down stairs or through a doorway (see LinkPath).
 public static partial class LookTestBuilder
 {
     const string IndustrialTex = "Assets/Art/Textures/Industrial/";
-    static Material chainLink, fencePost, pipeRust, pipeSteel, pipeGreen, conduit, cabinetGrey, cabinetVent, bulbCage, bulbGlow;
+    static Material chainLink, fencePost, pipeRust, pipeSteel, pipeGreen, conduit, cabinetGrey, cabinetVent, bulbCage, bulbGlow, wireBundle;
 
     static void IndustrialMaterials()
     {
@@ -23,7 +24,7 @@ public static partial class LookTestBuilder
         chainLink.SetFloat("_AlphaClip", 1f);
         chainLink.SetFloat("_Cutoff", 0.5f);
         chainLink.EnableKeyword("_ALPHATEST_ON");
-        chainLink.SetFloat("_Cull", 0f);                 // seen from both sides
+        chainLink.SetFloat("_Cull", 2f);                 // normal culling: the mesh has its own face for each side
         chainLink.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
         fencePost = Mat("FencePost", null, new Color(0.5f, 0.52f, 0.53f), 1f, 0.4f, 0.7f);
         pipeRust = Mat("PipeRust", Load<Texture2D>(IndustrialTex + "Pipes.png"), new Color(0.9f, 0.86f, 0.8f), 1.5f, 0.25f, 0.4f);
@@ -34,6 +35,7 @@ public static partial class LookTestBuilder
         cabinetVent = Mat("ElecCabinetVent", Load<Texture2D>(IndustrialTex + "Metal_cabinet_1.png"), Color.white, 1f, 0.3f, 0.4f);
         bulbCage = Mat("BulbCage", null, new Color(0.15f, 0.15f, 0.15f), 1f, 0.3f, 0.6f);
         bulbGlow = EmissiveMat("BulbGlow", new Color(1f, 0.75f, 0.45f) * 2f);
+        wireBundle = Mat("WireBundle", Tex2("Props/Plumbing/Wires.png"), Color.white, 4f, 0.3f);   // coloured stripes round the bundle
     }
 
     // ---------------------------------------------------------------- a level from a character map
@@ -106,15 +108,20 @@ public static partial class LookTestBuilder
             Object.DestroyImmediate(rail.GetComponent<Collider>());
         }
 
-        // The mesh: one quad along the run, its image repeating every half metre.
+        // The mesh: a quad along the run, its image repeating every half metre. It has two faces, back to
+        // back, each facing (and lit from) its own side, so the fence looks the same from either side.
         var mesh = new GameObject("Mesh");
         mesh.transform.SetParent(fence.transform, false);
         const float tile = 0.5f;
         var m = new Mesh { name = name + "_Mesh" };
-        m.vertices = new[] { new Vector3(0f, 0.08f, 0f), new Vector3(0f, height - 0.03f, 0f), new Vector3(0f, height - 0.03f, length), new Vector3(0f, 0.08f, length) };
-        m.uv = new[] { new Vector2(0f, 0.08f / tile), new Vector2(0f, height / tile), new Vector2(length / tile, height / tile), new Vector2(length / tile, 0.08f / tile) };
-        m.triangles = new[] { 0, 1, 2, 0, 2, 3 };
-        m.RecalculateNormals(); m.RecalculateBounds();
+        var corners = new[] { new Vector3(0f, 0.08f, 0f), new Vector3(0f, height - 0.03f, 0f), new Vector3(0f, height - 0.03f, length), new Vector3(0f, 0.08f, length) };
+        var cornerUvs = new[] { new Vector2(0f, 0.08f / tile), new Vector2(0f, height / tile), new Vector2(length / tile, height / tile), new Vector2(length / tile, 0.08f / tile) };
+        var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var normals = new List<Vector3>();
+        foreach (var side in new[] { Vector3.right, Vector3.left })   // the first face (wound one way) faces +x, the second -x
+            for (int i = 0; i < 4; i++) { verts.Add(corners[i]); uvs.Add(cornerUvs[i]); normals.Add(side); }
+        m.SetVertices(verts); m.SetUVs(0, uvs); m.SetNormals(normals);
+        m.triangles = new[] { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6 };
+        m.RecalculateBounds();
         mesh.AddComponent<MeshFilter>().sharedMesh = m;
         mesh.AddComponent<MeshRenderer>().sharedMaterial = chainLink;
 
@@ -238,15 +245,28 @@ public static partial class LookTestBuilder
     // Facing 'normal' (out of the wall), yaw for a model whose front faces -X.
     static float YawFacing(Vector3 normal) => Mathf.Atan2(normal.z, -normal.x) * Mathf.Rad2Deg;
 
-    // A circuit-breaker board on a wall: 'wallPoint' is on the wall surface at the board's centre height.
-    static GameObject BreakerPanel(Transform parent, Vector3 wallPoint, Vector3 normal, float height = 0.7f)
+    // A row of three control boxes on a wall (the Plumbing & Wiring pack's switch box: red and green lamps),
+    // with two bundles of coloured cables running from them up to the ceiling. 'wallPoint' is on the wall
+    // surface at the boxes' centre height.
+    static GameObject ControlPanel(Transform parent, Vector3 wallPoint, Vector3 normal, float height = 0.45f)
     {
-        var panel = Model(BreakerFbx, null, parent, Tex2("Props/Plumbing/FuseBox.png"), 1f, YawFacing(normal));
-        panel.name = "BreakerPanel";
+        var panel = Model(ArtDir + "/Props/Plumbing/Switch.fbx", null, parent, Tex2("Props/Plumbing/Switch.png"), 1f, YawFacing(normal));
+        panel.name = "ControlPanel";
         panel.transform.localScale *= height / Mathf.Max(0.01f, Bounds(panel).size.y);
         var b = Bounds(panel);
         float depth = Mathf.Abs(Vector3.Dot(b.size, normal));
         panel.transform.position += wallPoint + normal * (depth * 0.5f + 0.01f) - b.center;
+        b = Bounds(panel);
+        // Cable bundles from the top of the outer boxes up to whatever is above (the ceiling).
+        Physics.SyncTransforms();
+        Vector3 across = Vector3.Cross(Vector3.up, normal);
+        float halfWidth = Mathf.Abs(Vector3.Dot(b.size, across)) * 0.5f;
+        foreach (float side in new[] { -0.7f, 0.7f })
+        {
+            Vector3 foot = new Vector3(b.center.x, b.max.y, b.center.z) + across * (halfWidth * side) - normal * (depth * 0.15f);
+            float top = Physics.Raycast(foot + Vector3.up * 0.05f, Vector3.up, out var hit, 8f) ? hit.point.y : foot.y + 1.5f;
+            Pipe(parent, "CableBundle", foot, new Vector3(foot.x, top, foot.z), 0.035f, wireBundle);
+        }
         return panel;
     }
 

@@ -11,7 +11,7 @@ Every pack used in Last Stop. Keep this list in step with the in-game credits on
 | PSX Kitchen Props Pack | Nicowlas | Use in projects; **no redistribution** (LICENSE.txt) | no | Half-eaten pizza, cola can | `Models/Props/Kitchen` |
 | OFFICE pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Desk, office chair, logbook binder | `Models/Props/Office` |
 | Survival pack | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Flashlight battery, Zippo | `Models/Props/Survival` |
-| 3D Retro Plumbing & Wiring | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Fuse box and fuses; service level generator, pumps, transformers, turbine (all converted from .blend) | `Models/Props/Plumbing` |
+| 3D Retro Plumbing & Wiring | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Fuse box and fuses; service level generator, pumps, transformers, turbine; control boxes on the lower levels' walls and the wire texture of their cable bundles (all converted from .blend) | `Models/Props/Plumbing` |
 | PSX Derelict Furniture (Standard) | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Squatter camp mattresses, couch, chair, fridge; storage shelves | `Models/Props/DerelictFurniture` |
 | PSX Old Stuff Pack | unnamed author | README asks for credit (`LICENSE.txt`) | yes ("PSX Old Stuff Pack") | Candles, oxidised barrels (converted from .glb) | `Models/Props/OldStuff` |
 | Trash and Debris | unknown (to confirm) | **no licence file — confirm before release** | to confirm | Cans, chip bags, cardboard on the service level | `Models/Props/Trash` |

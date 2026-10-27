@@ -9,7 +9,7 @@ using UnityEngine;
 //   transformer bay, and the stores cage in the far corner with the second fuel can.
 // - The latch room off the hall: the emergency latch in the floor (EmergencyLatch), sealed until the
 //   generator restores the power; climbing down ends Station 2.
-// Pipes along every corridor ceiling and the hall, breaker boards, cabinets, dim caged bulbs, three lockers.
+// Pipes along every corridor ceiling and the hall, control boxs, cabinets, dim caged bulbs, three lockers.
 // Frankie walks all of it (BakeCanal), following the stairs' walking routes while the door is open.
 public static partial class LookTestBuilder
 {
@@ -135,14 +135,14 @@ public static partial class LookTestBuilder
             Pipe(g, "PumpDrop", new Vector3(x, f + 2f, 343.78f), new Vector3(x, f + 0.55f, 343.78f), 0.06f, pipeRust);
         }
         Pipe(g, "PumpHeader", new Vector3(-92f, f + 2f, 343.78f), new Vector3(-86f, f + 2f, 343.78f), 0.1f, pipeRust);
-        BreakerPanel(g, new Vector3(-86f, f + 1.5f, 340.9f), Vector3.left);
+        ControlPanel(g, new Vector3(-86f, f + 1.5f, 340.9f), Vector3.left);
         HidingLockerAt(g, "HidingLocker_CanalLowerPumps", new Vector3(-91.68f, f, 341.2f), 90f);
 
-        // Electrical room (x -76..-70, z 340..344): cabinets, breaker boards and a caged transformer.
+        // Electrical room (x -76..-70, z 340..344): cabinets, control boxs and a caged transformer.
         ElectricCabinet(g, new Vector3(-75.3f, f, 344f), Vector3.back, 1f, 1.9f, 0.45f);
         ElectricCabinet(g, new Vector3(-76f, f, 341.2f), Vector3.right, 1f, 1.9f, 0.45f, vents: true);
-        BreakerPanel(g, new Vector3(-73.8f, f + 1.5f, 344f), Vector3.back);
-        BreakerPanel(g, new Vector3(-72.6f, f + 1.5f, 344f), Vector3.back);
+        ControlPanel(g, new Vector3(-73.8f, f + 1.5f, 344f), Vector3.back);
+        ControlPanel(g, new Vector3(-72.6f, f + 1.5f, 344f), Vector3.back);
         Conduits(g, new Vector3(-76f, f + 2.4f, 344f), new Vector3(-70f, f + 2.4f, 344f), Vector3.back, 4);
         Kit("Props/Plumbing/Transformer.fbx", null, "Props/Plumbing/Transformer.png", g, new Vector3(-71f, f, 342.6f), 90f, 1.6f, true);
         FencedCage(g, "TransformerCage_Small", -72.4f, -70f, 341f, 344f, f, 3, 1f, 1, 2);
@@ -183,12 +183,12 @@ public static partial class LookTestBuilder
         Pipe(g, "SouthWallPipe", new Vector3(-62f, f + 1.7f, 338.25f), new Vector3(-36f, f + 1.7f, 338.25f), 0.09f, pipeRust);
         Pipe(g, "SouthWallPipe2", new Vector3(-62f, f + 2.1f, 338.22f), new Vector3(-36f, f + 2.1f, 338.22f), 0.06f, pipeGreen);
 
-        // Transformer bay against the north wall, caged, with breaker boards inside.
+        // Transformer bay against the north wall, caged, with control boxs inside.
         Kit("Props/Plumbing/Transformer.fbx", null, "Props/Plumbing/Transformer.png", g, new Vector3(-48f, f, 362.8f), 0f, 1.7f, true);
         Kit("Props/Plumbing/Transformer.fbx", null, "Props/Plumbing/Transformer.png", g, new Vector3(-44.5f, f, 362.8f), 0f, 1.7f, true);
         FencedCage(g, "TransformerBay", -50f, -42.5f, 359.4f, 364f, f, 0, 1.4f, 2);
         MachineLoop(g, "LowerTransformerBuzz", new Vector3(-46.2f, f + 1.2f, 362.8f), "TransformerBuzz", 0.35f, 12f, 0.95f);
-        BreakerPanel(g, new Vector3(-46.2f, f + 2.4f, 364f), Vector3.back);
+        ControlPanel(g, new Vector3(-46.2f, f + 2.4f, 364f), Vector3.back);
         Conduits(g, new Vector3(-62f, f + 3.2f, 364f), new Vector3(-30f, f + 3.2f, 364f), Vector3.back, 4);
 
         // The stores cage in the south-east corner: the second fuel can, crates, barrels.
@@ -205,8 +205,8 @@ public static partial class LookTestBuilder
         Kit("Props/OldStuff/Barrel.fbx", null, "Props/OldStuff/Barrel.png", g, new Vector3(-43.2f, f, 344.1f), 110f, 0.9f, true);
         ElectricCabinet(g, new Vector3(-62f, f, 349.6f), Vector3.right, 1f, 1.9f, 0.45f);
         ElectricCabinet(g, new Vector3(-62f, f, 351.8f), Vector3.right, 1f, 1.9f, 0.45f, vents: true);
-        BreakerPanel(g, new Vector3(-62f, f + 1.5f, 354f), Vector3.right);
-        BreakerPanel(g, new Vector3(-30f, f + 1.5f, 352.4f), Vector3.left);
+        ControlPanel(g, new Vector3(-62f, f + 1.5f, 354f), Vector3.right);
+        ControlPanel(g, new Vector3(-30f, f + 1.5f, 352.4f), Vector3.left);
 
         // Ceiling: a big main across the hall, a second line beside it, one crossing north-south.
         Pipe(g, "HallMain", new Vector3(-62f, ceil - 0.5f, 349.5f), new Vector3(-30f, ceil - 0.5f, 349.5f), 0.17f, pipeSteel);
@@ -266,7 +266,7 @@ public static partial class LookTestBuilder
         EmergencyLight(g, new Vector3(-20f, f + 2.85f, 355.8f), 2f, 6f);
         Notice(g, "Notice_Latch", new Vector3(-20f, f + 1.6f, 354f), Vector3.forward,
                "EMERGENCY EXIT - SEWER ACCESS\nLatch is released by BACKUP POWER only.\nIn an emergency, follow the overflow tunnel to the river outfall.\n- Line 4 Maintenance");
-        BreakerPanel(g, new Vector3(-14f, f + 1.5f, 352f), Vector3.left);
+        ControlPanel(g, new Vector3(-14f, f + 1.5f, 352f), Vector3.left);
         Conduits(g, new Vector3(-14f, f + 2.2f, 348f), new Vector3(-14f, f + 2.2f, 356f), Vector3.left);
         Pipe(g, "LatchPipe", new Vector3(-28f, f + 2.7f, 349f), new Vector3(-14f, f + 2.7f, 349f), 0.1f, pipeRust);
         Pipe(g, "LatchPipe2", new Vector3(-28f, f + 2.6f, 355.3f), new Vector3(-14f, f + 2.6f, 355.3f), 0.07f, pipeGreen);

@@ -96,9 +96,9 @@ public static partial class LookTestBuilder
         // He first appears under the lamp at the far end of the platform, then walks into that end's tunnel.
         arrival.revealSpots = new[] { new Vector3(-12f, 0f, 17.6f), new Vector3(12f, 0f, 17.6f) };
         arrival.walkOffSpots = new[] { new Vector3(-38f, -1.3f, 22.7f), new Vector3(38f, -1.3f, 22.7f) };
-        // Normally he wakes 5 s after the player first reaches the bottom of the service stairs, deep in the
+        // Normally he wakes 7 s after the player first reaches the bottom of the service stairs, deep in the
         // west tunnel above (where the shriek comes from), and comes searching.
-        arrival.belowDelay = 5f;
+        arrival.belowDelay = 7f;
         arrival.belowAppearSpot = FrankieSpawn;
         var below = new GameObject("ServiceStairsBottom");
         below.transform.SetParent(arrivalObject.transform);

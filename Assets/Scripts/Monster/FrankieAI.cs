@@ -15,14 +15,15 @@ using UnityEngine.AI;
 // - Reveal: his first appearance. He stands at the end of the platform staring at the player; once
 //   they've noticed him (a sting plays) he stares a moment longer, then...
 // - WalkOff: ...walks away into the tunnel, ignoring the player, and only then starts hunting.
-// A player hiding in a locker is invisible to him, unless he saw them get in: then he walks over,
-// pulls them out and attacks.
+// A player hiding in a locker is invisible to him, unless he knows they got in (HidingLocker decides):
+// then he walks over and breaks in (BreakIn: slams the door three times, tears it open, pulls them out)
+// and attacks.
 // He walks on the underground navigation mesh only, so the street is safe. Where the mesh has a
 // jump link (all along the platform edges) he leaps down to the tracks or up onto the platform.
 [RequireComponent(typeof(NavMeshAgent), typeof(FrankieSenses))]
 public class FrankieAI : MonoBehaviour
 {
-    public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff }
+    public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff, BreakIn }
 
     public Animator animator;
     public float walkSpeed = 0.9f, chaseSpeed = 3.8f;
@@ -44,6 +45,8 @@ public class FrankieAI : MonoBehaviour
     public float leapHeight = 0.6f, leapSpeed = 4f;   // his jumps between platform and tracks
     public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
     public float breather = 3f;                // seconds between one hit and coming at the player again
+    public int lockerBangs = 3;                // slams on a locker door before he tears it open
+    public float bangEvery = 0.9f;             // seconds between slams
 
     [Header("Sounds")]
     public AudioSource voice;                  // breathing, shrieks
@@ -54,6 +57,7 @@ public class FrankieAI : MonoBehaviour
 
     public Mood Current { get; private set; } = Mood.Wander;
     public bool SeesPlayer => seesPlayer;
+    public float LastSeenTime => lastSeen;     // Time.time he last saw the player
     public bool SeenByPlayer { get; private set; }   // he's on the player's screen, not hidden behind anything
 
     // The one Frankie in the level while he's awake (the torch flicker and the lockers ask about him).
@@ -65,6 +69,8 @@ public class FrankieAI : MonoBehaviour
     float huntUntil;                           // until then he never gives up a chase (the train finale)
     float smoothedSpeed, lastCycle;            // his speed, eased so the animation doesn't flick between walk and run
     Vector3 lastSeenAt, walkOffTo;
+    HidingLocker breakingInto;
+    int bangsDone;
     bool hitDone, landed, leaping, seesPlayer, stingPlayed;
     float searchArrivedAt = -1f;               // when a search reached its spot (moodTime), or -1
     string playing;
@@ -157,8 +163,9 @@ public class FrankieAI : MonoBehaviour
             case Mood.Repelled: Repelled(flare); break;
             case Mood.Reveal: Reveal(); break;
             case Mood.WalkOff: WalkOff(); break;
+            case Mood.BreakIn: BreakIn(); break;
         }
-        if (Current != Mood.Attack && Current != Mood.Reveal && agent.isStopped && !Arrived()) agent.isStopped = false;   // after a look-around
+        if (Current != Mood.Attack && Current != Mood.Reveal && Current != Mood.BreakIn && agent.isStopped && !Arrived()) agent.isStopped = false;   // after a look-around
         Animate();
         Sounds();
     }
@@ -177,6 +184,7 @@ public class FrankieAI : MonoBehaviour
         if (mood == Mood.Search) agent.SetDestination(lastSeenAt);
         if (mood == Mood.Attack) { agent.isStopped = true; Play("Attack"); animator.speed = clipHitAt / hitAt; }
         if (mood == Mood.Reveal) { agent.isStopped = true; agent.SetDestination(transform.position); }
+        if (mood == Mood.BreakIn) { agent.isStopped = true; bangsDone = 0; }
         if (mood == Mood.WalkOff) agent.SetDestination(walkOffTo);
         if (mood == Mood.Retreat || mood == Mood.Repelled) agent.speed = walkSpeed * 1.5f;
     }
@@ -244,8 +252,8 @@ public class FrankieAI : MonoBehaviour
             agent.SetDestination(locker.StandPoint);
             if (Vector3.Distance(transform.position, locker.StandPoint) < 1.3f)
             {
-                locker.PullOut();
-                SetMood(Mood.Attack);
+                breakingInto = locker;
+                SetMood(Mood.BreakIn);
             }
             return;
         }
@@ -308,6 +316,32 @@ public class FrankieAI : MonoBehaviour
             return;
         }
         if (moodTime > attackLength) SetMood(Mood.Retreat);
+    }
+
+    // At a locker he knows the player is in: a claw-swing at the door every 'bangEvery' seconds (each one
+    // lands with a bang and a shudder), then he tears it open, drags them out and attacks.
+    void BreakIn()
+    {
+        if (!breakingInto || HidingLocker.Occupied != breakingInto) { SetMood(Mood.Chase); return; }   // they got out
+        FaceTowards(breakingInto.transform.position, 8f);
+        float swingAt = bangsDone * bangEvery;            // when the current swing starts
+        if (bangsDone < lockerBangs)
+        {
+            if (moodTime >= swingAt && playing != "Bang" + bangsDone)
+            {
+                playing = "Bang" + bangsDone;             // restart the claw swing for each slam
+                animator.CrossFadeInFixedTime("Attack", 0.1f, 0, 0f);
+                animator.speed = clipHitAt / 0.55f;        // the claws hit the door 0.55 s into the swing
+            }
+            if (moodTime >= swingAt + 0.55f) { breakingInto.Bang(); bangsDone++; }
+            return;
+        }
+        if (moodTime >= lockerBangs * bangEvery + 0.2f)
+        {
+            breakingInto.PullOut();
+            breakingInto = null;
+            SetMood(Mood.Attack);
+        }
     }
 
     void Retreat()
@@ -440,8 +474,8 @@ public class FrankieAI : MonoBehaviour
     // feet match the ground.
     void Animate()
     {
-        if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal && Current != Mood.Retreat) agent.updateRotation = true;
-        if (Current == Mood.Attack) return;
+        if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal && Current != Mood.Retreat && Current != Mood.BreakIn) agent.updateRotation = true;
+        if (Current == Mood.Attack || Current == Mood.BreakIn) return;
         smoothedSpeed = Mathf.Lerp(smoothedSpeed, agent.velocity.magnitude, 1f - Mathf.Exp(-8f * Time.deltaTime));
         float speed = smoothedSpeed;
         // Two thresholds, so hovering around one speed doesn't keep swapping walk and run.

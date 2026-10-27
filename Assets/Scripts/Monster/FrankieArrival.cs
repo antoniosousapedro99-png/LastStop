@@ -3,7 +3,7 @@ using UnityEngine;
 
 // Wakes Frankie. Until then he is switched off and nowhere in the level.
 // - Normally: the first time the player reaches the bottom of the service-level stairs (BelowTrigger),
-//   5 seconds later a shriek echoes from deep in the west tunnel above and he appears there. He doesn't
+//   7 seconds later a shriek echoes from deep in the west tunnel above and he appears there. He doesn't
 //   know exactly where they are: he heads for the stairs and searches (both levels, see FrankieAI).
 // - If the power somehow came back first: 5-10 seconds after it, every lamp stutters, the shriek, the
 //   lamps stutter again and he is standing under the lamp at the far end of the platform, staring;
@@ -17,7 +17,7 @@ public class FrankieArrival : MonoBehaviour
     public float revealAfterShriek = 3.5f;     // seconds between the shriek and him appearing
     public Vector3[] revealSpots;              // where he can appear (one per platform end)
     public Vector3[] walkOffSpots;             // where he walks to from each spot (into that end's tunnel)
-    public float belowDelay = 5f;              // seconds after the player first reaches the service level
+    public float belowDelay = 7f;              // seconds after the player first reaches the service level
     public Vector3 belowAppearSpot;            // where he appears then (upstairs, deep in the west tunnel)
 
     bool waking;
