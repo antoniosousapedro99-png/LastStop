@@ -185,10 +185,16 @@ public static partial class LookTestBuilder
         // Bins, bags and a dumpster by the shops.
         Place(u + "metaltrashcan_beaten_overflowing.fbx", f, new Vector3(-5f, StreetY, -14.8f), 20f);
         Place(u + "trash_can_overflowing.fbx", f, new Vector3(9f, StreetY, -27.8f), 0f);
-        // (4 m clear of the laundry, whose corner and vending machine it used to poke into)
-        Place(u + "dumpster_full_lid_open.fbx", f, new Vector3(-24f, StreetY, -33f), 10f);
-        Place(u + "trashbag_1.fbx", f, new Vector3(-22f, StreetY, -31f), 30f);
-        Place(u + "trashbag_3.fbx", f, new Vector3(-21f, StreetY, -30.6f), 70f);
+        // The dumpster stands sideways across the far end of the alley between the laundry and the VHS shop
+        // (walls at x -30.8 and -26.9, buildings ending at z -46), blocking it off; bin bags in front of it.
+        const float alleyW = -30.8f, alleyE = -26.9f, alleyEnd = -46f;
+        var dumpster = Place(u + "dumpster_full_lid_open.fbx", f, new Vector3((alleyW + alleyE) * 0.5f, StreetY, alleyEnd + 1f), 90f);
+        var db = Bounds(dumpster);
+        float fit = (alleyE - alleyW - 0.06f) / db.size.x;   // just fits between the walls
+        if (fit < 1f) { dumpster.transform.localScale *= fit; db = Bounds(dumpster); }
+        StandOn(dumpster, new Vector3((alleyW + alleyE) * 0.5f, StreetY, alleyEnd + db.size.z * 0.5f));
+        Place(u + "trashbag_1.fbx", f, new Vector3(-29.6f, StreetY, alleyEnd + db.size.z + 0.6f), 30f);
+        Place(u + "trashbag_3.fbx", f, new Vector3(-28.5f, StreetY, alleyEnd + db.size.z + 0.5f), 70f);
         Place(u + "trashpile_2.fbx", f, new Vector3(4f, StreetY, -8f), 0f);
         // Dead ends: an abandoned bus and concrete barriers to the west; police barriers to the east.
         PlacePiece(stop, "Bus", f, new Vector3(-45f, StreetY - 0.15f, -21f), 90f);
