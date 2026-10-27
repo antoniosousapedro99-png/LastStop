@@ -58,6 +58,7 @@ public static partial class LookTestBuilder
         CanalArrivalTrain(canal);
         CanalDressing(canal);     // rubbish, cones, posters, blood (LookTestBuilder.CanalDressing.cs)
         CanalLowerLevel(canal);   // the service level under the south tunnel (LookTestBuilder.CanalLower.cs)
+        CanalScares(canal);       // one-time scares (LookTestBuilder.CanalScares.cs)
         BakeCanal(canal);
     }
 

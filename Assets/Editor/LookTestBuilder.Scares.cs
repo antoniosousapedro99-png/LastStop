@@ -5,8 +5,9 @@ using UnityEngine;
 // The atmosphere pass: one-time scares at set spots (ScareTrigger + an IScare each).
 // - Before the power: a train rumbles through the west tunnel. (The PA announcement is switched off until
 //   the creative director records a proper one: PaAnnouncement and its clip are kept for then.)
-// - After the power: lamps pop and die behind you (corridor, platform, east tunnel); a black figure
-//   stands far down the east tunnel and vanishes when you look; another rumble near the east train.
+// - After the power: lamps pop and die behind you (corridor, platform, east tunnel); another rumble near
+//   the east train.
+// Canal St's scares are in LookTestBuilder.CanalScares.cs.
 public static partial class LookTestBuilder
 {
     const string ScareSfx = SfxDir + "/Scares";
@@ -30,20 +31,8 @@ public static partial class LookTestBuilder
         LampDies(group, "Scare_LampPlatform", new Vector3(9.5f, 1.5f, 17f), new Vector3(1f, 3f, 6f), new Vector3(6f, 4.48f, 18.6f), pop);
         LampDies(group, "Scare_LampTunnel", new Vector3(52f, 0.75f, 22.75f), new Vector3(1f, 4.5f, 5.5f), new Vector3(48f, 1.4f, 20f), pop);
 
-        // ---- the shadow figure, after the power: on the tracks just before the staff room door
-        var spot = ScareSpot(group, "Scare_ShadowFigure", new Vector3(30f, 0.75f, 22.75f), new Vector3(1f, 4.5f, 5.5f), ScareTrigger.PowerRule.AfterPower);
-        var shadow = spot.AddComponent<ShadowFigure>();
-        shadow.figure = ShadowFigureModel(group, new Vector3(41f, -1.3f, 22.4f));   // about 11 m ahead: any further and the fog hides him
-        shadow.tooClose = 6f;
-        shadow.seeWithoutTorch = 8f;                                               // he goes when the torch finds him (or you get close)
-        // A faint sickly glow on the floor and walls just behind him, so he stands out as a silhouette.
-        // It belongs to him, so it dies the moment he vanishes.
-        var backlight = new GameObject("Backlight").AddComponent<Light>();
-        backlight.transform.SetParent(shadow.figure.transform, false);
-        backlight.transform.localPosition = new Vector3(0f, 1.2f, -2.5f);   // behind him (he turns to face the player)
-        backlight.type = LightType.Point; backlight.color = new Color(0.7f, 0.85f, 0.7f);
-        backlight.intensity = 6f; backlight.range = 5f; backlight.shadows = LightShadows.None;
-        shadow.vanishSound = Load<AudioClip>(ScareSfx + "/ShadowWhisper.wav");
+        // (The shadow figure on the east tunnel's tracks was removed on 2026-10-27; ShadowFigure and
+        // ShadowFigureModel are kept in case it comes back.)
     }
 
     // An invisible one-time trigger box on the Ignore Raycast layer.

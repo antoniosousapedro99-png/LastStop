@@ -111,7 +111,9 @@ public static partial class LookTestBuilder
         Conduits(g, new Vector3(-94f, SvcFloor + 2.2f, 346f), new Vector3(-84f, SvcFloor + 2.2f, 346f), Vector3.forward);        // corridor B, south wall
         Conduits(g, new Vector3(-96f, SvcFloor + 2.2f, 358f), new Vector3(-88f, SvcFloor + 2.2f, 358f), Vector3.forward);        // corridor C, south wall
         CagedBulb(g, "LowerBulb_Stairs", Cell(10, 1) + Vector3.up * 2.75f, 1.6f, 5f);
-        CagedBulb(g, "LowerBulb_A", Cell(16, 2) + Vector3.up * 2.75f, 1.4f, 5f, flicker: true);
+        // Corridor A's bulbs (with the stairs one) go out one by one toward the player: LookTestBuilder.CanalScares.cs.
+        CagedBulb(g, "LowerBulb_A", Cell(18, 2) + Vector3.up * 2.75f, 1.4f, 5f);
+        CagedBulb(g, "LowerBulb_A2", Cell(14, 2) + Vector3.up * 2.75f, 1.3f, 5f);
         CagedBulb(g, "LowerBulb_B", Cell(5, 7) + Vector3.up * 2.75f, 1.4f, 5f);
         CagedBulb(g, "LowerBulb_C", Cell(12, 13) + Vector3.up * 2.75f, 1.5f, 5f, flicker: true);
         CagedBulb(g, "LowerBulb_D", Cell(3, 15) + Vector3.up * 2.75f, 1.2f, 4.5f);
