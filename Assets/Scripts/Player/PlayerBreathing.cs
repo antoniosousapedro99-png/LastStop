@@ -1,16 +1,14 @@
 using UnityEngine;
 
 // The player's own breathing.
-// - Out of breath: sprinting builds up 'exertion' (full after 'secondsToWinded' of running); heavy
-//   breathing fades in as it builds and dies away slowly once they stop ('secondsToRecover').
+// - Out of breath: follows PlayerMovement's sprint stamina; heavy breathing fades in as it runs low
+//   and dies away as it refills.
 // - Hiding in a locker: slow, held breathing instead, louder the closer Frankie is.
 // (Breathing while hurt is PlayerHealth's job.)
 public class PlayerBreathing : MonoBehaviour
 {
     public AudioSource heavy;              // looping heavy breathing
     public AudioSource slow;               // looping slow breathing
-    public float secondsToWinded = 4f;
-    public float secondsToRecover = 7f;
     public float heavyVolume = 0.55f;
     public float slowVolume = 0.3f, slowVolumeFrankieNear = 0.8f;
     public float frankieNearDistance = 10f;   // within this, the held breath gets louder (and shakier)
@@ -27,8 +25,8 @@ public class PlayerBreathing : MonoBehaviour
 
     void Update()
     {
-        bool sprinting = movement && movement.enabled && movement.CurrentSpeed > (movement.walkSpeed + movement.runSpeed) * 0.5f;
-        exertion = Mathf.MoveTowards(exertion, sprinting ? 1f : 0f, Time.deltaTime / (sprinting ? secondsToWinded : secondsToRecover));
+        // Follows the sprint stamina: the emptier it is, the harder they breathe (fully winded = loudest).
+        exertion = movement ? 1f - movement.Stamina : 0f;
 
         bool hiding = HidingLocker.Occupied;
         bool dead = health && health.Dead;

@@ -5,18 +5,29 @@ using UnityEngine.InputSystem;
 // Keeps them on the ground with gravity. Uses a CharacterController, which slides along walls
 // and climbs small steps by itself. While crouched (see PlayerCrouch) the player creeps slowly
 // and can't sprint or jump.
+// Sprinting uses stamina: about 6 s of it, then the player is winded and can only jog (slower than
+// Frankie) until they've caught their breath again. PlayerBreathing makes this audible.
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
     public float walkSpeed = 2.3f;     // metres per second, a slow cautious walk
     public float runSpeed = 4.3f;
     public float crouchSpeed = 1.3f;
+    public float windedSpeed = 3.0f;   // the jog when out of breath: Frankie (3.8) gains on it
+    public float sprintSeconds = 6f;   // full stamina lasts this long at a sprint
+    public float recoverSeconds = 8f;  // empty to full again while not sprinting
+    public float recoveredAt = 0.4f;   // once winded, sprinting comes back at this much stamina
     public float jumpHeight = 0.6f;    // metres: a short, heavy hop (enough for a crate), not a platformer leap
     public float gravity = -15f;
 
     CharacterController controller;
     PlayerCrouch crouch;
     float verticalSpeed;
+    float stamina = 1f;
+
+    // 1 rested .. 0 completely out of breath. Winded: ran it to empty and hasn't recovered yet.
+    public float Stamina => stamina;
+    public bool Winded { get; private set; }
 
     // How fast the player actually moved last frame (footsteps listen to this).
     public float CurrentSpeed { get; private set; }
@@ -37,7 +48,13 @@ public class PlayerMovement : MonoBehaviour
         bool jump = Controls.Pressed(GameAction.Jump) && !IsCrouched;
 
         // Move relative to where the body faces (the body turns left/right with the mouse).
-        float speed = IsCrouched ? crouchSpeed : running ? runSpeed : walkSpeed;
+        // Stamina drains only while actually sprinting somewhere, and refills otherwise.
+        bool sprinting = running && !Winded && input.sqrMagnitude > 0.01f;
+        stamina = Mathf.Clamp01(stamina + Time.deltaTime * (sprinting ? -1f / sprintSeconds : 1f / recoverSeconds));
+        if (stamina <= 0f) Winded = true;
+        else if (Winded && stamina >= recoveredAt) Winded = false;
+
+        float speed = IsCrouched ? crouchSpeed : running ? (Winded ? windedSpeed : runSpeed) : walkSpeed;
         Vector3 move = (transform.right * input.x + transform.forward * input.y) * speed;
 
         // Gravity pulls down; standing on something resets it. A jump is the upward speed

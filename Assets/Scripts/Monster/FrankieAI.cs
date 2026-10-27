@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -6,8 +7,9 @@ using UnityEngine.AI;
 // - Investigate: heard something; walks to the spot and looks around.
 // - Chase: sees the player; runs at them (3.8 m/s, a little slower than sprinting).
 // - Search: lost sight; goes to where he last saw them and looks around for a while.
-// - Attack: close enough; lunges, and the player takes a hit if still in reach.
-// - Retreat: after a hit, a short breather: he steps back a little, staring, then comes at the player
+// - Attack: close enough; lunges forward about 1.5 m, and the player takes a hit if still in reach.
+//   A miss sends him straight back into the chase.
+// - Retreat: after a hit that landed, a short breather: he steps back a little, staring, then comes at the player
 //   again (he keeps attacking until they die, escape out of sight or drive him off with a flare).
 // - Repelled: a lit flare is near; he backs away and keeps his distance until it dies.
 // - Reveal: his first appearance. He stands at the end of the platform staring at the player; once
@@ -15,7 +17,8 @@ using UnityEngine.AI;
 // - WalkOff: ...walks away into the tunnel, ignoring the player, and only then starts hunting.
 // A player hiding in a locker is invisible to him, unless he saw them get in: then he walks over,
 // pulls them out and attacks.
-// He walks on the underground navigation mesh only, so the street is safe.
+// He walks on the underground navigation mesh only, so the street is safe. Where the mesh has a
+// jump link (all along the platform edges) he leaps down to the tracks or up onto the platform.
 [RequireComponent(typeof(NavMeshAgent), typeof(FrankieSenses))]
 public class FrankieAI : MonoBehaviour
 {
@@ -33,8 +36,12 @@ public class FrankieAI : MonoBehaviour
     public float maxWalkPlayback = 2f, maxRunPlayback = 1.5f, minRunPlayback = 0.6f;
     // Where in each animation's loop (0..1) a foot hits the ground, for the footstep sounds.
     public float[] walkFootfalls = { 0.43f, 0.83f }, runFootfalls = { 0.44f, 0.94f };
-    // His attack animation: when the claws land, and how long it lasts.
-    public float hitAt = 0.8f, attackLength = 1.5f;
+    // His attack: when the claws land and how long it lasts (seconds). The animation's claws land 0.8 s
+    // into the clip ('clipHitAt'), so it is sped up to match 'hitAt'.
+    public float hitAt = 0.5f, attackLength = 1f, clipHitAt = 0.8f;
+    public float lungeDistance = 1.5f;         // how far he leaps forward before the claws land
+    public float hitArc = 50f;                 // the claws only catch a player within this angle of straight ahead
+    public float leapHeight = 0.6f, leapSpeed = 4f;   // his jumps between platform and tracks
     public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
     public float breather = 3f;                // seconds between one hit and coming at the player again
 
@@ -58,7 +65,7 @@ public class FrankieAI : MonoBehaviour
     float huntUntil;                           // until then he never gives up a chase (the train finale)
     float smoothedSpeed, lastCycle;            // his speed, eased so the animation doesn't flick between walk and run
     Vector3 lastSeenAt, walkOffTo;
-    bool hitDone, seesPlayer;
+    bool hitDone, landed, leaping, seesPlayer;
     string playing;
 
     void Awake()
@@ -67,12 +74,13 @@ public class FrankieAI : MonoBehaviour
         senses = GetComponent<FrankieSenses>();
     }
 
-    void OnEnable() { Active = this; SetMood(Mood.Wander); }
+    void OnEnable() { Active = this; leaping = false; SetMood(Mood.Wander); }
     void OnDisable() { if (Active == this) Active = null; }
 
     // Used by the arrival: he appears standing at 'standAt', and leaves toward 'leaveTo' once he's been seen.
     public void StageReveal(Vector3 standAt, Vector3 leaveTo)
     {
+        StopLeap();
         agent.Warp(standAt);
         walkOffTo = leaveTo;
         noticedAt = -1f;
@@ -96,6 +104,7 @@ public class FrankieAI : MonoBehaviour
     // Loading a save: back where he was, wandering.
     public void PutBack(Vector3 position, float yaw)
     {
+        StopLeap();
         agent.Warp(position);
         transform.rotation = Quaternion.Euler(0f, yaw, 0f);
         SetMood(Mood.Wander);
@@ -107,6 +116,14 @@ public class FrankieAI : MonoBehaviour
         sightTimer -= Time.deltaTime;
         if (sightTimer <= 0f) { sightTimer = 0.2f; seesPlayer = senses.CanSeePlayer(); SeenByPlayer = senses.PlayerCanSeeMe(); }
         if (seesPlayer) { lastSeen = Time.time; lastSeenAt = senses.Player.position; }
+
+        // Reached a jump link (a platform edge): leap across it; nothing else happens mid-air.
+        if (agent.isOnOffMeshLink)
+        {
+            if (!leaping) StartCoroutine(Leap());
+            Sounds();
+            return;
+        }
 
         // A lit flare close by overrides everything else (except his staged first appearance).
         var flare = Flare.NearestLit(transform.position);
@@ -137,11 +154,12 @@ public class FrankieAI : MonoBehaviour
         Current = mood;
         moodTime = 0f;
         hitDone = false;
+        landed = false;
         agent.isStopped = false;
         agent.speed = mood == Mood.Chase ? chaseSpeed : walkSpeed;
         if (mood == Mood.Wander) PickWanderSpot();
         if (mood == Mood.Search) agent.SetDestination(lastSeenAt);
-        if (mood == Mood.Attack) { agent.isStopped = true; Play("Attack"); }
+        if (mood == Mood.Attack) { agent.isStopped = true; Play("Attack"); animator.speed = clipHitAt / hitAt; }
         if (mood == Mood.Reveal) { agent.isStopped = true; agent.SetDestination(transform.position); }
         if (mood == Mood.WalkOff) agent.SetDestination(walkOffTo);
         if (mood == Mood.Retreat || mood == Mood.Repelled) agent.speed = walkSpeed * 1.5f;
@@ -238,17 +256,33 @@ public class FrankieAI : MonoBehaviour
 
     void Attack()
     {
-        if (senses.Player) FaceTowards(senses.Player.position, 8f);
-        // The claws land 'hitAt' seconds in; it only hurts if the player is still within reach.
+        // During the lunge he's committed and turns only slowly; once the claws have landed he turns freely.
+        if (senses.Player) FaceTowards(senses.Player.position, hitDone ? 8f : 2.5f);
+        // The lunge: until the claws land he surges forward the way he's facing, so running away doesn't
+        // escape it, but a well-timed sidestep can leave him swiping at air. He stops short of the player.
+        if (!hitDone && senses.Player && Vector3.Distance(transform.position, senses.Player.position) > 1f)
+            agent.Move(transform.forward * (lungeDistance / hitAt) * Time.deltaTime);
+        // The claws land 'hitAt' seconds in; it only hurts if the player is still within reach, in front of him.
         if (!hitDone && moodTime > hitAt)
         {
             hitDone = true;
             var health = senses.Player ? senses.Player.GetComponent<PlayerHealth>() : null;
-            if (health && Vector3.Distance(transform.position, senses.Player.position) < HitReach)
+            Vector3 toPlayer = senses.Player ? senses.Player.position - transform.position : Vector3.zero;
+            toPlayer.y = 0f;
+            if (health && toPlayer.magnitude < HitReach && Vector3.Angle(transform.forward, toPlayer) < hitArc)
             {
+                landed = true;
                 if (hitSound) feet.PlayOneShot(hitSound, 1f);
                 health.Hit(transform.position);
             }
+        }
+        // Missed: no breather, straight back after them (unless they've slipped into a locker unseen).
+        if (hitDone && !landed && moodTime > hitAt + 0.25f)
+        {
+            lastSeen = Time.time;
+            if (senses.Player) lastSeenAt = senses.Player.position;
+            SetMood(HidingLocker.Occupied && !HidingLocker.SeenGettingIn ? Mood.Search : Mood.Chase);
+            return;
         }
         if (moodTime > attackLength) SetMood(Mood.Retreat);
     }
@@ -310,6 +344,33 @@ public class FrankieAI : MonoBehaviour
             senses.ForgetNoise();
             SetMood(Mood.Wander);
         }
+    }
+
+    // One jump along a link: an arc from where he stands to the link's far end, then back to walking.
+    IEnumerator Leap()
+    {
+        leaping = true;
+        var link = agent.currentOffMeshLinkData;
+        Vector3 start = transform.position;
+        Vector3 end = link.endPos + Vector3.up * agent.baseOffset;
+        Vector3 flat = end - start; flat.y = 0f;
+        agent.updateRotation = false;
+        if (flat.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(flat);
+        float duration = Mathf.Max(0.35f, Vector3.Distance(start, end) / leapSpeed);
+        for (float t = 0f; t < 1f; t += Time.deltaTime / duration)
+        {
+            // Straight line from start to end, lifted by a hump that peaks halfway.
+            transform.position = Vector3.Lerp(start, end, t) + Vector3.up * (leapHeight * 4f * t * (1f - t));
+            yield return null;
+        }
+        agent.CompleteOffMeshLink();
+        leaping = false;
+    }
+
+    void StopLeap()
+    {
+        StopAllCoroutines();
+        leaping = false;
     }
 
     bool Arrived() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.3f;

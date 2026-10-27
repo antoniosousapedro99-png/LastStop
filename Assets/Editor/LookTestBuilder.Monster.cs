@@ -55,7 +55,7 @@ public static partial class LookTestBuilder
         var agent = man.AddComponent<NavMeshAgent>();
         agent.radius = 0.35f; agent.height = 2.1f; agent.speed = 0.9f;
         agent.acceleration = 10f; agent.angularSpeed = 180f; agent.stoppingDistance = 0.5f;   // 180: turns smoothly, not snapping round
-        agent.autoTraverseOffMeshLink = true;
+        agent.autoTraverseOffMeshLink = false;   // FrankieAI leaps across links itself, in an arc
         // The walkable area floats a few centimetres above the real floor; lower him by that gap so his feet touch it.
         if (NavMesh.SamplePosition(FrankieSpawn, out var navHit, 1f, NavMesh.AllAreas)) agent.baseOffset = FrankieSpawn.y - navHit.position.y;
 
@@ -141,14 +141,23 @@ public static partial class LookTestBuilder
         AssetDatabase.DeleteAsset(path);
         AssetDatabase.CreateAsset(surface.navMeshData, path);
 
-        foreach (float x in new[] { -10f, 0f, 10f, 16f })
+        EdgeLinks(go.transform, "PlatformEdgeLink", -18f, 18f, 19.6f, 1);
+    }
+
+    // Jump links side by side along a whole platform edge (x 'fromX'..'toX'), so Frankie can drop onto
+    // the track bed or climb back up anywhere. 'atZ' is just inside the edge; 'side' is +1 if the track
+    // bed is toward +z, -1 if toward -z. He lands 'reach' metres out, 'drop' metres below the platform.
+    static void EdgeLinks(Transform parent, string name, float fromX, float toX, float atZ, int side, float reach = 1.2f, float drop = 1.3f)
+    {
+        const float width = 4f;
+        for (float x = fromX + width / 2f; x <= toX - width / 2f + 0.01f; x += width)
         {
-            var link = new GameObject("PlatformEdgeLink").AddComponent<NavMeshLink>();
-            link.transform.SetParent(go.transform);
-            link.transform.position = new Vector3(x, 0f, 19.6f);
-            link.startPoint = new Vector3(0f, 0f, -0.6f);              // on the platform
-            link.endPoint = new Vector3(0f, -1.3f, 1.2f);              // down on the track bed
-            link.width = 1.2f;
+            var link = new GameObject(name).AddComponent<NavMeshLink>();
+            link.transform.SetParent(parent);
+            link.transform.position = new Vector3(x, 0f, atZ);
+            link.startPoint = new Vector3(0f, 0f, -side * 0.9f);       // on the platform, safely inside its walkable area
+            link.endPoint = new Vector3(0f, -drop, side * reach);      // down on the track bed
+            link.width = width;
             link.bidirectional = true;
         }
     }

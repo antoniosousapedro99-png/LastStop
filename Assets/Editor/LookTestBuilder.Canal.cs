@@ -554,18 +554,9 @@ public static partial class LookTestBuilder
         const string path = "Assets/Scenes/LookTest_CanalNavMesh.asset";
         AssetDatabase.DeleteAsset(path);
         AssetDatabase.CreateAsset(surface.navMeshData, path);
-        // Links so he can jump between the island and the track beds, not only use the staff steps.
-        foreach (float x in new[] { -20f, 0f, 20f })
-            foreach (int side in new[] { -1, 1 })
-            {
-                var link = new GameObject("IslandEdgeLink").AddComponent<NavMeshLink>();
-                link.transform.SetParent(go.transform);
-                float edge = side < 0 ? CanalZ + 5.5f : CanalZ + 15.5f;
-                link.transform.position = new Vector3(x, 0f, edge);
-                link.startPoint = new Vector3(0f, 0f, -side * 0.6f);
-                link.endPoint = new Vector3(0f, -1.3f, side * 1.2f);
-                link.width = 1.2f;
-                link.bidirectional = true;
-            }
+        // Links so he can jump between the island and the track beds anywhere, not only use the staff steps.
+        EdgeLinks(go.transform, "IslandEdgeLink", -40f, 40f, CanalZ + 5.5f, -1);
+        // The south track runs right against the edge, so he lands on the raised bed between its rails.
+        EdgeLinks(go.transform, "IslandEdgeLink", -40f, 40f, CanalZ + 15.5f, 1, 1.9f, 1.15f);
     }
 }
