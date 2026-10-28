@@ -19,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
     public float recoveredAt = 0.4f;   // once winded, sprinting comes back at this much stamina
     public float jumpHeight = 0.6f;    // metres: a short, heavy hop (enough for a crate), not a platformer leap
     public float gravity = -15f;
+    [System.NonSerialized] public float speedMultiplier = 1f;   // below 1 for a moment after a bad fall (FallDamage)
 
     CharacterController controller;
     PlayerCrouch crouch;
@@ -62,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
         if (stamina <= 0f) Winded = true;
         else if (Winded && stamina >= recoveredAt) Winded = false;
 
-        float speed = IsCrouched ? crouchSpeed : running ? (Winded ? windedSpeed : runSpeed) : walkSpeed;
+        float speed = (IsCrouched ? crouchSpeed : running ? (Winded ? windedSpeed : runSpeed) : walkSpeed) * speedMultiplier;
         Vector3 move = (transform.right * input.x + transform.forward * input.y) * speed;
 
         // Gravity pulls down; standing on something resets it. A jump is the upward speed

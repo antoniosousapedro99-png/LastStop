@@ -318,6 +318,9 @@ public static partial class LookTestBuilder
         breathing.slow = BreathLoop(player, "PlayerBreathSlow");
         breathing.heartbeat = BreathLoop(player, "PlayerHeartbeat");   // made with ffmpeg (two low thumps, ~70 bpm)
 
+        // Falls: safe up to 3 m, one hit and a short limp above that, death above 7 m; deep water breaks a fall.
+        player.AddComponent<FallDamage>().thud = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
+
         // Vaulting: hold Jump at a ledge up to 1.4 m (PlayerVault); an effort breath, then a step on landing.
         var vault = player.AddComponent<PlayerVault>();
         vault.voice = stepAudio;

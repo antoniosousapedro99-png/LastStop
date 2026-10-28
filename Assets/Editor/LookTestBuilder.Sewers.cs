@@ -46,7 +46,7 @@ public static partial class LookTestBuilder
         CagedBulb(g, "SewerBulb_Main", o + new Vector3(-1.2f, 2.75f, 16f), 1.4f, 6f, flicker: true);
 
         // ---- the pumping-station hub: 16 x 16 m, 6 m high, a sump in the middle, the pump, a control room
-        SewerRoom(g, "Hub", -8f, 8f, 30f, 46f, 0f, 6f, (0, -2f, 2f, 3f), (3, 36f, 38f, 2.4f), (1, 36f, 38f, 2.4f), (2, -1f, 1f, 2.4f));
+        SewerRoom(g, "Hub", -8f, 8f, 30f, 46f, 0f, 6f, false, (0, -2f, 2f, 3f), (3, 36f, 38f, 2.4f), (1, 36f, 38f, 2.4f), (2, -1f, 1f, 2.4f));
         Span("HubFloorS", g, o + new Vector3(-8f, -0.2f, 30f), o + new Vector3(8f, 0f, 35f), sewerFloor);
         Span("HubFloorN", g, o + new Vector3(-8f, -0.2f, 41f), o + new Vector3(8f, 0f, 46f), sewerFloor);
         Span("HubFloorW", g, o + new Vector3(-8f, -0.2f, 35f), o + new Vector3(-3f, 0f, 41f), sewerFloor);
@@ -212,5 +212,6 @@ public static partial class LookTestBuilder
         var water = Prim(PrimitiveType.Quad, name, g, SewerOrigin + new Vector3((x0 + x1) * 0.5f, y, (z0 + z1) * 0.5f), new Vector3(x1 - x0, z1 - z0, 1f), sewerWater);
         water.transform.rotation = Quaternion.Euler(90f, 0f, 0f);   // facing up
         Object.DestroyImmediate(water.GetComponent<Collider>());
+        water.AddComponent<WaterSurface>().size = new Vector2(x1 - x0, z1 - z0);   // deep enough, it breaks a fall
     }
 }
