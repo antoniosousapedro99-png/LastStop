@@ -46,12 +46,17 @@ Something lives down there.
 4. **Restore power.** Lights come back in a wave, and doors and machines wake up.
 5. **Escape to the next station** through a scripted finale.
 
-### Big reveal (Idea — NOT to be implemented yet)
+### The truth: fear made flesh (Idea — decided, NOT to be implemented yet)
 
-- The truth under Line 4 is a **giant spider**, the final boss.
-- The "wrapped" creatures stalking the tunnels are **spider-zombies**: the missing workers from the posters, cocooned and turned. Exactly how is still undecided.
-- Players should slowly realise that the monsters are the people on the posters, and that they might be next.
-- Cocoon and web imagery should grow as the player goes deeper underground. Web models are still needed; the director will source them.
+- **No giant spider** (dropped as too on the nose). The cause is **occult / paranormal**: a **liminal entity** under Line 4 makes people's nightmares real. It is never fought or clearly seen; it lives in empty, in-between, wrong-feeling spaces.
+- **The real monster is fear.** Each victim becomes what they feared most:
+  - a worker afraid of **spiders** becomes a spider-thing, and his victims become **the Wrapped** (cocooned) or **eyeball / spider creatures**;
+  - a worker afraid of **death** becomes a **Ridgeback**, shambling undead forever.
+- The missing workers on the posters are among the victims. Players should slowly realise the monsters are those people, each turned into their own worst fear, and that they might be next.
+- **Planned creatures (assets not bought yet):**
+  - The Wrapped, Ridgeback or Clawman (by Codyanka) may replace Frankie as the stalker of Stations 1–2.
+  - "Necrothread: The Pulse of Rotting Flesh" (imaginais) is kept for a later monster.
+  - imaginais' eyeball spider creatures fit too.
 
 ---
 
@@ -281,7 +286,7 @@ The first pull of the starter cord only coughs (Frankie may hear it). The second
 ### 4.4 Stations 3–4 and the ending zone (Planned, not built)
 
 - **Station 3: the sewers**, reached through Canal St's emergency latch.
-- Station 4 and the final ending zone are not designed yet. This is where the spider reveal is meant to happen.
+- Station 4 and the final ending zone are not designed yet. This is where the truth (the liminal entity and fear made flesh) is meant to come out.
 
 ---
 
@@ -394,7 +399,7 @@ All of this happened between **20 and 28 October 2026**.
 **Design questions still open:**
 - How many safe rooms per station, and what they look like.
 - Station 3 (the sewers), Station 4 and the ending: layout, goals, new scripted horrors.
-- How the spider-zombie turning works (lore).
+- How the liminal entity shows itself, and which fear each missing worker had.
 
 **Content still missing:**
 - web and cobweb models;
