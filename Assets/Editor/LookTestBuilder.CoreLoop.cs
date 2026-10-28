@@ -189,6 +189,9 @@ public static partial class LookTestBuilder
         spatter.transform.position = new Vector3(benchX + 0.3f, floorY + 1.35f, wallN + 0.02f);
         spatter.transform.rotation = Quaternion.LookRotation(Vector3.back);   // facing into the car
 
+        // Past the debris wall the far half is crushed by a tunnel collapse (LookTestBuilder.TrainWreck.cs).
+        TrainWreck(tunnel, b.min.x, midX, floorY, wallN, wallS);
+
         // The same faint, flickering cab light at the open end.
         var cab = new GameObject("CabLight");
         cab.transform.SetParent(car.transform, true);
