@@ -173,6 +173,18 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **Hiding lockers moved (2026-10-27):** the two lockers on Hollis St's tracks are gone; the service level has **three** (corridor below the stairs, the machinery hall by the east door, the squatter camp by its doorway). Canal St's lower level has three more (pump room, storeroom, machinery hall).
 - **Train fronts and the cab (2026-10-26):** the stalled carriages keep their **original end** (a doorway with a window either side) instead of a cut-open box; the doorway is just widened (frame and windows slide outward a little) to **0.9 m** (0.8 m was chosen, but the player needs about 0.86 m with collision padding) and every carriage is drawn a little bigger (**18.7 m** long, was 17.5 m) so the doorway is **1.95 m** tall. The Station 1 finale cab's plain steel back wall is replaced by the **carriage's own end wall** (no cab model exists in the asset library) with a closed steel door; through its two windows you see the dark carriage behind. The Canal St arrival car gets the same partition instead of an invisible wall.
 
+## Station 3: the sewers (planned 2026-10-28, NOT built yet)
+
+- **Fear: drowning / water.** Reached by climbing down Canal St's **emergency latch** into the overflow tunnels under Line 4.
+- **Size:** like Canal St, about 1-1.5 hours: a **pumping station hub** plus **three branches**.
+- **Goal: drain the flood.** The sewers are flooding. **Open three valves, one in each branch.** Each valve lowers the water a little, which opens the way into the next branch. Then **restart the main pump** in the hub.
+- **Water in play: it rises and falls.** Some areas are knee- or waist-deep: wading is slow and loud. Deep water can't be walked through, only crossed on ledges and gantries. Each valve, and finally the pump, lowers the water and opens new paths.
+- **The danger is the water itself (no creature for now):** deep water drowns you if you stay under too long, with the breath shown **by sound only** (no meter on screen). Strong currents in some channels push you, and falling in is the main threat. **Frankie does not follow** into the sewers. A **new, water-based monster** will be added later by the director.
+- **Exit: the river outfall.** Once the pump runs, the overflow tunnel drains and leads out to the river, as the latch notice says. Station 4 (losing your mind) starts back underground somewhere else.
+- **Voicemails (2):** an old wall phone in the **pump control room** (visible), and an emergency phone **deep in a flooded branch** (hidden, reachable only after draining it). Who speaks is still to decide (his father stays for the very end).
+- **Assets to use:** the Sewer pack's textures already in the project (brick, dirty concrete, rusty metal, mud), the industrial kit from the lower levels (pipes, pumps, control boxes, chain-link, caged bulbs), and the water and splash sounds.
+- **Open questions:** the branches' themes and layout, how the water level is shown and animated, what a valve looks like and how it's turned, the drowning rules (how long you can hold your breath), and the new monster.
+
 ## The story: Sousa, the failing line, and fear (revised 2026-10-28)
 
 - **The giant spider reveal is dropped**, and so is "fear made flesh" as a confirmed truth: **no one is confirmed to have been turned into a monster.**

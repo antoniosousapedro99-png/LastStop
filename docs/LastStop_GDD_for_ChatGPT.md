@@ -315,10 +315,22 @@ The first pull of the starter cord only coughs (Frankie may hear it). The second
 - on the lower level, a **locker bangs from inside** (it's empty);
 - a corridor's **bulbs go out one by one toward you**, the last right overhead.
 
-### 4.4 Stations 3–4 and the ending zone (Planned, not built)
+### 4.4 Station 3 – the sewers (Planned 28 October, not built)
 
-- **Station 3: the sewers**, reached through Canal St's emergency latch.
-- Station 4 and the final ending zone are not designed yet. This is where the truth (the liminal entity and fear made flesh) is meant to come out.
+- **Fear: drowning / water.** Reached by climbing down Canal St's **emergency latch** into the overflow tunnels under Line 4.
+- **Size:** like Canal St, about 1-1.5 hours: a **pumping station hub** plus **three branches**.
+- **Goal: drain the flood.** The sewers are flooding. **Open three valves, one in each branch.** Each valve lowers the water a little, which opens the way into the next branch. Then **restart the main pump** in the hub.
+- **Water in play: it rises and falls.** Some areas are knee- or waist-deep: wading is slow and loud. Deep water can't be walked through, only crossed on ledges and gantries. Each valve, and finally the pump, lowers the water and opens new paths.
+- **The danger is the water itself (no creature for now):** deep water drowns you if you stay under too long, with the breath shown **by sound only** (no meter on screen). Strong currents in some channels push you, and falling in is the main threat. **Frankie does not follow** into the sewers. A **new, water-based monster** will be added later by the director.
+- **Exit: the river outfall.** Once the pump runs, the overflow tunnel drains and leads out to the river, as the latch notice says. Station 4 (losing your mind) starts back underground somewhere else.
+- **Voicemails (2):** an old wall phone in the **pump control room** (visible), and an emergency phone **deep in a flooded branch** (hidden, reachable only after draining it). Who speaks is still to decide (his father stays for the very end).
+- **Assets to use:** the Sewer pack's textures already in the project (brick, dirty concrete, rusty metal, mud), the industrial kit from the lower levels (pipes, pumps, control boxes, chain-link, caged bulbs), and the water and splash sounds.
+- **Open questions:** the branches' themes and layout, how the water level is shown and animated, what a valve looks like and how it's turned, the drowning rules (how long you can hold your breath), and the new monster.
+
+### 4.5 Station 4 and the ending zone (Planned, not built)
+
+- Station 4: losing your mind (derealisation made real). Not designed yet.
+- The ending: being forgotten, Sousa's own fear, and the two endings.
 
 ---
 
