@@ -10,9 +10,9 @@ using UnityEngine.Rendering;
 // Layout (street level is y = 6; the road runs along x):
 //   south sidewalk z -16..-2 (subway entrance at x 0), road z -26..-16, north sidewalk z -30..-26,
 //   shops behind each sidewalk. Both ends of the road are blocked (bus + barriers / police).
-// Lore (all text is a draft for the creative director to rewrite): missing-worker posters, a
-// newspaper, a shop note, the van radio and a payphone answering machine. The monster is
-// only hinted at (blood dripping down the stairs to a wrapped shape), never seen here.
+// Lore (all text is a draft for the creative director to rewrite): the line was run into the ground by
+// years of cost-cutting, and tonight it all failed. A newspaper, a shop note, the van radio and a payphone's
+// recorded outage message. Blood dripping down the stairs is the only unexplained thing up here.
 public static partial class LookTestBuilder
 {
     const float StreetY = 6f;
@@ -227,8 +227,8 @@ public static partial class LookTestBuilder
         radio.lines = new[]
         {
             "DISPATCH: Unit 12, you there? The whole of Line 4 is dark. Start with Hollis Street.",
-            "DISPATCH: Fuse box is down on the platform. Kowalski's crew left spares in the tunnels... somewhere.",
-            "DISPATCH: And check in every hour. The last crew stopped checking in.",
+            "DISPATCH: Fuse box is down on the platform. There should be spares down there... if anyone ever restocked them.",
+            "DISPATCH: And Sousa? Don't be a hero. That line's been falling apart for years.",
         };
         // Parked along the curbs, a taxi left in the road and a police car blocking the east end.
         Car(cars, c + "Car3.fbx", new Vector3(-20f, -17.4f), 90f, "ParkedCar_1");
@@ -342,31 +342,15 @@ public static partial class LookTestBuilder
         var paper = Mat("PosterPaper", null, new Color(0.86f, 0.84f, 0.78f), 1f, 0.15f);
         var page = Load<AudioClip>(SfxDir + "/PaperDocument1.wav");
 
-        // MISSING posters for the three night-shift workers, stuck flat onto two lamp posts and the
-        // bus shelter (found by casting rays at them). Look at one to read it.
         Physics.SyncTransforms();
-        var posterMat = Mat("MissingPoster", PosterTexture(), Color.white, 1f, 0.1f);
-        string[] names = { "DALE KOWALSKI", "ROSA MENDEZ", "THEO BANKS" };
-        string[] ages = { "54", "31", "26" };
-        var furniture = street.Find("Furniture");
-        GameObject[] holders = { furniture.Find("StreetLight_S_1").gameObject, furniture.Find("Bus_stop").gameObject, furniture.Find("StreetLight_S_3").gameObject };
-        for (int i = 0; i < 3; i++)
-        {
-            var poster = Prim(PrimitiveType.Quad, "MissingPoster_" + (i + 1), lore, Vector3.zero, new Vector3(0.3f, 0.42f, 1f), posterMat);
-            Object.DestroyImmediate(poster.GetComponent<Collider>());
-            poster.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
-            if (!StickTo(poster, holders[i], StreetY + 1.55f, Vector3.forward))   // seen from the road (north)
-                Debug.LogWarning("Poster " + i + " found nothing to stick to");
-            poster.transform.rotation *= Quaternion.Euler(0, 0, Random.Range(-5f, 5f));
-            poster.AddComponent<ReadableNote>().text = "MISSING\n" + names[i] + ", age " + ages[i] + "\nMetro Transit maintenance, Line 4 night shift.\nLast seen entering Hollis St station after midnight.\nIf you have any information call the MTA hotline.";
-        }
+        // (The missing-worker posters were removed on 2026-10-28: the story no longer has missing workers.)
 
         // A soaked newspaper lying on the bus shelter's bench.
         var newspaper = Prim(PrimitiveType.Cube, "Newspaper", lore, Vector3.zero, new Vector3(0.5f, 0.012f, 0.35f), Mat("Newsprint", PosterTexture(), new Color(0.8f, 0.8f, 0.78f), 1f, 0.2f));
         newspaper.transform.rotation = Quaternion.Euler(0, 20f, 0);
         if (Physics.Raycast(new Vector3(-11.5f, StreetY + 3f, -14.4f), Vector3.down, out var benchHit, 4f))
             newspaper.transform.position = benchHit.point + Vector3.up * 0.006f;
-        newspaper.AddComponent<ReadableNote>().text = "THIRD TRANSIT WORKER VANISHES ON LINE 4\nRosa Mendez, 31, is the third maintenance worker in five weeks to disappear during a night shift. MTA officials dismissed staff reports of 'something wrapped up in the tunnels' as stress.";
+        newspaper.AddComponent<ReadableNote>().text = "LINE 4 'HELD TOGETHER WITH TAPE', ENGINEERS WARN\nInternal reports show the MTA has postponed power, signal and tunnel repairs on Line 4 for the third year running to cover budget cuts. 'It isn't if it fails, it's when,' one engineer said. The MTA called the line 'safe and fully operational'.";
 
         // A note taped to the 6twelve's door.
         var shopNote = Prim(PrimitiveType.Quad, "ShopDoorNote", lore, Vector3.zero, new Vector3(0.22f, 0.3f, 1f), Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f));
@@ -382,8 +366,8 @@ public static partial class LookTestBuilder
         machine.crackle = Load<AudioClip>(SfxDir + "/SwitchButton3_On.wav");
         machine.lines = new[]
         {
-            "PAYPHONE (recorded): ...this is Rosa. If anyone gets this, don't go past the trains.",
-            "PAYPHONE (recorded): It's wrapping them. Dale's still moving in there, I can hear him-- [static]",
+            "PAYPHONE (recorded): ...MTA service line. Due to a power failure, all Line 4 service is suspended until further notice.",
+            "PAYPHONE (recorded): We apologise for the inconvenience. Please do not enter closed stations-- [static]",
         };
 
         // Police tape around the gas station forecourt.
@@ -391,7 +375,8 @@ public static partial class LookTestBuilder
         Tape(lore, tape, new Vector3(18f, StreetY + 0.95f, -30.6f), new Vector3(40f, StreetY + 0.95f, -30.6f));
         Tape(lore, tape, new Vector3(18f, StreetY + 0.9f, -30.6f), new Vector3(18f, StreetY + 0.9f, -40f));
 
-        // Hints of the monster: blood dripping down the stairs to something wrapped on the steps.
+        // Blood dripping down the stairs, left unexplained (the wrapped shape that lay on the steps was removed
+        // on 2026-10-28, with the missing workers).
         string[] drops = { "BloodDrop01", "BloodDrop02", "BloodDrop20" };
         int[] steps = { 26, 24, 23, 21, 18, 16, 15 };
         for (int k = 0; k < steps.Length; k++)
@@ -401,22 +386,6 @@ public static partial class LookTestBuilder
             var drop = Decal("BloodDrip_" + k, lore, drops[k % 3], new Vector3(0.2f + 0.35f * Mathf.Sin(k * 1.7f), 0.2f * i + 0.004f, zMid), 0.28f + 0.08f * (k % 2), k * 53f);
         }
         Decal("BloodPool", lore, "BloodSpatter02", new Vector3(0.9f, 0.2f * 20 + 0.004f, -1f - 0.3f * 20 + 0.15f), 0.9f, 30f);
-        var wrapped = new GameObject("WrappedShape");
-        wrapped.transform.SetParent(lore);
-        wrapped.transform.position = new Vector3(1.1f, 2.3f, -7.1f);    // lying across the steps, halfway down
-        wrapped.transform.rotation = Quaternion.Euler(0, 15f, 0) * Quaternion.Euler(-34f, 0, 90f);
-        var cloth = Mat("WrapCloth", null, new Color(0.32f, 0.3f, 0.27f), 1f, 0.1f);
-        var bands = Mat("WrapBands", null, new Color(0.18f, 0.16f, 0.14f), 1f, 0.1f);
-        var bodyShape = Prim(PrimitiveType.Capsule, "Body", wrapped.transform, wrapped.transform.position, new Vector3(0.45f, 0.85f, 0.4f), cloth);
-        bodyShape.transform.SetParent(wrapped.transform, true);
-        bodyShape.transform.localRotation = Quaternion.identity;
-        for (int i = 0; i < 6; i++)
-        {
-            var band = Prim(PrimitiveType.Cylinder, "Band_" + i, wrapped.transform, Vector3.zero, new Vector3(0.48f, 0.02f, 0.43f), bands);
-            band.transform.SetParent(wrapped.transform, false);
-            band.transform.localPosition = new Vector3(0, -0.6f + i * 0.24f, 0);
-            band.transform.localRotation = Quaternion.Euler(Random.Range(-12f, 12f), 0, Random.Range(-12f, 12f));
-        }
     }
 
     // A strip of police tape between two points (thin box with a striped texture).

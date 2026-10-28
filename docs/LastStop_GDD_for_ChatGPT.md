@@ -31,12 +31,9 @@
 
 ### Premise
 
-You play a **night-shift metro maintenance worker** in a 1990s, New-York-style city. After a city-wide blackout you're sent down **alone** to bring power back to the Line 4 subway stations. Over the past five weeks, three Line 4 night-shift workers have gone missing:
-- Dale Kowalski (54);
-- Rosa Mendez (31);
-- Theo Banks (26).
+You play a **night-shift metro maintenance worker** in a 1990s, New-York-style city. After a city-wide blackout you're sent down **alone** to bring power back to the Line 4 subway stations. Line 4 has been run into the ground by years of cost-cutting, and tonight it all failed at once.
 
-Something lives down there.
+Something may be down there with him. Or it may be his own mind.
 
 ### Core loop (each station)
 
@@ -46,16 +43,16 @@ Something lives down there.
 4. **Restore power.** Lights come back in a wave, and doors and machines wake up.
 5. **Escape to the next station** through a scripted finale.
 
-### The truth: fear made flesh (Idea — decided, NOT to be implemented yet)
+### The story: Sousa, the failing line, and fear (decided 28 October)
 
-- **No giant spider** (dropped as too on the nose). The cause is **occult / paranormal**: a **liminal entity** under Line 4 makes people's nightmares real. It is never fought or clearly seen; it lives in empty, in-between, wrong-feeling spaces.
-- **The real monster is fear.** Each victim becomes what they feared most:
-  - a worker afraid of **spiders** becomes a spider-thing, and his victims become **the Wrapped** (cocooned) or **eyeball / spider creatures**;
-  - a worker afraid of **death** becomes a **Ridgeback**, shambling undead forever.
-- The missing workers on the posters are among the victims. Players should slowly realise the monsters are those people, each turned into their own worst fear, and that they might be next.
-- **Planned creatures (assets not bought yet):**
-  - **Frankie now has the Ridgeback's body** (Codyanka; built 28 October): same AI and behaviour. The Wrapped and Clawman (Codyanka) remain options for later creatures.
-- **The entity shows itself only as shadow figures** (built 28 October): every 3-5 minutes underground, a pitch-black silhouette of an ordinary man stands at the corner of your eye, against something lit, facing you. The moment you look at it, it's gone, silently. It also goes after 4 s or if you come within 4 m, and never appears during a chase or while you hide.
+- **No giant spider, and no confirmed transformations**: nobody is confirmed to have been turned into a monster.
+- **The real reason Line 4 is dead is mundane: years of cost-cutting.** Postponed repairs and old equipment until everything failed at once. The accidents feel real: the west train crushed by a tunnel collapse, dead power feeds, and further down the line floods and fires, all failures of neglect.
+- **The haunting is never explained.** Frankie, the shadow figures and each section's creatures could be real, or Sousa's mind under stress and derealisation. The game gives evidence both ways and never decides.
+- **The focus is Sousa:** the creatures embody his fears, one per section.
+- **Creatures:**
+  - **Frankie has the Ridgeback's body** (by Codyanka, since 28 October): same AI and behaviour.
+  - Later options: the Wrapped and Clawman (Codyanka); "Necrothread: The Pulse of Rotting Flesh" and the eyeball spider creatures (imaginais).
+- **Shadow figures** (built 28 October): every 3-5 minutes underground, a pitch-black silhouette of an ordinary man stands at the corner of your eye, facing you. The moment you look at it, it's gone, silently. Never explained.
 - **Each section of the game focuses on one fear; the last is the player character's own**.
 - **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, OCD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
   - **His fear: being forgotten.** The final section is built from it.
@@ -64,16 +61,14 @@ Something lives down there.
   - **Name: J. Sousa.** Workmates, dispatch and badges use only his surname ("Sousa", "J. Sousa").
   - **Details are inspired, fictional:** the feelings are real, but names, places and events are made up.
 - **One fear per section (decided 2026-10-28):**
-  - **Station 1, Hollis St: death.** The **Ridgeback** (the worker afraid of death, shambling undead forever) hunts you from the start.
-  - **Station 2, Canal St: spiders.** The spider-fear worker's nest: the Wrapped and eyeball creatures, webs thickening the deeper you go.
+  - **Station 1, Hollis St: death.** The **Ridgeback** (undead, shambling on forever) hunts you from the start.
+  - **Station 2, Canal St: spiders.** The Wrapped and eyeball / spider creatures, webs thickening the deeper you go.
   - **Station 3, the sewers: drowning / water.** Rising water, flooded tunnels, things moving under the surface.
   - **Station 4: losing your mind.** Derealisation made real: the station repeats, rooms rearrange, you can't trust what you see. The bridge into his own fear.
   - **The end: being forgotten**, Sousa's own fear.
 - **The two endings are decided by reaching out:** optional moments of connection along the way (answering the calls, finding and keeping pieces of an unsent letter, and the like). Enough of them and **his parents** remember him: he walks out at dawn. Too few and he's forgotten and becomes one of the shadow figures.
 - **The whole game is an allegory (decided 2026-10-28):** the metro is **Sousa's deep psyche**. Going down the line is searching through it; each station is a buried fear or wound; restoring the power is **working through his traumas bit by bit, in the dark, by himself, alone, as he always was**. He's a maintenance worker repairing his own mind. The title carries it too: the last stop is where he either gets off or doesn't.
 - **The ending is "get better" or "die":** in the hopeful ending he climbs out, remembered by his parents; in the bleak one he walks off into the dark and becomes a ghost, one of the shadow figures (suicide, shown through that walk into the dark).
-  - "Necrothread: The Pulse of Rotting Flesh" (imaginais) is kept for a later monster.
-  - imaginais' eyeball spider creatures fit too.
 
 ---
 
@@ -124,7 +119,7 @@ Something lives down there.
 
 ## 3. The threat: Frankie (Built)
 
-**Frankie** (the squatters' name for him) now has the body of **the Ridgeback** (by Codyanka, since 28 October): a 2.0 m, pale, skeletal undead man, the worker who feared death, with his own idle, hunched walk, frantic chase, "notice" (his scream) and claw attack.
+**Frankie** (the squatters' name for him) now has the body of **the Ridgeback** (by Codyanka, since 28 October): a 2.0 m, pale, skeletal undead man, with his own idle, hunched walk, frantic chase, "notice" (his scream) and claw attack.
 
 **History:**
 - Earlier placeholders were tried and dropped: BagMan, then "The Wrapper", then "The Pale Man", then the "Big Frankie" model (24-28 October).
@@ -198,13 +193,12 @@ He only sees what's in front of him with a clear view.
   - South side: pizzeria and apartment blocks.
   - Also: a bus stop, trees, a dumpster blocking an alley, and graffiti.
 - **Start:** beside the maintenance van, whose radio plays dispatch's message.
-- **Lore drops** (draft text, which the director will rewrite):
-  - MISSING posters for the three workers;
-  - a newspaper on the bus-stop bench;
-  - a "closed nights" note;
-  - red graffiti in the stairwell: "HE WRAPS THEM UP";
-  - a payphone answering machine with Rosa's last message.
-- **Foreshadowing:** blood drips down the subway stairs to a **cocooned shape** on the steps.
+- **Lore drops** (draft text, which the director will rewrite): the line was run into the ground by cost-cutting.
+  - a newspaper on the bus-stop bench: "LINE 4 'HELD TOGETHER WITH TAPE', ENGINEERS WARN";
+  - a "closed nights" note on a shop door;
+  - the van radio: dispatch sends Sousa down ("Don't be a hero. That line's been falling apart for years.");
+  - a payphone playing the MTA's recorded outage message.
+- **Unexplained:** blood drips down the subway stairs.
 - **Boundaries:** invisible walls show "I should turn around…" when you walk into them. Beyond them, the streets and skyline carry on as scenery.
 
 ### 4.2 Station 1 — Hollis St (Built, playable to its ending)
@@ -424,7 +418,7 @@ All of this happened between **20 and 28 October 2026**.
 - Before release: a **content note** at the start (suicide and self-harm themes) and a support line in the credits; the director writes the wording.
 - How many safe rooms per station, and what they look like.
 - Station 3 (the sewers), Station 4 and the ending: layout, goals, new scripted horrors.
-- How the liminal entity shows itself, and which fear each missing worker had.
+- What, if anything, is behind the haunting (deliberately never answered).
 
 **Content still missing:**
 - web and cobweb models;
