@@ -13,8 +13,8 @@ public class PlayerMovement : MonoBehaviour
     public float walkSpeed = 2.3f;     // metres per second, a slow cautious walk
     public float runSpeed = 4.3f;
     public float crouchSpeed = 1.3f;
-    public float windedSpeed = 3.0f;   // the jog when out of breath: Frankie (3.8) gains on it
-    public float sprintSeconds = 6f;   // full stamina lasts this long at a sprint
+    public float windedSpeed = 3.0f;   // the jog when out of breath: Frankie (3.5) gains on it
+    public float sprintSeconds = 8f;   // full stamina lasts this long at a sprint
     public float recoverSeconds = 8f;  // empty to full again while not sprinting
     public float recoveredAt = 0.4f;   // once winded, sprinting comes back at this much stamina
     public float jumpHeight = 0.6f;    // metres: a short, heavy hop (enough for a crate), not a platformer leap

@@ -64,7 +64,7 @@ Something lives down there.
 - **Crouch** (C, a toggle) 1.3 m/s. Crouching makes footsteps half as loud, lowers the body to 1.1 m, and won't let you stand up under something low.
 - **Jump** (Space): a short, heavy 0.6 m hop.
 - **Stamina:**
-  - Sprinting lasts about **6 s**. Then you're **winded** and can only jog at **3.0 m/s** until 40% has come back (about 3 s). It's full again after 8 s.
+  - Sprinting lasts about **8 s**. Then you're **winded** and can only jog at **3.0 m/s** until 40% has come back (about 3 s). It's full again after 8 s.
   - There's no stamina bar: heavy breathing builds up as stamina drains.
 - **Vault:**
   - Hold Jump while facing a ledge between **0.5 and 1.4 m** high (the platform edge from the tracks, crates, low walls).
@@ -130,7 +130,7 @@ He only sees what's in front of him with a clear view.
 
 - **Wander:** 0.9 m/s, sometimes drifting toward you.
 - **Investigate** noises.
-- **Chase:** 3.8 m/s (your sprint is 4.3, but stamina runs out).
+- **Chase:** 3.5 m/s (your sprint is 4.3, but stamina runs out).
 - **Search** where he lost you.
 - **Attack:**
   - Within 2 m he **lunges about 1.5 m forward**, and the claws land after **0.5 s**.

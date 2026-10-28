@@ -5,7 +5,7 @@ using UnityEngine.AI;
 // Frankie's behaviour. He is always in exactly one of these moods:
 // - Wander: walks to random spots underground, now and then drifting toward where the player is.
 // - Investigate: heard something; walks to the spot and looks around.
-// - Chase: sees the player; runs at them (3.8 m/s, a little slower than sprinting).
+// - Chase: sees the player; runs at them (3.5 m/s, slower than sprinting).
 // - Search: lost sight; goes to where he last saw them and looks around for a while.
 // - Attack: close enough; lunges forward about 1.5 m, and the player takes a hit if still in reach.
 //   A miss sends him straight back into the chase.
@@ -26,7 +26,7 @@ public class FrankieAI : MonoBehaviour
     public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff, BreakIn }
 
     public Animator animator;
-    public float walkSpeed = 0.9f, chaseSpeed = 3.8f;
+    public float walkSpeed = 0.9f, chaseSpeed = 3.5f;
     public float attackRange = 2f, hitReach = 2.5f;   // lunges within 2 m; the hit lands if still within 2.5 m
     public float loseAfter = 8f;               // seconds without seeing the player before giving up the chase
     public float flareKeepAway = 6f;           // metres he stays from a lit flare
