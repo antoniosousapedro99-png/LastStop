@@ -56,7 +56,11 @@ Something lives down there.
 - **Planned creatures (assets not bought yet):**
   - **Frankie is a placeholder**, most likely to be replaced by the **Ridgeback** (by Codyanka): same AI and behaviour, new body. The Wrapped and Clawman (Codyanka) are alternatives.
 - **The entity shows itself only as shadow figures** at the corner of your eye or the edge of the darkness: there for a moment, gone when you look.
-- **Each section of the game focuses on one fear; the last is the player character's own** (not decided yet).
+- **Each section of the game focuses on one fear; the last is the player character's own**.
+- **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, OCD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
+  - **His fear: being forgotten.** The final section is built from it.
+  - **Revealed by slow hints** scattered through every station, small personal things that only make sense at the end.
+  - **Two endings**, decided by what the player did (or didn't do) along the way. What decides it is still open.
   - "Necrothread: The Pulse of Rotting Flesh" (imaginais) is kept for a later monster.
   - imaginais' eyeball spider creatures fit too.
 
