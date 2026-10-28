@@ -34,14 +34,14 @@ public static partial class LookTestBuilder
         var lot = Mat("StreetLot", Load<Texture2D>(StreetDir + "/Urban/concrete_bare.jpg"), new Color(0.5f, 0.5f, 0.5f), 3f, 0.4f);
         var stairConcrete = Mat("StairConcrete", Tex("ConcreteBare.png"), new Color(0.6f, 0.6f, 0.58f), 1f, 0.15f);
 
-        BuildStairwell(stairConcrete, wallTile, concrete);
+        BuildStairwell(stairConcrete, wallTile, concrete, pavement);
 
         // ---- ground: sidewalks (top y 6), road 15 cm lower, lots and yards behind the shops
         float y0 = StreetY - 0.4f, y1 = StreetY;
         Span("SidewalkS_W", street, new Vector3(-50, y0, -16), new Vector3(-2.3f, y1, -2), pavement);
         Span("SidewalkS_E", street, new Vector3(2.3f, y0, -16), new Vector3(50, y1, -2), pavement);
         Span("SidewalkS_Front", street, new Vector3(-2.3f, y0, -16), new Vector3(2.3f, y1, -12), pavement);
-        Span("SidewalkS_Back", street, new Vector3(-2.3f, y0, -3.7f), new Vector3(2.3f, y1, -2), pavement);   // its front 30 cm is stone facing (BuildStairwell)
+        Span("SidewalkS_Back", street, new Vector3(-2.3f, y0, -4), new Vector3(2.3f, y1, -2), pavement);
         // The ground up to and under the shops is paved like the sidewalk, so the shopfronts stand on it.
         Span("GroundSouth", street, new Vector3(-50, y0, -2), new Vector3(50, y1, 35), pavement);
         Span("Road", street, new Vector3(-50, y0, -26), new Vector3(50, y1 - 0.15f, -16), asphalt);
@@ -79,7 +79,7 @@ public static partial class LookTestBuilder
     // ---------------------------------------------------------------- stairwell
     // From the corridor (z 0, y 0) up 30 steps (20 cm each) to the street (z -10, y 6).
     // The lower third runs under the sidewalk (ceiling above); the rest is open to the sky.
-    static void BuildStairwell(Material stair, Material wallTile, Material concrete)
+    static void BuildStairwell(Material stair, Material wallTile, Material concrete, Material pavement)
     {
         var well = StreetGroup("Stairwell");
         Span("BottomLanding", well, new Vector3(-2, -0.2f, -1), new Vector3(2, 0, 0), stair);
@@ -113,10 +113,9 @@ public static partial class LookTestBuilder
             Span("StoneCap_" + s, well, Mirror(new Vector3(2f - lip, StreetY + wallTop, -12f - lip), side), Mirror(new Vector3(2.3f + lip, StreetY + capTop, -4f), side), concrete);
         }
         Span("StoneWall_Back", well, new Vector3(-2.3f, StreetY, -4f), new Vector3(2.3f, StreetY + wallTop, -3.7f), stone);
-        // Below the back wall, stone facing down over the sidewalk slab's edge to the covered stairs' first
+        // The sidewalk slab's grey paving carries on down below the back wall to the covered stairs' first
         // ceiling beam (y 5.2), closing the dark gap between them.
-        Span("StoneFacing_Back", well, new Vector3(-2.3f, StreetY - 0.4f, -4f), new Vector3(2.3f, StreetY, -3.7f), stone);
-        Span("StoneFacing_BackLow", well, new Vector3(-2f, 5.2f, -4f), new Vector3(2f, StreetY - 0.4f, -3.7f), stone);
+        Span("PavingFacing_Back", well, new Vector3(-2f, 5.2f, -4f), new Vector3(2f, StreetY - 0.4f, -3.7f), pavement);
         Span("StoneCap_Back", well, new Vector3(-2.3f - lip, StreetY + wallTop, -4f), new Vector3(2.3f + lip, StreetY + capTop, -3.7f + lip), concrete);
         foreach (int side in new[] { -1, 1 })
         {
