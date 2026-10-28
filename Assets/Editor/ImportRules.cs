@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 10;
+    public override uint GetVersion() => 11;
 
     void OnPreprocessTexture()
     {
@@ -39,8 +39,9 @@ public class ImportRules : AssetPostprocessor
             importer.importAnimation = assetPath.Contains("/TheWrapper/");
             return;
         }
-        // Frankie (the monster) plays his own animations on his own skeleton: "Generic", no retargeting.
-        if (assetPath.Contains("/Characters/Frankie/"))
+        // The monster (Frankie; since 2026-10-28 the Ridgeback's body) plays his own animations on his own
+        // skeleton: "Generic", no retargeting.
+        if (assetPath.Contains("/Characters/Frankie/") || assetPath.Contains("/Characters/Ridgeback/"))
         {
             importer.animationType = ModelImporterAnimationType.Generic;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
@@ -52,15 +53,17 @@ public class ImportRules : AssetPostprocessor
         importer.importAnimation = true;
     }
 
-    // TheWrapper's and Frankie's walk, run and idle repeat; the attack, scream and wall slam play once.
+    // TheWrapper's, Frankie's and the Ridgeback's walk, run (CHASE) and idle repeat; the attack, scream
+    // (NOTICE) and wall slam play once.
     void OnPreprocessAnimation()
     {
-        if (!assetPath.Contains("/Characters/TheWrapper/") && !assetPath.Contains("/Characters/Frankie/")) return;
+        if (!assetPath.Contains("/Characters/TheWrapper/") && !assetPath.Contains("/Characters/Frankie/") && !assetPath.Contains("/Characters/Ridgeback/")) return;
         var importer = (ModelImporter)assetImporter;
         var clips = importer.defaultClipAnimations;
         foreach (var clip in clips)
         {
-            clip.loopTime = clip.name.Contains("Walk") || clip.name.Contains("Run") || clip.name.Contains("Idle");
+            string n = clip.name.ToLowerInvariant();
+            clip.loopTime = n.Contains("walk") || n.Contains("run") || n.Contains("idle") || n.Contains("chase");
             clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;   // the AI moves the body, not the clip
             clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;
         }

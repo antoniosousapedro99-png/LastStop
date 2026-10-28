@@ -54,8 +54,8 @@ Something lives down there.
   - a worker afraid of **death** becomes a **Ridgeback**, shambling undead forever.
 - The missing workers on the posters are among the victims. Players should slowly realise the monsters are those people, each turned into their own worst fear, and that they might be next.
 - **Planned creatures (assets not bought yet):**
-  - **Frankie is a placeholder**, most likely to be replaced by the **Ridgeback** (by Codyanka): same AI and behaviour, new body. The Wrapped and Clawman (Codyanka) are alternatives.
-- **The entity shows itself only as shadow figures** at the corner of your eye or the edge of the darkness: there for a moment, gone when you look.
+  - **Frankie now has the Ridgeback's body** (Codyanka; built 28 October): same AI and behaviour. The Wrapped and Clawman (Codyanka) remain options for later creatures.
+- **The entity shows itself only as shadow figures** (built 28 October): every 3-5 minutes underground, a pitch-black silhouette of an ordinary man stands at the corner of your eye, against something lit, facing you. The moment you look at it, it's gone, silently. It also goes after 4 s or if you come within 4 m, and never appears during a chase or while you hide.
 - **Each section of the game focuses on one fear; the last is the player character's own**.
 - **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, OCD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
   - **His fear: being forgotten.** The final section is built from it.
@@ -124,11 +124,11 @@ Something lives down there.
 
 ## 3. The threat: Frankie (Built)
 
-**Frankie** is a 2.1 m tall, gaunt, long-armed creature with bulging eyes and bared teeth (the "Big Frankie" model, with its top hat removed), using his own animations: a hunched walk, run, idle, roar and claw lunge.
+**Frankie** (the squatters' name for him) now has the body of **the Ridgeback** (by Codyanka, since 28 October): a 2.0 m, pale, skeletal undead man, the worker who feared death, with his own idle, hunched walk, frantic chase, "notice" (his scream) and claw attack.
 
 **History:**
-- Earlier placeholders were tried and dropped: BagMan, then "The Wrapper", then "The Pale Man".
-- Frankie replaced them on 24 October.
+- Earlier placeholders were tried and dropped: BagMan, then "The Wrapper", then "The Pale Man", then the "Big Frankie" model (24-28 October).
+- On 28 October the Ridgeback's body replaced Big Frankie's; the name Frankie, the AI and the sounds stayed.
 - The stalker code doesn't depend on any one model.
 
 ### Senses
@@ -407,7 +407,14 @@ All of this happened between **20 and 28 October 2026**.
     - concrete lower-level floors;
     - a **pipe and machinery audit** (correct textures, logical connections);
     - messier litter.
-11. **Day 9 (28 Oct):** gaps around the stairwell closed. (Work continues.)
+11. **Day 9 (28 Oct):**
+    - stairwell gaps closed with grey paving;
+    - Frankie slower (3.5 m/s chase) and sprint longer (8 s);
+    - every pipe fixed (they were drawn inside out), hung from hangers or strapped to walls, no loose ends;
+    - no litter on the tracks, chip bags only on two benches;
+    - **the story was rewritten**: fear made flesh, one fear per station, J. Sousa, the metro as his psyche, two endings;
+    - **shadow figures** (the entity) built;
+    - **the Ridgeback** became Frankie's body.
 
 ---
 

@@ -5,12 +5,24 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.AI;
 
-// Frankie (Big Frankie, converted in Blender by Tools/Blender/convert_frankie.py: hat removed, his own
-// idle, walk, run, roar and attack), his walkable area, his arrival after the power comes back, the
-// chase music, and the player's health.
+// Frankie, the monster: since 2026-10-28 he has the Ridgeback's body (the worker who feared death, pale
+// skin) and its own idle, walk, chase, notice and attack; his AI, senses and sounds are unchanged. Also his
+// walkable area, his arrival, the chase music, and the player's health.
+// (The old Big Frankie model is still in Characters/Frankie, used by nothing but ShadowFigureModel.)
 public static partial class LookTestBuilder
 {
     const string FrankieDir = ArtDir + "/Characters/Frankie";
+    const string MonsterFbx = ArtDir + "/Characters/Ridgeback/Ridgeback.fbx";
+    static readonly System.Collections.Generic.Dictionary<string, string> MonsterTextures = new System.Collections.Generic.Dictionary<string, string>
+    {
+        { "PSX_ManThing", "Characters/Ridgeback/ManThing_pale.png" },
+    };
+    const float MonsterHeight = 2f;
+    // His animation clips (by the end of their names) for each state the AI plays.
+    static readonly System.Collections.Generic.Dictionary<string, string> MonsterClips = new System.Collections.Generic.Dictionary<string, string>
+    {
+        { "Idle", "_IDLE" }, { "Walk", "_WALK" }, { "Run", "_CHASE" }, { "Attack", "_ATTACK" }, { "Scream", "_NOTICE" },
+    };
     // His three textures, by material name. Every copy of his model must pass these (the materials are
     // shared files, so a copy made without them would wipe them for him too).
     static readonly System.Collections.Generic.Dictionary<string, string> FrankieTextures = new System.Collections.Generic.Dictionary<string, string>
@@ -29,31 +41,30 @@ public static partial class LookTestBuilder
         man.transform.SetParent(root);
         man.transform.position = FrankieSpawn;
         man.transform.rotation = Quaternion.Euler(0f, 90f, 0f);   // facing the station
-        var model = Model(FrankieDir + "/Frankie.fbx", null, man.transform, null, 1f, 0f, FrankieTextures);
-        model.transform.localRotation = Load<GameObject>(FrankieDir + "/Frankie.fbx").transform.localRotation;   // the file already faces forward
-        float height = Bounds(model).size.y;
-        model.transform.localScale *= 2.1f / height;                   // 2.1 m (the file has him at 4.2 m)
+        var model = Model(MonsterFbx, null, man.transform, null, 1f, 0f, MonsterTextures);
+        model.transform.localRotation = Load<GameObject>(MonsterFbx).transform.localRotation;   // the file already faces forward
         model.transform.localPosition = Vector3.zero;
-        // Stand him on the floor in his idle pose (his default pose holds the feet higher than the animations do):
-        // measure how far the soles reach below the foot bones in the default pose, then pose him and use the bones.
-        float soleBelowBones = LowestFootBone(model) - Bounds(model).min.y;
-        var idle = AssetDatabase.LoadAllAssetsAtPath(FrankieDir + "/Frankie.fbx").OfType<AnimationClip>().First(c => c.name.EndsWith("Idle"));
+        var idle = AssetDatabase.LoadAllAssetsAtPath(MonsterFbx).OfType<AnimationClip>().First(c => c.name.EndsWith(MonsterClips["Idle"]));
+        // 2 m tall standing in his idle pose, his soles on the floor (measured on the posed body itself).
         idle.SampleAnimation(model, 0f);
-        model.transform.localPosition = new Vector3(0f, man.transform.position.y - (LowestFootBone(model) - soleBelowBones), 0f);
+        var (low, high) = PosedHeights(model);
+        model.transform.localScale *= MonsterHeight / (high - low);
+        idle.SampleAnimation(model, 0f);
+        model.transform.localPosition = new Vector3(0f, man.transform.position.y - PosedHeights(model).low, 0f);
         foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>()) r.updateWhenOffscreen = true;
 
         var animator = model.GetComponent<Animator>();
         if (!animator) animator = model.AddComponent<Animator>();
-        animator.avatar = AssetDatabase.LoadAllAssetsAtPath(FrankieDir + "/Frankie.fbx").OfType<Avatar>().First();
+        animator.avatar = AssetDatabase.LoadAllAssetsAtPath(MonsterFbx).OfType<Avatar>().First();
         animator.runtimeAnimatorController = FrankieController();
         animator.applyRootMotion = false;
         animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
         var capsule = man.AddComponent<CapsuleCollider>();
-        capsule.center = new Vector3(0f, 1.05f, 0f); capsule.height = 2.1f; capsule.radius = 0.3f;
+        capsule.center = new Vector3(0f, MonsterHeight * 0.5f, 0f); capsule.height = MonsterHeight; capsule.radius = 0.3f;
 
         var agent = man.AddComponent<NavMeshAgent>();
-        agent.radius = 0.35f; agent.height = 2.1f; agent.speed = 0.9f;
+        agent.radius = 0.35f; agent.height = MonsterHeight; agent.speed = 0.9f;
         agent.acceleration = 10f; agent.angularSpeed = 180f; agent.stoppingDistance = 0.5f;   // 180: turns smoothly, not snapping round
         agent.autoTraverseOffMeshLink = false;   // FrankieAI leaps across links itself, in an arc
         // The walkable area floats a few centimetres above the real floor; lower him by that gap so his feet touch it.
@@ -61,7 +72,7 @@ public static partial class LookTestBuilder
 
         var eyes = new GameObject("Eyes").transform;
         eyes.SetParent(man.transform, false);
-        eyes.localPosition = new Vector3(0f, 1.95f, 0.1f);
+        eyes.localPosition = new Vector3(0f, MonsterHeight - 0.15f, 0.1f);
         var senses = man.AddComponent<FrankieSenses>();
         senses.eyes = eyes;
 
@@ -71,6 +82,12 @@ public static partial class LookTestBuilder
 
         var ai = man.AddComponent<FrankieAI>();
         ai.animator = animator;
+        // The Ridgeback's clips, measured in the Editor: his planted foot slides back about 0.4 m/s in the walk and 1.15 m/s
+        // in the chase, and the claws reach furthest 0.6 s into the attack. The AI speeds the clips up to match
+        // how fast he really moves (the chase plays up to 3x, a frantic scuttle). Footfalls: where each foot lands.
+        ai.clipWalkSpeed = 0.4f; ai.clipRunSpeed = 1.15f; ai.clipHitAt = 0.6f;
+        ai.walkFootfalls = new[] { 0.02f, 0.52f }; ai.runFootfalls = new[] { 0.43f, 0.98f };
+        ai.maxWalkPlayback = 2.3f; ai.maxRunPlayback = 3f;
         ai.voice = voice; ai.feet = feet;
         // His own sounds, made from the Darkworld pack with ffmpeg (see Assets/Art/CREDITS.md).
         ai.breaths = Clips("Frankie/FrankieBreath1", "Frankie/FrankieBreath2", "Frankie/FrankieBreath3");
@@ -175,21 +192,36 @@ public static partial class LookTestBuilder
         }
     }
 
-    // Idle, Walk, Run, Attack and Scream, Frankie's own animations; FrankieAI cross-fades between them.
+    // Idle, Walk, Run, Attack and Scream, the monster's own animations; FrankieAI cross-fades between them.
     static AnimatorController FrankieController()
     {
-        string path = FrankieDir + "/Frankie.controller";
+        string path = "Assets/Art/Models/Characters/Ridgeback/Monster.controller";
         AssetDatabase.DeleteAsset(path);
         var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
-        var clips = AssetDatabase.LoadAllAssetsAtPath(FrankieDir + "/Frankie.fbx").OfType<AnimationClip>().Where(c => !c.name.StartsWith("__")).ToArray();
+        var clips = AssetDatabase.LoadAllAssetsAtPath(MonsterFbx).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__")).ToArray();
         var machine = controller.layers[0].stateMachine;
         foreach (var state in new[] { "Idle", "Walk", "Run", "Attack", "Scream" })
         {
             var s = machine.AddState(state);
-            s.motion = clips.First(c => c.name.EndsWith(state));
+            s.motion = clips.First(c => c.name.EndsWith(MonsterClips[state]));
             if (state == "Idle") machine.defaultState = s;
         }
         return controller;
+    }
+
+    // The lowest and highest points of a model's skinned body in its current pose, in world space. (A skinned
+    // renderer's bounds don't follow a pose sampled in the Editor, so the posed mesh is baked and measured.)
+    static (float low, float high) PosedHeights(GameObject model)
+    {
+        float low = float.MaxValue, high = float.MinValue;
+        foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>())
+        {
+            var mesh = new Mesh();
+            r.BakeMesh(mesh, true);
+            foreach (var v in mesh.vertices) { float y = r.transform.TransformPoint(v).y; low = Mathf.Min(low, y); high = Mathf.Max(high, y); }
+            Object.DestroyImmediate(mesh);
+        }
+        return (low, high);
     }
 
     // The height of the lowest foot bone (foot / foot2 on either side) in the model's current pose.
