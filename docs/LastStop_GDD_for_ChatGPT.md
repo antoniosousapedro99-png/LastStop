@@ -233,7 +233,7 @@ He only sees what's in front of him with a clear view.
 - **Fuse 1** is in the **squatter camp on the service level**.
   - The service level is reached through a rusted maintenance door in the west tunnel and steel stairs 8 m down.
   - It's an industrial area: a machinery hall, a storage room and the camp, mostly dark.
-  - In the camp: mattresses, candles, a radio hissing static, and notes such as "Took the fuse so the maintenance guys can't turn the lights back on. Frankie can smell you. Don't let them."
+  - In the camp: mattresses, candles, a radio hissing static, and notes such as "Took the fuse so the maintenance guys can't turn the lights back on. If the power comes back they'll clear us out. We've got nowhere else to go."
 - **Fuse 2** is locked in a blue platform cabinet. Its key is on a bench inside the **west train**, which you climb into from a crate.
 
 **Frankie wakes** 7 s after you first reach the bottom of the service stairs. His shriek echoes from the west tunnel, he appears there, then searches and roams both levels.
@@ -281,7 +281,7 @@ He only sees what's in front of him with a clear view.
 3. About **60 s** later, a thud on the stalled train's roof: Frankie has followed you.
 
 **Goal:** restart the **backup generator** (in a service room off the mezzanine). It needs:
-- **2 fuel cans**: one in the station master's office (a save room with a candle and a terminal), one in the stores cage on the lower level;
+- **2 fuel cans**: one in the driver's cab of the train parked in the north-east tunnel (get in through a forced side door), one in the stores cage on the lower level. The station master's office is still the save room (a candle and a terminal).
 - **a spark plug**, locked in the office. The office key is on the ticket booth's back counter.
 
 The first pull of the starter cord only coughs (Frankie may hear it). The second roars into life.
