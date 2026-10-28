@@ -9,6 +9,7 @@ using UnityEngine.AI;
 //   walls, floors and ceilings that meet edge to edge;
 // - ChainFence: chain-link fencing (the Industrial Exterior pack's see-through fence image) on steel posts;
 // - Pipe / PipeRun: round pipes along walls and ceilings (8-sided, PS1 style), joints filled in;
+//   PipeSupports then hangs each one from the ceiling or bolts it to the wall it runs along;
 // - CagedBulb: a dim bulb in a wire cage, the only light down there;
 // - ControlPanel and ElectricCabinet: control boxes (with cable bundles up to the ceiling) and cabinets on
 //   the walls (not the circuit-breaker model, which is kept for the real fuse box, the objective);
@@ -20,6 +21,8 @@ public static partial class LookTestBuilder
     // Pipe images that are sheets of several metal pieces: only this column (left and right edge, 0..1) is
     // wrapped round the pipe, so every pipe shows the same piece, with its seams as rings along it.
     static readonly Dictionary<Material, Vector2> pipeStrip = new Dictionary<Material, Vector2>();
+    // Every pipe built this run (its centre line and radius), for PipeSupports.
+    static readonly List<(Vector3 a, Vector3 b, float radius, Transform parent)> builtPipes = new List<(Vector3, Vector3, float, Transform)>();
 
     static void IndustrialMaterials()
     {
@@ -165,6 +168,7 @@ public static partial class LookTestBuilder
     // ends so joints in a run look filled. No collider (they're up on the walls and ceilings).
     static GameObject Pipe(Transform parent, string name, Vector3 a, Vector3 b, float radius, Material mat)
     {
+        if (radius >= 0.045f) builtPipes.Add((a, b, radius, parent));   // thin cables and conduits lie flush already
         Vector3 dir = (b - a).normalized;
         a -= dir * radius; b += dir * radius;
         float length = Vector3.Distance(a, b);
@@ -183,10 +187,12 @@ public static partial class LookTestBuilder
             verts.Add(ring); uvs.Add(new Vector2(u, 0f));
             verts.Add(ring + Vector3.forward * length); uvs.Add(new Vector2(u, length / tile));
         }
+        // Wound so each side faces outward (Unity draws only a triangle's front): the other way round, the
+        // outside was invisible and you saw the inside of the far wall of the pipe instead.
         for (int i = 0; i < sides; i++)
         {
             int k = i * 2;
-            tris.AddRange(new[] { k, k + 1, k + 3, k, k + 3, k + 2 });
+            tris.AddRange(new[] { k, k + 3, k + 1, k, k + 2, k + 3 });
         }
         // End caps.
         foreach (float z in new[] { 0f, length })
@@ -215,6 +221,60 @@ public static partial class LookTestBuilder
     {
         for (int i = 1; i < points.Length; i++)
             Pipe(parent, name + "_" + i, points[i - 1], points[i], radius, mat);
+    }
+
+    // Holds up every pipe built this run, so none of them hang in the air: along a level pipe every ~2 m,
+    // a steel strap to the wall if one runs right beside it, otherwise a hanger rod up to the ceiling; along
+    // an upright pipe, a strap to the wall behind it every 1.5 m. Run once everything solid is built.
+    static void PipeSupports()
+    {
+        Physics.SyncTransforms();
+        int straps = 0, hangers = 0;
+        foreach (var (a, b, r, parent) in builtPipes)
+        {
+            Vector3 along = b - a;
+            float length = along.magnitude;
+            if (length < 0.4f) continue;
+            Vector3 dir = along / length;
+            bool upright = Mathf.Abs(dir.y) > 0.9f;
+            if (Mathf.Abs(dir.y) > 0.3f && !upright) continue;   // a slanted pipe: leave it
+            float step = upright ? 1.5f : 2f;
+            int count = Mathf.Max(1, Mathf.RoundToInt(length / step));
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 p = a + along * ((i + 0.5f) / count);
+                // The nearest wall beside the pipe (level pipes: either side across it; upright: all round).
+                Vector3 across = upright ? Vector3.forward : Vector3.Cross(Vector3.up, dir).normalized;
+                Vector3[] sides = upright ? new[] { Vector3.forward, Vector3.back, Vector3.left, Vector3.right } : new[] { across, -across };
+                RaycastHit wall = default; bool nearWall = false;
+                foreach (var s in sides)
+                    if (Physics.Raycast(p, s, out var h, r + 0.45f, ~0, QueryTriggerInteraction.Ignore) && (!nearWall || h.distance < wall.distance)) { wall = h; nearWall = true; }
+                if (nearWall)
+                {
+                    float gap = wall.distance - r;
+                    if (gap < 0.015f) continue;   // already touching
+                    // A strap from the pipe's centre to the wall, 4 cm wide and 5 cm tall.
+                    Vector3 n = wall.normal, c = (p + wall.point) * 0.5f;
+                    Vector3 size = new Vector3(Mathf.Abs(n.x) * wall.distance, upright ? 0.05f : 0.05f, Mathf.Abs(n.z) * wall.distance);
+                    Vector3 width = upright ? Vector3.Cross(Vector3.up, n) : dir;
+                    size += new Vector3(Mathf.Abs(width.x), 0f, Mathf.Abs(width.z)) * 0.04f;
+                    Object.DestroyImmediate(Box("PipeStrap", parent, c, size, fencePost).GetComponent<Collider>());
+                    straps++;
+                    continue;
+                }
+                if (upright) continue;   // free-standing riser: held at its ends
+                if (!Physics.Raycast(p, Vector3.up, out var up, 3f, ~0, QueryTriggerInteraction.Ignore)) continue;
+                if (up.distance - r < 0.015f) continue;
+                var rod = Prim(PrimitiveType.Cylinder, "PipeHanger", parent, (p + up.point) * 0.5f, new Vector3(0.025f, up.distance * 0.5f, 0.025f), fencePost);
+                Object.DestroyImmediate(rod.GetComponent<Collider>());
+                // A clamp band round the pipe where the rod meets it.
+                var band = Prim(PrimitiveType.Cylinder, "PipeClamp", parent, p, new Vector3(r * 2f + 0.02f, 0.025f, r * 2f + 0.02f), fencePost);
+                band.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
+                Object.DestroyImmediate(band.GetComponent<Collider>());
+                hangers++;
+            }
+        }
+        Debug.Log("Pipe supports: " + straps + " wall straps, " + hangers + " ceiling hangers");
     }
 
     // ---------------------------------------------------------------- lights

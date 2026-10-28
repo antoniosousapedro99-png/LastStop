@@ -37,6 +37,7 @@ public static partial class LookTestBuilder
     {
         tileSize.Clear();
         tileOrigin.Clear();
+        builtPipes.Clear();
         EnsureFolder(MatDir);
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         root = new GameObject("Level").transform;
@@ -220,6 +221,7 @@ public static partial class LookTestBuilder
         BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildScares();            // one-time scares (after the lamps and the monster model exist)
         BuildCanal();             // Station 2, Canal St Junction, far beyond z 300 (needs the monster)
+        PipeSupports();           // hangers and wall straps for every pipe (needs all the walls and ceilings)
         BuildMenus();             // last: the menus switch the player off until "New game"
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves

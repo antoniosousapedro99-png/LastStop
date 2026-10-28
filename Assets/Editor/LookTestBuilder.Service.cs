@@ -381,12 +381,12 @@ public static partial class LookTestBuilder
         hiss.loop = true; hiss.playOnAwake = true; hiss.volume = 0.45f; hiss.spatialBlend = 1f;
         hiss.rolloffMode = AudioRolloffMode.Linear; hiss.minDistance = 1.5f; hiss.maxDistance = 14f;
 
-        // Rubbish: bags, cans, chip packets, flattened cardboard for bedding.
+        // Rubbish: bags, cans, flattened cardboard for bedding (no chip bags: those are only on Canal St's benches).
         Kit("Props/Trash/TrashBagA.fbx", null, "Props/Trash/TrashBagBlack.png", g, new Vector3(-32.8f, f, 42.8f), 10f, 0.5f);
         Kit("Props/Trash/TrashBagA.fbx", null, "Props/Trash/TrashBagBlack.png", g, new Vector3(-33.4f, f, 42.6f), 70f, 0.45f);
         Kit("Props/Trash/TrashAndDebris.fbx", "Cardboard_Cutout_1", "Props/Trash/CardboardPaper.png", g, new Vector3(-38.5f, f + 0.015f, 50.6f), 90f, 0.02f);   // lifted off the floor so they don't flicker
-        string[] litter = { "Can_1_Crushed", "Can_2", "Can_3_Crushed", "Chip_Bag_1", "Can_5_Crushed", "Chip_Bag_3", "Can_7" };
-        string[] litterTex = { "CansRusty", "Cans", "Cans", "Bags", "Cans", "Bags", "Cans" };
+        string[] litter = { "Can_1_Crushed", "Can_2", "Can_3_Crushed", "Can_5_Crushed", "Can_7" };
+        string[] litterTex = { "CansRusty", "Cans", "Cans", "Cans", "Cans" };
         var rng = new System.Random(3);
         for (int i = 0; i < litter.Length; i++)
             Kit("Props/Trash/TrashAndDebris.fbx", litter[i], "Props/Trash/" + litterTex[i] + ".png", g,

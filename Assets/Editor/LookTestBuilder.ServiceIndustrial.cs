@@ -15,7 +15,8 @@ public static partial class LookTestBuilder
         float f = SvcFloor;
 
         // ---- corridor: a pipe along the ceiling that rises into the hall, conduits, a control box, a bulb
-        PipeRun(g, "CorridorPipe", 0.09f, pipeRust, new Vector3(-54.6f, -6.55f, 34.1f), new Vector3(-54.6f, -6.55f, 40.4f), new Vector3(-54.6f, -4.85f, 40.4f), new Vector3(-54.6f, -4.85f, 42.5f));
+        // (It comes down out of the corridor ceiling by the stairs, and rises into the hall clear of the wall pipes.)
+        PipeRun(g, "CorridorPipe", 0.09f, pipeRust, new Vector3(-54.6f, -6.3f, 34.6f), new Vector3(-54.6f, -6.55f, 34.6f), new Vector3(-54.6f, -6.55f, 40.6f), new Vector3(-54.6f, -4.85f, 40.6f), new Vector3(-54.6f, -4.85f, 42.5f));
         Conduits(g, new Vector3(-55.5f, -6.65f, 34.1f), new Vector3(-55.5f, -6.65f, 39.7f), Vector3.right);
         ControlPanel(g, new Vector3(-52.5f, -7.8f, 35.6f), Vector3.left);
         CagedBulb(g, "CorridorBulb", new Vector3(-53.6f, -6.55f, 37.2f), 1.6f, 5f, flicker: true);
@@ -27,16 +28,16 @@ public static partial class LookTestBuilder
         Pipe(g, "HallPipeA", new Vector3(-68f, -4.85f, 42.5f), new Vector3(-44f, -4.85f, 42.5f), 0.12f, pipeRust);
         Pipe(g, "HallPipeB", new Vector3(-68f, -4.8f, 43.1f), new Vector3(-44f, -4.8f, 43.1f), 0.07f, pipeGreen);
         Pipe(g, "HallMain", new Vector3(-68f, -4.9f, 49.4f), new Vector3(-44f, -4.9f, 49.4f), 0.16f, pipeSteel);
-        PipeRun(g, "GeneratorFeed", 0.1f, pipeSteel, new Vector3(-62f, -4.9f, 49.4f), new Vector3(-62f, -4.9f, 51.3f), new Vector3(-62f, -7.5f, 51.3f));
-        PipeRun(g, "TurbineFeed", 0.1f, pipeSteel, new Vector3(-50f, -4.9f, 49.4f), new Vector3(-50f, -4.9f, 50.8f), new Vector3(-50f, -7.4f, 50.8f));
-        // South wall: two pipes either side of the doorway, each dropping into a pump.
-        foreach (var (x0, x1) in new[] { (-68f, -55.5f), (-52.5f, -44f) })
-        {
-            Pipe(g, "SouthWallPipe", new Vector3(x0, -7f, 40.25f), new Vector3(x1, -7f, 40.25f), 0.08f, pipeRust);
-            Pipe(g, "SouthWallPipe2", new Vector3(x0, -6.6f, 40.22f), new Vector3(x1, -6.6f, 40.22f), 0.05f, pipeGreen);
-        }
+        PipeRun(g, "GeneratorFeed", 0.1f, pipeSteel, new Vector3(-62f, -4.9f, 49.4f), new Vector3(-62f, -4.9f, 51.3f), new Vector3(-62f, -7.75f, 51.3f));
+        PipeRun(g, "TurbineFeed", 0.1f, pipeSteel, new Vector3(-50f, -4.9f, 49.4f), new Vector3(-50f, -4.9f, 50.8f), new Vector3(-50f, -7.65f, 50.8f));
+        // South wall: two pipes the whole width of the wall, stepping up over the doorway (one inside the
+        // other), and a feed from the lower one into each pump.
+        PipeRun(g, "SouthWallPipe", 0.08f, pipeRust, new Vector3(-68f, -7f, 40.25f), new Vector3(-55.8f, -7f, 40.25f), new Vector3(-55.8f, -5.9f, 40.25f),
+                new Vector3(-52.2f, -5.9f, 40.25f), new Vector3(-52.2f, -7f, 40.25f), new Vector3(-44f, -7f, 40.25f));
+        PipeRun(g, "SouthWallPipe2", 0.05f, pipeGreen, new Vector3(-68f, -6.6f, 40.22f), new Vector3(-56.1f, -6.6f, 40.22f), new Vector3(-56.1f, -5.6f, 40.22f),
+                new Vector3(-51.9f, -5.6f, 40.22f), new Vector3(-51.9f, -6.6f, 40.22f), new Vector3(-44f, -6.6f, 40.22f));
         foreach (float x in new[] { -61f, -58.5f, -48f })
-            Pipe(g, "PumpDrop", new Vector3(x, -7f, 40.25f), new Vector3(x, -8.65f, 40.25f), 0.06f, pipeRust);
+            PumpFeed(g, x, 41f, 40.25f, -7f, f);
         // East wall: risers floor to ceiling.
         foreach (float z in new[] { 41.4f, 42.1f })
             Pipe(g, "EastRiser", new Vector3(-44.22f, f, z), new Vector3(-44.22f, -4.5f, z), 0.08f, pipeGreen);

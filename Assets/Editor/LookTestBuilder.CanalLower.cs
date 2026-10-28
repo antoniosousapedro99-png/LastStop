@@ -108,10 +108,12 @@ public static partial class LookTestBuilder
                 while (e + 1 < rows && Corridor(LowerMap[e + 1][c])) e++;
                 if (e - r >= 2)
                 {
-                    float x = LowerOrigin.x + (c + 0.5f) * LowerCell - 0.45f;
+                    float x = LowerOrigin.x + (c + 0.5f) * LowerCell - 0.45f, y = SvcFloor + 2.5f;
                     float z0 = LowerOrigin.z + r * LowerCell, z1 = LowerOrigin.z + (e + 1) * LowerCell;
-                    if (r == 0) z0 = 329.6f;   // the first corridor carries on to the stairs
-                    Pipe(g, "PipeZ", new Vector3(x, SvcFloor + 2.5f, z0), new Vector3(x, SvcFloor + 2.5f, z1), 0.07f, pipeGreen);
+                    if (r == 0)   // the first corridor carries on to the stairs, where the pipe turns up into the ceiling
+                        PipeRun(g, "PipeZ", 0.07f, pipeGreen, new Vector3(x, SvcFloor + 3f, 330f), new Vector3(x, y, 330f), new Vector3(x, y, z1));
+                    else
+                        Pipe(g, "PipeZ", new Vector3(x, y, z0), new Vector3(x, y, z1), 0.07f, pipeGreen);
                 }
                 r = e + 1;
             }
@@ -147,7 +149,8 @@ public static partial class LookTestBuilder
             Kit("Props/Plumbing/Pump.fbx", null, "Props/Plumbing/Pump.png", g, new Vector3(x, f, 343f), 0f, 0.6f, true);
             PumpFeed(g, x, 343f, 343.78f, f + 2f, f);
         }
-        Pipe(g, "PumpHeader", new Vector3(-92f, f + 2f, 343.78f), new Vector3(-86f, f + 2f, 343.78f), 0.1f, pipeRust);
+        // The header comes out of the west wall and turns up into the ceiling before the doorway in the east wall.
+        PipeRun(g, "PumpHeader", 0.1f, pipeRust, new Vector3(-92f, f + 2f, 343.78f), new Vector3(-86.5f, f + 2f, 343.78f), new Vector3(-86.5f, f + 3f, 343.78f));
         ControlPanel(g, new Vector3(-86f, f + 1.5f, 340.9f), Vector3.left);
         HidingLockerAt(g, "HidingLocker_CanalLowerPumps", new Vector3(-91.68f, f, 341.2f), 90f);
 

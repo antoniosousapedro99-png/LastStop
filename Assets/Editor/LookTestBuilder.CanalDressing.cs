@@ -25,8 +25,6 @@ public static partial class LookTestBuilder
         Scatter(g, new Vector3(56.5f, mezz, z + 10.5f), new Vector2(6.5f, 9f), 15, 14);  // mezzanine, platform side
         Scatter(g, new Vector3(64f, mezz, z + 10.5f), new Vector2(1.2f, 1.6f), 5, 15);   // a few in the gate aisle
         Scatter(g, new Vector3(72f, mezz, z + 10.5f), new Vector2(6.5f, 9f), 15, 16);    // street side
-        Scatter(g, new Vector3(-68f, -1.3f, z + 1.2f), new Vector2(8f, 0.4f), 3, 17);    // blown down the arrival tunnel
-        Scatter(g, new Vector3(-105f, -1.3f, z + 1.2f), new Vector2(8f, 0.4f), 3, 18);
 
         // ---- snacks and drinks left behind on the benches (a chip bag on just two of them)
         int bench = 0;
@@ -164,11 +162,14 @@ public static partial class LookTestBuilder
         {
             var k = kinds[rng.Next(kinds.Length)];
             Vector2 p = Random2(rng) * radius;
+            // Only where there's floor at this height (the platform or mezzanine), never out over the track pit.
+            Vector3 spot = centre + new Vector3(p.x, 0f, p.y);
+            if (!Physics.Raycast(spot + Vector3.up, Vector3.down, out var floor, 3f, ~0, QueryTriggerInteraction.Ignore) || Mathf.Abs(floor.point.y - centre.y) > 0.05f) continue;
             var go = ModelPiece(TrashFbx, k.piece, parent, Tex2("Props/Trash/" + k.tex + ".png"), 1f);
             var b = Bounds(go);
             go.transform.localScale *= k.size / Mathf.Max(0.001f, Mathf.Max(b.size.x, b.size.y, b.size.z));
             go.transform.rotation = (k.flat ? Messy(rng, 5f) : OnItsSide(rng)) * go.transform.rotation;
-            StandOn(go, centre + new Vector3(p.x, 0.008f, p.y));   // a hair above the floor, so flat paper doesn't flicker
+            StandOn(go, floor.point + Vector3.up * 0.008f);   // a hair above the floor, so flat paper doesn't flicker
         }
     }
 
