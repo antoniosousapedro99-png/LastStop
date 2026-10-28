@@ -54,7 +54,9 @@ Something lives down there.
   - a worker afraid of **death** becomes a **Ridgeback**, shambling undead forever.
 - The missing workers on the posters are among the victims. Players should slowly realise the monsters are those people, each turned into their own worst fear, and that they might be next.
 - **Planned creatures (assets not bought yet):**
-  - The Wrapped, Ridgeback or Clawman (by Codyanka) may replace Frankie as the stalker of Stations 1–2.
+  - **Frankie is a placeholder**, most likely to be replaced by the **Ridgeback** (by Codyanka): same AI and behaviour, new body. The Wrapped and Clawman (Codyanka) are alternatives.
+- **The entity shows itself only as shadow figures** at the corner of your eye or the edge of the darkness: there for a moment, gone when you look.
+- **Each section of the game focuses on one fear; the last is the player character's own** (not decided yet).
   - "Necrothread: The Pulse of Rotting Flesh" (imaginais) is kept for a later monster.
   - imaginais' eyeball spider creatures fit too.
 
