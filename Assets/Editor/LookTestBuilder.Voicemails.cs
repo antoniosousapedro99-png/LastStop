@@ -52,6 +52,28 @@ public static partial class LookTestBuilder
             });
     }
 
+    // Sousa's family photo for the inventory: Sunday lunch years ago (the director's own photo, shrunk to a
+    // PS1-style 112 x 98 picture with 40 colours, so the faces are soft blocks). Cream paper on the back, and
+    // a pale layer in front that PhotoFade makes more solid for every call he lets ring out.
+    static GameObject FamilyPhotoModel(Transform parent)
+    {
+        var photo = new GameObject("FamilyPhoto");
+        photo.transform.SetParent(parent, false);
+        const float w = 0.15f, h = 0.13f;
+        var front = Prim(PrimitiveType.Quad, "Picture", photo.transform, parent.position, new Vector3(w, h, 1f),
+                         Mat("FamilyPhoto", Load<Texture2D>("Assets/Art/Textures/Personal/FamilyPhoto.png"), Color.white, 1f, 0.35f));
+        front.transform.localRotation = Quaternion.identity;   // a quad shows its front along -Z, toward the preview camera
+        var back = Prim(PrimitiveType.Quad, "Back", photo.transform, parent.position, new Vector3(w, h, 1f), Mat("PhotoBack", null, new Color(0.86f, 0.83f, 0.74f), 1f, 0.2f));
+        back.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+        back.transform.localPosition = new Vector3(0f, 0f, 0.001f);
+        var fade = Prim(PrimitiveType.Quad, "Fade", photo.transform, parent.position, new Vector3(w, h, 1f), TransparentMat("PhotoFadeLayer", new Color(0f, 0f, 0f, 0f), 0.1f));
+        fade.transform.localRotation = Quaternion.identity;
+        fade.transform.localPosition = new Vector3(0f, 0f, -0.001f);
+        photo.AddComponent<PhotoFade>().overlay = fade.GetComponent<Renderer>();
+        photo.transform.localRotation = Quaternion.Euler(-8f, 0f, 3f);   // held a little tilted
+        return photo;
+    }
+
     // Makes 'phone' a voicemail phone: a faint looping ring at the phone, and the line in Sousa's ear.
     static void VoicemailOn(GameObject phone, string id, string speaker, string[] portuguese, string[] english)
     {

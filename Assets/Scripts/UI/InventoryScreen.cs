@@ -105,6 +105,7 @@ public class InventoryScreen : MonoBehaviour
     void Refresh()
     {
         entries.Clear();
+        Add("Photo", "Family photo", 1, "Family photo. Sunday lunch, years ago. I don't remember the last time we sat like this.");
         Add("Fuse", "Fuse", inventory.fuses, "A glass cartridge fuse. The platform fuse box needs two before the breaker will hold.");
         string battery = Controls.Label(GameAction.SwapBattery), flare = Controls.Label(GameAction.Flare);
         Add("Battery", "Torch battery", inventory.spareBatteries, "A spare battery for your flashlight. Press " + battery + " to swap it in when the light starts to die.");

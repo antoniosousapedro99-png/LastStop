@@ -19,6 +19,7 @@ public class VoicemailPhone : MonoBehaviour, IInteractable
     public float ringDistance = 8f, ringFor = 20f, rearmDistance = 10f;
 
     public bool Heard { get; private set; }
+    public bool Ignored { get; private set; }  // it rang out without being answered (fades his family photo)
     bool ringing, armed = true, playing;
     float ringStarted;
     Transform player;
@@ -36,7 +37,7 @@ public class VoicemailPhone : MonoBehaviour, IInteractable
         float distance = Vector3.Distance(player.position, transform.position);
         if (ringing)
         {
-            if (Time.time - ringStarted > ringFor) StopRinging();
+            if (Time.time - ringStarted > ringFor) { StopRinging(); Ignored = true; }
         }
         else if (!Heard && !playing && armed && distance < ringDistance)
         {
@@ -80,4 +81,5 @@ public class VoicemailPhone : MonoBehaviour, IInteractable
 
     // Loading a save: already listened to, so it stays quiet (it can still be picked up again).
     public void SetHeard() => Heard = true;
+    public void SetIgnored() => Ignored = true;
 }

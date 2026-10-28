@@ -8,6 +8,8 @@ public class ItemTurntable : MonoBehaviour
 {
     public Camera previewCamera;
     public float degreesPerSecond = 40f;
+    public string[] faceForward = { "Photo" };   // flat things (the family photo) sway gently facing the camera instead
+    public float swayDegrees = 14f, swaySpeed = 0.8f;
 
     Transform shown;
 
@@ -26,6 +28,10 @@ public class ItemTurntable : MonoBehaviour
 
     void Update()
     {
-        if (shown) transform.Rotate(0f, degreesPerSecond * Time.unscaledDeltaTime, 0f, Space.World);
+        if (!shown) return;
+        if (System.Array.IndexOf(faceForward, shown.name) >= 0)
+            transform.rotation = Quaternion.Euler(0f, Mathf.Sin(Time.unscaledTime * swaySpeed) * swayDegrees, 0f);
+        else
+            transform.Rotate(0f, degreesPerSecond * Time.unscaledDeltaTime, 0f, Space.World);
     }
 }
