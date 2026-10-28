@@ -414,6 +414,7 @@ All of this happened between **20 and 28 October 2026**.
 ## 8. Open questions and to-do
 
 **Design questions still open:**
+- Before release: a **content note** at the start (suicide and self-harm themes) and a support line in the credits; the director writes the wording.
 - How many safe rooms per station, and what they look like.
 - Station 3 (the sewers), Station 4 and the ending: layout, goals, new scripted horrors.
 - How the liminal entity shows itself, and which fear each missing worker had.

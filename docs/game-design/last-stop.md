@@ -221,6 +221,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 
 ## Open questions (ask before building what they affect)
 
+- **Before release: a content note** at the start (the game deals with suicide and self-harm) and a support line in the credits. The director writes the wording. Important.
 - How many shells exist in total.
 - Safe-room look and count per station.
 - BagMan's behaviour (patrol, hearing, how long the shotgun stuns it).
