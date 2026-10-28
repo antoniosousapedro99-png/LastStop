@@ -60,7 +60,16 @@ Something lives down there.
 - **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, OCD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
   - **His fear: being forgotten.** The final section is built from it.
   - **Revealed by slow hints** scattered through every station, small personal things that only make sense at the end.
-  - **Two endings**, decided by what the player did (or didn't do) along the way. What decides it is still open.
+  - **Two endings** (see below).
+  - **Name: J. Sousa.** Workmates, dispatch and badges use only his surname ("Sousa", "J. Sousa").
+  - **Details are inspired, fictional:** the feelings are real, but names, places and events are made up.
+- **One fear per section (decided 2026-10-28):**
+  - **Station 1, Hollis St: death.** The **Ridgeback** (the worker afraid of death, shambling undead forever) hunts you from the start.
+  - **Station 2, Canal St: spiders.** The spider-fear worker's nest: the Wrapped and eyeball creatures, webs thickening the deeper you go.
+  - **Station 3, the sewers: drowning / water.** Rising water, flooded tunnels, things moving under the surface.
+  - **Station 4: losing your mind.** Derealisation made real: the station repeats, rooms rearrange, you can't trust what you see. The bridge into his own fear.
+  - **The end: being forgotten**, Sousa's own fear.
+- **The two endings are decided by reaching out:** optional moments of connection along the way (answering the calls, finding and keeping pieces of an unsent letter, and the like). Enough of them and **his parents** remember him: he walks out at dawn. Too few and he's forgotten and becomes one of the shadow figures.
   - "Necrothread: The Pulse of Rotting Flesh" (imaginais) is kept for a later monster.
   - imaginais' eyeball spider creatures fit too.
 

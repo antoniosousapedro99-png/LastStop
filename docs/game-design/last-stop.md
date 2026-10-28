@@ -190,7 +190,16 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, OCD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
   - **His fear: being forgotten.** The final section is built from it.
   - **Revealed by slow hints** scattered through every station, small personal things that only make sense at the end.
-  - **Two endings**, decided by what the player did (or didn't do) along the way. What decides it is still open.
+  - **Two endings** (see below).
+  - **Name: J. Sousa.** Workmates, dispatch and badges use only his surname ("Sousa", "J. Sousa").
+  - **Details are inspired, fictional:** the feelings are real, but names, places and events are made up.
+- **One fear per section (decided 2026-10-28):**
+  - **Station 1, Hollis St: death.** The **Ridgeback** (the worker afraid of death, shambling undead forever) hunts you from the start.
+  - **Station 2, Canal St: spiders.** The spider-fear worker's nest: the Wrapped and eyeball creatures, webs thickening the deeper you go.
+  - **Station 3, the sewers: drowning / water.** Rising water, flooded tunnels, things moving under the surface.
+  - **Station 4: losing your mind.** Derealisation made real: the station repeats, rooms rearrange, you can't trust what you see. The bridge into his own fear.
+  - **The end: being forgotten**, Sousa's own fear.
+- **The two endings are decided by reaching out:** optional moments of connection along the way (answering the calls, finding and keeping pieces of an unsent letter, and the like). Enough of them and **his parents** remember him: he walks out at dawn. Too few and he's forgotten and becomes one of the shadow figures.
   - **Necrothread: The Pulse of Rotting Flesh** (imaginais: a person fused with flesh who collapses into a bone-and-limb spider with one eye) is for **later**, as its own monster.
   - The rest of imaginais' monsters (especially the **eyeball spider creatures**) fit the theme.
 - **Station 1 exit (2026-10-24):** the way out is the **train stalled in the east tunnel** (now an open car like the west one, its open end facing the platform, a crate to climb in by, a small driver's cab with the controls and a flickering cab light). The controls need **power** and the **reverser key**; a note taped above them says the spare is in the **staff room desk drawer** (a small steel drawer unit beside the desk). With both, using the controls slots the key in: a clunk, the cab light steadies, the engine whines, and the noise brings the **Pale Man charging** down the tunnel (woken early if he hadn't arrived). The player must **hold the Use button on the dead man's handle for 10 s in total** while looking at the controls; letting go pauses the countdown (time to strike a flare). He can't fit into the cab, but in this finale he lunges in from the crate at the door, with normal hits (two kill). When the countdown fills, the train screeches away and he is left at the door; the screen fades to the **end card** ("END OF STATION 1 / HOLLIS ST", time played, "TO BE CONTINUED"), then the title. The old sealed east train is gone; the title camera now looks at the open car.
