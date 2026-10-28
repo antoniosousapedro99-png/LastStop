@@ -327,9 +327,20 @@ The first pull of the starter cord only coughs (Frankie may hear it). The second
 - **Assets to use:** the Sewer pack's textures already in the project (brick, dirty concrete, rusty metal, mud), the industrial kit from the lower levels (pipes, pumps, control boxes, chain-link, caged bulbs), and the water and splash sounds.
 - **Open questions:** the branches' themes and layout, how the water level is shown and animated, what a valve looks like and how it's turned, the drowning rules (how long you can hold your breath), and the new monster.
 
-### 4.5 Station 4 and the ending zone (Planned, not built)
+### 4.5 Station 4 – the unfinished station (Planned 28 October, not built)
 
-- Station 4: losing your mind (derealisation made real). Not designed yet.
+- **Fear: losing your mind**, derealisation made real. It's the bridge into Sousa's own fear (being forgotten) and the ending.
+- **Place: an unfinished station** on a cancelled line extension, abandoned half-built (more cost-cutting). Sousa reaches it underground after leaving the sewers at the river outfall.
+- **Look:** bare grey concrete, plastic tarps moving in a draught, scaffolding, work lights on stands, half-tiled walls. Liminal and cold.
+- **How the station breaks the rules:**
+  - **Looping corridors:** walk a corridor and come out where you started, subtly changed each time (a sign, a light, a stain).
+  - **Rooms change behind you:** turn around and a doorway is gone, or a room has rearranged.
+- **Goal: collect 3 old photos** of Sousa growing up, scattered through the loops. Each is a memory and fits the "forgotten" theme. **All three are needed at the end:** the final way out (into the ending) only opens once all three are found. They **do not count toward the ending**; only the voicemails decide that.
+- **Threat: only the shadow figures**, more often and closer than before. Never a chase: pure dread before the ending.
+- **Open questions:** the layout and how many loops; what changes on each loop; where the photos are and what each one shows; how the end door looks; any voicemails here (two per station so far; his father is saved for the very end).
+
+### 4.6 The ending zone (Planned, not built)
+
 - The ending: being forgotten, Sousa's own fear, and the two endings.
 
 ---
