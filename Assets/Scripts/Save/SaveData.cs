@@ -33,6 +33,7 @@ public class SaveData
     public List<string> openDoors = new List<string>();   // doors, lockers and cabinets standing open
     public List<string> openDrawers = new List<string>();
     public List<string> firedScares = new List<string>();   // one-time scares that already happened
+    public List<string> heardVoicemails = new List<string>();   // family messages listened to (VoicemailPhone ids)
 
     // Canal St Junction
     public int generatorFuel;

@@ -11,8 +11,8 @@ using UnityEngine.Rendering;
 //   south sidewalk z -16..-2 (subway entrance at x 0), road z -26..-16, north sidewalk z -30..-26,
 //   shops behind each sidewalk. Both ends of the road are blocked (bus + barriers / police).
 // Lore (all text is a draft for the creative director to rewrite): the line was run into the ground by
-// years of cost-cutting, and tonight it all failed. A newspaper, a shop note, the van radio and a payphone's
-// recorded outage message. Blood dripping down the stairs is the only unexplained thing up here.
+// years of cost-cutting, and tonight it all failed. A newspaper, a shop note and the van radio; the payphone
+// rings with a message from Sousa's mother (Voicemails.cs). Blood dripping down the stairs is left unexplained.
 public static partial class LookTestBuilder
 {
     const float StreetY = 6f;
@@ -358,17 +358,10 @@ public static partial class LookTestBuilder
         shopNote.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
         StickTo(shopNote, street.Find("Shops/SixTwelve").gameObject, StreetY + 1.5f, Vector3.back, 1.5f);   // shop is north of the road
         shopNote.AddComponent<ReadableNote>().text = "CLOSED NIGHTS until further notice.\nStaff will not work past dark while the station stays open.\nSorry for the inconvenience. - Management";
-        // Payphone with an answering-machine message (placeholder shape until a model is found).
+        // Payphone (placeholder shape until a model is found): it rings with a message from Sousa's mother
+        // (LookTestBuilder.Voicemails.cs).
         var phone = Prim(PrimitiveType.Cube, "Payphone", lore, new Vector3(-16.5f, StreetY + 1.2f, -14.9f), new Vector3(0.45f, 0.75f, 0.3f), Mat("Payphone", null, new Color(0.25f, 0.27f, 0.3f), 1f, 0.5f, 0.6f));
         Prim(PrimitiveType.Cylinder, "PayphonePole", lore, new Vector3(-16.5f, StreetY + 0.4f, -14.9f), new Vector3(0.08f, 0.4f, 0.08f), Mat("GlobePost", null, new Color(0.1f, 0.18f, 0.12f), 1f, 0.5f, 0.6f));
-        var machine = phone.AddComponent<RadioMessages>();
-        machine.label = "payphone message";
-        machine.crackle = Load<AudioClip>(SfxDir + "/SwitchButton3_On.wav");
-        machine.lines = new[]
-        {
-            "PAYPHONE (recorded): ...MTA service line. Due to a power failure, all Line 4 service is suspended until further notice.",
-            "PAYPHONE (recorded): We apologise for the inconvenience. Please do not enter closed stations-- [static]",
-        };
 
         // Police tape around the gas station forecourt.
         var tape = Mat("PoliceTape", StripeTexture(), Color.white, 1f, 0.3f);

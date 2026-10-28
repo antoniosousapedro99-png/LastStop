@@ -218,6 +218,7 @@ public static partial class LookTestBuilder
         BuildInventoryScreen();   // needs the player's gear (torch battery)
         BuildHidingLockers();     // before the walkable area is baked, so he walks round them
         BuildServiceLevel();      // the service tunnels under the west tunnel
+        BuildVoicemails();        // family messages on phones (the street payphone, the squatter camp)
         BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildScares();            // one-time scares (after the lamps and the monster model exist)
         BuildCanal();             // Station 2, Canal St Junction, far beyond z 300 (needs the monster)

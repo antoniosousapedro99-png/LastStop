@@ -115,7 +115,6 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - A newspaper on the bus-stop bench: "LINE 4 'HELD TOGETHER WITH TAPE', ENGINEERS WARN" (repairs postponed three years running).
   - A "closed nights" note on the 6twelve door.
   - The van radio: dispatch sends Sousa to Hollis St ("There should be spares down there... if anyone ever restocked them." / "Don't be a hero. That line's been falling apart for years.").
-  - A payphone playing the MTA's recorded outage message.
   - Police tape around the gas station.
   - Blood drips down the subway stairs, unexplained. (The missing-worker posters, Rosa's message and the wrapped shape on the steps were removed on 2026-10-28.)
 - **Grime (2026-10-23), very sparing:** four black, worn graffiti tags (one on an apartment block on the street, two on the stairwell walls, one beside the platform vending machine), plus three small blood marks: a smear dragged down the east tunnel wall, drops outside the staff room door, and a dried stain under the east platform bench (`LookTestBuilder.Grime.cs`).
@@ -201,6 +200,9 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **The core memory the game builds toward: the fight with his father**, the night it all broke, which he has never forgiven himself for. The hopeful ending is making peace with it.
   - **His parents reach out through voicemails in Portuguese** (subtitled): his mother's messages on dead payphones and old station phones; his father never calls until the very end.
   - **Nobody else appears in person**: only voices (dispatch on the radio, messages, recordings). He's alone, as he always was.
+- **Voicemails (built 2026-10-28):** phones around the world **ring faintly** (within **8 m**, for up to **20 s**; ignored, they ring again the next time you come close) with messages from Sousa's family. Answering is **optional and easy to miss**; each one listened to is saved and will count toward the hopeful ending. **Two per station.** Lines appear as subtitles, **Portuguese first, English underneath** (a recorded voice can be added to each phone later). Mostly his **mother**, sometimes his **sister**; his **father only at the very end**. All lines are **drafts** for the director to rewrite.
+  - **Hollis St 1, the street payphone** by the bus stop (it used to play the transit company's outage message): **his mother** ("Filho, sou eu, a mãe...").
+  - **Hollis St 2, an old green maintenance phone on the squatter camp's north wall** (hidden): **his sister** ("Sou eu. A mãe pediu-me para te ligar...").
 - **One fear per section (decided 2026-10-28):**
   - **Station 1, Hollis St: death.** The **Ridgeback** (undead, shambling on forever) hunts you from the start.
   - **Station 2, Canal St: spiders.** The Wrapped and eyeball / spider creatures, webs thickening the deeper you go.
