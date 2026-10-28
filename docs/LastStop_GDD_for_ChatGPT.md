@@ -54,7 +54,7 @@ Something may be down there with him. Or it may be his own mind.
   - Later options: the Wrapped and Clawman (Codyanka); "Necrothread: The Pulse of Rotting Flesh" and the eyeball spider creatures (imaginais).
 - **Shadow figures** (built 28 October): every 3-5 minutes underground, a pitch-black silhouette of an ordinary man stands at the corner of your eye, facing you. The moment you look at it, it's gone, silently. Never explained.
 - **Each section of the game focuses on one fear; the last is the player character's own**.
-- **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, OCD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
+- **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
   - **His fear: being forgotten.** The final section is built from it.
   - **Revealed by slow hints** scattered through every station, small personal things that only make sense at the end.
   - **Two endings** (see below).
@@ -63,7 +63,7 @@ Something may be down there with him. Or it may be his own mind.
 - **Sousa, in detail (decided 2026-10-28; fiction inspired by the director):**
   - **Early 30s**, in the city about **two years**. He came **running from home** after the break with his family: the first job abroad he could find, in a city just far enough away.
   - **He carries an old photo**: creased, of him as a kid with his parents, the only one of him left. It can fade as the game goes on.
-  - **He copes with a mix of everything**: cigarettes and silence, a flask, and compulsive OCD routines (checking, counting, switching lights in order), which calm him until the metro breaks them.
+  - **He copes with cigarettes, a flask and silence.** (No OCD: removed 2026-10-28, it doesn't translate into gameplay.)
   - **He rarely speaks**: a few short muttered lines at key moments, some in Portuguese, shown as subtitles.
   - **The core memory the game builds toward: the fight with his father**, the night it all broke, which he has never forgiven himself for. The hopeful ending is making peace with it.
   - **His parents reach out through voicemails in Portuguese** (subtitled): his mother's messages on dead payphones and old station phones; his father never calls until the very end.

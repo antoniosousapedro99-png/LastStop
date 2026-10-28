@@ -186,7 +186,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **Necrothread: The Pulse of Rotting Flesh** (imaginais) is for **later**, as its own monster; the rest of imaginais' monsters (especially the **eyeball spider creatures**) fit too.
 - **Shadow figures** (built 2026-10-28) at the corner of your eye or the edge of the darkness: there for a moment, gone when you look. Never explained.
 - **Structure:** **each section of the game focuses on one fear**, and the **last one is the player character's own fear**.
-- **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, OCD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
+- **The player character (decided 2026-10-28):** a **Portuguese migrant worker**, estranged from his family and friends because of deep-seated mental struggles (ADHD, anger issues, depression, derealisation). He deeply regrets his own existence and how he handled things in the past with his **parents** and his **former girlfriend**. No kids: just regrets and a bitter life. That's why he takes the job: nothing left to lose, nothing worth losing, or so he thinks. He can still lose his mind.
   - **His fear: being forgotten.** The final section is built from it.
   - **Revealed by slow hints** scattered through every station, small personal things that only make sense at the end.
   - **Two endings** (see below).
@@ -195,7 +195,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **Sousa, in detail (decided 2026-10-28; fiction inspired by the director):**
   - **Early 30s**, in the city about **two years**. He came **running from home** after the break with his family: the first job abroad he could find, in a city just far enough away.
   - **He carries an old photo**: creased, of him as a kid with his parents, the only one of him left. It can fade as the game goes on.
-  - **He copes with a mix of everything**: cigarettes and silence, a flask, and compulsive OCD routines (checking, counting, switching lights in order), which calm him until the metro breaks them.
+  - **He copes with cigarettes, a flask and silence.** (No OCD: removed 2026-10-28, it doesn't translate into gameplay.)
   - **He rarely speaks**: a few short muttered lines at key moments, some in Portuguese, shown as subtitles.
   - **The core memory the game builds toward: the fight with his father**, the night it all broke, which he has never forgiven himself for. The hopeful ending is making peace with it.
   - **His parents reach out through voicemails in Portuguese** (subtitled): his mother's messages on dead payphones and old station phones; his father never calls until the very end.
