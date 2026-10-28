@@ -192,6 +192,14 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
   - **Two endings** (see below).
   - **Name: J. Sousa.** Workmates, dispatch and badges use only his surname ("Sousa", "J. Sousa").
   - **Details are inspired, fictional:** the feelings are real, but names, places and events are made up.
+- **Sousa, in detail (decided 2026-10-28; fiction inspired by the director):**
+  - **Early 30s**, in the city about **two years**. He came **running from home** after the break with his family: the first job abroad he could find, in a city just far enough away.
+  - **He carries an old photo**: creased, of him as a kid with his parents, the only one of him left. It can fade as the game goes on.
+  - **He copes with a mix of everything**: cigarettes and silence, a flask, and compulsive OCD routines (checking, counting, switching lights in order), which calm him until the metro breaks them.
+  - **He rarely speaks**: a few short muttered lines at key moments, some in Portuguese, shown as subtitles.
+  - **The core memory the game builds toward: the fight with his father**, the night it all broke, which he has never forgiven himself for. The hopeful ending is making peace with it.
+  - **His parents reach out through voicemails in Portuguese** (subtitled): his mother's messages on dead payphones and old station phones; his father never calls until the very end.
+  - **Nobody else appears in person**: only voices (dispatch on the radio, messages, recordings). He's alone, as he always was.
 - **One fear per section (decided 2026-10-28):**
   - **Station 1, Hollis St: death.** The **Ridgeback** (undead, shambling on forever) hunts you from the start.
   - **Station 2, Canal St: spiders.** The Wrapped and eyeball / spider creatures, webs thickening the deeper you go.
