@@ -66,7 +66,7 @@ public static partial class LookTestBuilder
         note.transform.rotation = Quaternion.LookRotation(Vector3.back) * Quaternion.Euler(0, 0, 3f);   // faces into the cab
         Object.DestroyImmediate(note.GetComponent<Collider>());
         note.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
-        note.AddComponent<ReadableNote>().text = "CAR 4471 - DO NOT MOVE\nReverser key went home with Dale again.\nSpare is in the staff room, desk drawer.\n- Night supervisor";
+        note.AddComponent<ReadableNote>().text = "CAR 4471 - DO NOT MOVE\nReverser key went home with the day driver again.\nSpare is in the staff room, desk drawer.\n- Night supervisor";
         onCar.Add(note.transform);
 
         // The same faint, flickering cab light, steadying when the train wakes.

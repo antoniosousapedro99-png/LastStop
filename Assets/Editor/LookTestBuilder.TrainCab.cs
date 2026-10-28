@@ -11,7 +11,7 @@ public static partial class LookTestBuilder
 
     // 'car' is the placed carriage; the partition stands with its cab side at 'atX', facing 'towardCab'
     // (+1 or -1 along x). Returns the partition so callers can move it with the car.
-    static Transform CabPartition(Transform parent, GameObject car, float atX, float floorY, int towardCab)
+    static Transform CabPartition(Transform parent, GameObject car, float atX, float floorY, int towardCab, bool doorOpen = false)
     {
         var wall = Place("Assets/Art/Models/Environment/MetroPSX/SubwayCarEnd.fbx", parent, Vector3.zero, 0f);
         wall.name = "CabPartition";
@@ -34,6 +34,19 @@ public static partial class LookTestBuilder
         wall.transform.position += new Vector3(shiftX, floorY - 0.03f - b.min.y, carBounds.center.z - b.center.z);
         b = Bounds(wall);
 
+        if (doorOpen)
+        {
+            // Doorway left open: invisible walls either side of it, so nobody climbs through the windows.
+            foreach (float s in new[] { -1f, 1f })
+            {
+                var half = new GameObject("CabPartitionCollider").AddComponent<BoxCollider>();
+                half.transform.SetParent(wall.transform, true);
+                float inner = 0.5f, outer = carBounds.extents.z;
+                half.transform.position = new Vector3(b.center.x, floorY + 1.2f, carBounds.center.z + s * (inner + outer) * 0.5f);
+                half.size = new Vector3(b.size.x, 2.4f, outer - inner);
+            }
+            return wall.transform;
+        }
         // A closed steel door filling the doorway (0.9 m by 1.94 m), in the middle of the wall's thickness.
         var door = Box("CabDoor", wall.transform, new Vector3(b.center.x, floorY + 0.97f, carBounds.center.z), new Vector3(0.04f, 1.94f, 0.92f),
                        Mat("DoorMetal", Tex("Door_01.jpg"), new Color(0.7f, 0.7f, 0.7f), 1f, 0.3f, 0.3f));

@@ -155,7 +155,7 @@ public static partial class LookTestBuilder
             ("News_1", "NewsPapers", 0.45f, true), ("News_2", "NewsPapers", 0.45f, true), ("News_3", "NewsPapers", 0.45f, true), ("Paper_1", "NewsPapers", 0.3f, true),
             ("Paper_2", "NewsPapers", 0.3f, true), ("Coffee_Cup_Crushed", "FastFoodTrash", 0.12f, false), ("Soda_Cup", "FastFoodTrash", 0.16f, false),
             ("Fry_Container", "FastFoodTrash", 0.14f, false), ("Can_2_Crushed", "Cans", 0.11f, false),
-            ("Can_4", "Cans", 0.12f, false), ("Paper_Bag_1", "Bags", 0.28f, false), ("Coffee_Cup_WithLid", "FastFoodTrash", 0.13f, false),
+            ("Can_4", "Cans", 0.12f, false), ("Coffee_Cup_WithLid", "FastFoodTrash", 0.13f, false),
         };
         var rng = new System.Random(seed);
         for (int i = 0; i < count; i++)

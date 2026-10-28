@@ -2,11 +2,10 @@ using UnityEditor;
 using UnityEngine;
 
 // Station 1's fear is death. Grounded traces of it (the haunting itself stays unexplained):
-// - a small memorial on the platform's back wall for Eddie Russo, a track worker killed last winter by a
-//   faulty third rail nobody fixed: a photo, a card, burnt-down candles and two wilted bouquets;
-// - Ray's work jacket and shoes left at the top of the service stairs (the squatters' notes say he went up
-//   to look and never came back).
-// The flowers, jacket and shoes are simple shapes until models are found. All text is a draft.
+// a small memorial on the platform's back wall for Eddie Russo, a track worker killed last winter by a faulty
+// third rail nobody fixed: a photo, a card, burnt-down candles and two wilted bouquets. (Ray's jacket and
+// shoes at the top of the service stairs were removed on 2026-10-28.)
+// The flowers are simple shapes until a model is found. All text is a draft.
 public static partial class LookTestBuilder
 {
     static void BuildDeathTraces()
@@ -62,38 +61,6 @@ public static partial class LookTestBuilder
                 head.transform.localPosition = new Vector3(spread * 1.6f, 0.02f, 0.25f + (float)rng.NextDouble() * 0.03f);   // drooping on the floor
                 Object.DestroyImmediate(head.GetComponent<Collider>());
             }
-        }
-
-        // ---- Ray's jacket and shoes at the top of the service stairs, by the landing's east wall
-        var cloth = Mat("RayJacket", null, new Color(0.22f, 0.24f, 0.2f), 1f, 0.1f);      // a dark olive work jacket
-        var leather = Mat("RayShoes", null, new Color(0.13f, 0.1f, 0.08f), 1f, 0.3f);
-        var jacket = new GameObject("RaysJacket").transform;
-        jacket.SetParent(g);
-        jacket.SetPositionAndRotation(new Vector3(-52.9f, -1.3f, 27.5f), Quaternion.Euler(0f, 200f, 0f));
-        var body = Prim(PrimitiveType.Cube, "Body", jacket, Vector3.zero, new Vector3(0.5f, 0.07f, 0.42f), cloth);
-        body.transform.localPosition = new Vector3(0f, 0.035f, 0f); body.transform.localRotation = Quaternion.Euler(0f, 0f, 4f);
-        body.GetComponent<BoxCollider>().size = new Vector3(1.4f, 4f, 1.4f);   // easy to look at
-        body.AddComponent<ReadableNote>().text = "A worn work jacket, damp and cold.\n\"RAY\" is written on the collar in marker.\nHis shoes are beside it, laces still tied.";
-        foreach (float side in new[] { -1f, 1f })   // sleeves, folded in
-        {
-            var sleeve = Prim(PrimitiveType.Capsule, "Sleeve", jacket, Vector3.zero, new Vector3(0.1f, 0.22f, 0.07f), cloth);
-            sleeve.transform.localPosition = new Vector3(side * 0.18f, 0.06f, 0.05f); sleeve.transform.localRotation = Quaternion.Euler(90f, side * 35f, 90f);
-            Object.DestroyImmediate(sleeve.GetComponent<Collider>());
-        }
-        var collar = Prim(PrimitiveType.Cube, "Collar", jacket, Vector3.zero, new Vector3(0.3f, 0.05f, 0.08f), cloth);
-        collar.transform.localPosition = new Vector3(0f, 0.08f, -0.2f); collar.transform.localRotation = Quaternion.Euler(-15f, 0f, 0f);
-        Object.DestroyImmediate(collar.GetComponent<Collider>());
-        foreach (float side in new[] { -0.07f, 0.07f })   // the shoes, side by side, as if stepped out of
-        {
-            var shoe = new GameObject("RaysShoe").transform;
-            shoe.SetParent(g);
-            shoe.SetPositionAndRotation(new Vector3(-52.75f + side, -1.3f, 28.2f), Quaternion.Euler(0f, 175f + side * 60f, 0f));
-            var sole = Prim(PrimitiveType.Cube, "Shoe", shoe, Vector3.zero, new Vector3(0.1f, 0.09f, 0.27f), leather);
-            sole.transform.localPosition = new Vector3(0f, 0.045f, 0f); sole.transform.localRotation = Quaternion.identity;
-            Object.DestroyImmediate(sole.GetComponent<Collider>());
-            var toe = Prim(PrimitiveType.Sphere, "Toe", shoe, Vector3.zero, new Vector3(0.1f, 0.08f, 0.1f), leather);
-            toe.transform.localPosition = new Vector3(0f, 0.04f, 0.13f);
-            Object.DestroyImmediate(toe.GetComponent<Collider>());
         }
     }
 

@@ -11,7 +11,7 @@ using UnityEngine.AI;
 //   the north track's west tunnel, 80 m out; staff steps at the west end lead down to both track beds.
 //   A rusted maintenance door in the south track's west tunnel leads down to the lower level
 //   (LookTestBuilder.CanalLower.cs): service corridors, a machinery hall, and the emergency latch.
-//   Fuel cans: one in the station master's office, one in a cage in the lower level's machinery hall.
+//   Fuel cans: one in the cab of the train parked in the north-east tunnel (CanalTrain.cs), one in a cage in the lower level's machinery hall.
 // - Escalator 1 climbs from the island's east end to the mezzanine (y 6): ticket gates, a ticket booth
 //   (the office key lies on its back counter), ticket machines, the generator room (north) and the locked
 //   station master's office (south: the spark plug and a save PC).
@@ -59,6 +59,7 @@ public static partial class LookTestBuilder
         CanalDressing(canal);     // rubbish, cones, posters, blood (LookTestBuilder.CanalDressing.cs)
         CanalLowerLevel(canal);   // the service level under the south tunnel (LookTestBuilder.CanalLower.cs)
         CanalScares(canal);       // one-time scares (LookTestBuilder.CanalScares.cs)
+        CanalParkedTrain(canal);  // three intact cars in the north-east tunnel, the fuel can in the cab (CanalTrain.cs)
         BakeCanal(canal);
     }
 
@@ -86,9 +87,9 @@ public static partial class LookTestBuilder
         g.SetParent(canal);
         float z = CanalZ;
         // Track pits (north: a long west tunnel where the train stalled; south: a short dead end).
-        Span("PitN", g, new Vector3(-140f, -1.5f, z), new Vector3(95f, -1.3f, z + 5.5f), gravel);
+        Span("PitN", g, new Vector3(-140f, -1.5f, z), new Vector3(145f, -1.3f, z + 5.5f), gravel);   // runs on 50 m further east, where the parked train stands
         Span("PitS", g, new Vector3(-100f, -1.5f, z + 15.5f), new Vector3(95f, -1.3f, z + 21f), gravel);
-        CanalTrack(g, "TrackN", -140f, 95f, z + 1.6f);
+        CanalTrack(g, "TrackN", -140f, 145f, z + 1.6f);
         CanalTrack(g, "TrackS", -100f, 95f, z + 17.2f);
         // Island platform between them.
         Span("IslandBase", g, new Vector3(-40f, -1.5f, z + 5.5f), new Vector3(40f, -0.05f, z + 15.5f), concrete);
@@ -116,7 +117,7 @@ public static partial class LookTestBuilder
         // Tunnels beyond the hall (concrete, ceiling 3 m above the platform).
         CanalTunnel(g, "TunnelNW", -140f, -40.3f, z, z + 5.5f, tunnelConcrete, true);
         CanalTunnel(g, "TunnelSW", -100f, -40.3f, z + 15.5f, z + 21f, tunnelConcrete, true, CanalServiceDoorX);
-        CanalTunnel(g, "TunnelNE", 40.3f, 95f, z, z + 5.5f, tunnelConcrete, false);
+        CanalTunnel(g, "TunnelNE", 40.3f, 145f, z, z + 5.5f, tunnelConcrete, false);
         CanalTunnel(g, "TunnelSE", 40.3f, 95f, z + 15.5f, z + 21f, tunnelConcrete, false);
 
         // Staff steps at the west end, down from the island to each track bed.
@@ -151,7 +152,7 @@ public static partial class LookTestBuilder
         Note(g, "CanalNotice", new Vector3(37.5f, 0.01f, z + 9.2f), 80f,
              "NOTICE - Canal St Junction\nStation power failure. Escalators out of service.\nBackup generator: mezzanine service room.\n- MTA Line 4");
         HidingLockerAt(g, "HidingLocker_CanalWest", new Vector3(-39.68f, 0f, z + 7.5f), 90f);
-        // (The fuel cans are in the station master's office and on the lower level.)
+        // (The fuel cans are in the parked train's cab and on the lower level.)
     }
 
     // Pushes an object along 'towards' until its back is 1 cm from the wall plane at 'wall' (x or z).
@@ -339,8 +340,8 @@ public static partial class LookTestBuilder
         MakePickup(key, global::Pickup.Kind.OfficeKey, new Vector3(56.4f, f + 0.95f, z + 0.3f), 25f, "GateWoodChain1");
 
         // Ticket machines, seats, a vending machine, a bin; a hiding locker by the exit side.
-        Prop("ticket_machine", g, new Vector3(52.5f, f, z + 20.4f), 180f);
-        Prop("ticket_machine", g, new Vector3(54.3f, f, z + 20.4f), 180f);
+        Prop("ticket_machine", g, new Vector3(52.5f, f, z + 20.4f), 0f);   // screens facing out, into the hall
+        Prop("ticket_machine", g, new Vector3(54.3f, f, z + 20.4f), 0f);
         BackToWall(Prop("Vending_machine", g, new Vector3(77.5f, f, z + 20.4f), 0f), Vector3.forward, z + 21f);
         Prop("seats", g, new Vector3(71f, f, z + 20.2f), 180f);
         Prop("trash_can", g, new Vector3(60.5f, f, z + 20.5f), 0f);
@@ -387,7 +388,7 @@ public static partial class LookTestBuilder
         log.transform.rotation = Quaternion.LookRotation(Vector3.left);   // faces into the room
         Object.DestroyImmediate(log.GetComponent<Collider>());
         log.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
-        log.AddComponent<ReadableNote>().text = "BACKUP GENERATOR - CANAL ST\nTank: EMPTY. Two cans left: one in the station master's office, one in the stores cage on the lower level (maintenance door, south tunnel).\nSpark plug: shot. Spare is in the station master's office.\nOffice key is on the ticket booth's back counter.\nNB: backup power also releases the emergency latch on the lower level.\n- Line 4 Maintenance";
+        log.AddComponent<ReadableNote>().text = "BACKUP GENERATOR - CANAL ST\nTank: EMPTY. Two cans left: one in the cab of the train parked in the north-east tunnel, one in the stores cage on the lower level (maintenance door, south tunnel).\nSpark plug: shot. Spare is in the station master's office.\nOffice key is on the ticket booth's back counter.\nNB: backup power also releases the emergency latch on the lower level.\n- Line 4 Maintenance";
     }
 
     // ---------------------------------------------------------------- station master's office (south, locked)
@@ -438,7 +439,7 @@ public static partial class LookTestBuilder
         AddMeshColliders(chair);
         // A candle burning on the desk (left by the station master?) lights the room a little.
         var candle = Candle(g, new Vector3(58.45f, top, z + 6.35f), true);
-        PlaceFuelCan(g, new Vector3(54.6f, f, z + 4.2f), 60f);   // fuel can 1, on the floor by the west wall
+        // (Fuel can 1 used to lie here; since 2026-10-28 it's in the parked train's cab, LookTestBuilder.CanalTrain.cs.)
         var flame = candle.GetComponentInChildren<Light>();
         flame.intensity = 1.6f; flame.range = 4.5f;
     }
@@ -558,8 +559,8 @@ public static partial class LookTestBuilder
         go.transform.SetParent(canal);
         var surface = go.AddComponent<NavMeshSurface>();
         surface.collectObjects = CollectObjects.Volume;
-        surface.center = new Vector3(-22.5f, 2.5f, CanalZ + 30f);
-        surface.size = new Vector3(245f, 26f, 80f);       // x -145..100, y -10.5..15.5, z 290..370
+        surface.center = new Vector3(0f, 2.5f, CanalZ + 30f);
+        surface.size = new Vector3(292f, 26f, 80f);       // x -146..146, y -10.5..15.5, z 290..370
         surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
         surface.layerMask = ~((1 << PreviewLayer) | (1 << 2));
         surface.BuildNavMesh();
