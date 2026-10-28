@@ -219,6 +219,7 @@ public static partial class LookTestBuilder
         BuildHidingLockers();     // before the walkable area is baked, so he walks round them
         BuildServiceLevel();      // the service tunnels under the west tunnel
         BuildVoicemails();        // family messages on phones (the street payphone, the squatter camp)
+        BuildDeathTraces();       // Station 1's fear, death: Eddie Russo's memorial, Ray's jacket and shoes
         BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildScares();            // one-time scares (after the lamps and the monster model exist)
         BuildCanal();             // Station 2, Canal St Junction, far beyond z 300 (needs the monster)
@@ -314,6 +315,7 @@ public static partial class LookTestBuilder
         var breathing = player.AddComponent<PlayerBreathing>();
         breathing.heavy = BreathLoop(player, "PlayerBreathHeavy");
         breathing.slow = BreathLoop(player, "PlayerBreathSlow");
+        breathing.heartbeat = BreathLoop(player, "PlayerHeartbeat");   // made with ffmpeg (two low thumps, ~70 bpm)
 
         // Vaulting: hold Jump at a ledge up to 1.4 m (PlayerVault); an effort breath, then a step on landing.
         var vault = player.AddComponent<PlayerVault>();

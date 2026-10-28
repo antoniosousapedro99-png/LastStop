@@ -347,9 +347,9 @@ public static partial class LookTestBuilder
         MakePickup(ModelPiece(BreakerFbx, "Fuse", g, Tex2("Props/Plumbing/FuseBox.png"), 1.6f), global::Pickup.Kind.Fuse,
                    new Vector3(-37f, tableTop, 48f), 40f, "SmallGlassBottles1");
         Note(g, "CampNote_Fuse", new Vector3(-36.35f, f + 0.008f, 48.55f), 25f,   // on the floor beside the crate
-             "Took the fuse so the maintenance guys can't turn the lights back on.\nFrankie can smell you.\nDon't let them.");
+             "Took the fuse so the maintenance guys can't turn the lights back on.\nFrankie can smell you.\nRay went up to look and never came back.\nI'm not dying down here like him.");
         Note(g, "CampNote_Ray", Bounds(mattressA).center + Vector3.up * (Bounds(mattressA).extents.y + 0.003f), -15f,
-             "Day 9 down here.\nRay swears he hears it walking the tracks at night.\nNot a train. Feet.\nRay went up to look on Tuesday.");
+             "Day 12 down here.\nSo cold the candles barely burn.\nRay went up the stairs to look on Tuesday.\nHis jacket and his shoes are still at the top.\nNobody takes their shoes off in this cold.");
 
         PlacePainkillers(g, new Vector3(-37f, f, 50.4f), 30f);
 

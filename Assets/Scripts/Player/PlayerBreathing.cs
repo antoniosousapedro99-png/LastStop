@@ -3,12 +3,14 @@ using UnityEngine;
 // The player's own breathing.
 // - Out of breath: follows PlayerMovement's sprint stamina; heavy breathing fades in as it runs low
 //   and dies away as it refills.
-// - Hiding in a locker: slow, held breathing instead, louder the closer Frankie is.
+// - Hiding in a locker: slow, held breathing instead, louder the closer Frankie is, over a faint heartbeat.
 // (Breathing while hurt is PlayerHealth's job.)
 public class PlayerBreathing : MonoBehaviour
 {
     public AudioSource heavy;              // looping heavy breathing
     public AudioSource slow;               // looping slow breathing
+    public AudioSource heartbeat;          // looping heartbeat, heard faintly while hiding
+    public float heartbeatVolume = 0.3f;
     public float heavyVolume = 0.55f;
     public float slowVolume = 0.3f, slowVolumeFrankieNear = 0.8f;
     public float frankieNearDistance = 10f;   // within this, the held breath gets louder (and shakier)
@@ -41,6 +43,7 @@ public class PlayerBreathing : MonoBehaviour
         }
         Fade(heavy, heavyTarget, 0.6f);
         Fade(slow, slowTarget, 0.8f);
+        Fade(heartbeat, hiding && !dead ? heartbeatVolume : 0f, 0.5f);
     }
 
     // Eases a loop toward its target volume (per second), starting and stopping it as needed.
