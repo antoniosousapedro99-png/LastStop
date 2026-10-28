@@ -70,6 +70,8 @@ Something lives down there.
   - **Station 4: losing your mind.** Derealisation made real: the station repeats, rooms rearrange, you can't trust what you see. The bridge into his own fear.
   - **The end: being forgotten**, Sousa's own fear.
 - **The two endings are decided by reaching out:** optional moments of connection along the way (answering the calls, finding and keeping pieces of an unsent letter, and the like). Enough of them and **his parents** remember him: he walks out at dawn. Too few and he's forgotten and becomes one of the shadow figures.
+- **The whole game is an allegory (decided 2026-10-28):** the metro is **Sousa's deep psyche**. Going down the line is searching through it; each station is a buried fear or wound; restoring the power is **working through his traumas bit by bit, in the dark, by himself, alone, as he always was**. He's a maintenance worker repairing his own mind. The title carries it too: the last stop is where he either gets off or doesn't.
+- **The ending is "get better" or "die":** in the hopeful ending he climbs out, remembered by his parents; in the bleak one he walks off into the dark and becomes a ghost, one of the shadow figures (suicide, shown through that walk into the dark).
   - "Necrothread: The Pulse of Rotting Flesh" (imaginais) is kept for a later monster.
   - imaginais' eyeball spider creatures fit too.
 
