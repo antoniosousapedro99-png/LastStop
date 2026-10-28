@@ -325,6 +325,14 @@ The first pull of the starter cord only coughs (Frankie may hear it). The second
 - **Exit: the river outfall.** Once the pump runs, the overflow tunnel drains and leads out to the river, as the latch notice says. Station 4 (losing your mind) starts back underground somewhere else.
 - **Voicemails (2):** an old wall phone in the **pump control room** (visible), and an emergency phone **deep in a flooded branch** (hidden, reachable only after draining it). Who speaks is still to decide (his father stays for the very end).
 - **Assets to use:** the Sewer pack's textures already in the project (brick, dirty concrete, rusty metal, mud), the industrial kit from the lower levels (pipes, pumps, control boxes, chain-link, caged bulbs), and the water and splash sounds.
+- **First draft built (2026-10-28):** climbing down Canal St's emergency latch now fades out and leads into the sewers (replacing the "End of Station 2" card; it autosaves "Autosave - The Sewers"; Frankie stays behind). A walkable greybox in sewer brick, about 20 m below and beyond z 600:
+  - **arrival chamber** with a ladder up to the shut hatch;
+  - **main tunnel**: a walkway beside a knee-deep channel;
+  - **pumping-station hub** (16 x 16 m, 6 m high): a central sump of water, the main pump (placeholder drum and motor), a control room in the north-west corner;
+  - **west branch** (knee-deep), **east branch** (a step down, waist-deep), **north branch** (deep, crossed on a narrow ledge along the west wall), each ending in a **valve room** with a red valve wheel (placeholder);
+  - beyond the north valve room, the **outfall tunnel**, barred by a grate with night and moonlight beyond;
+  - dim caged bulbs, a red emergency lamp at the arrival, the sound of running water.
+  - **Not working yet:** valves and pump do nothing, the water doesn't drop, wading isn't slowed, deep water can't drown you (the ledge isn't needed yet), no voicemails, no creature. Some walls overlap where rooms meet (identical brick, no visible flicker; to tidy later).
 - **Open questions:** the branches' themes and layout, how the water level is shown and animated, what a valve looks like and how it's turned, the drowning rules (how long you can hold your breath), and the new monster.
 
 ### 4.5 Station 4 – the unfinished station (Planned 28 October, not built)

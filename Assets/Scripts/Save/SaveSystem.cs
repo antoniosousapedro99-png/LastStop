@@ -111,10 +111,13 @@ public static class SaveSystem
 
     // A plain name for each part of the level, from a position (the layout in LookTestBuilder).
     // Canal St Junction is built far from Hollis St, beyond z 250.
-    public static bool IsCanal(Vector3 p) => p.z > 250f;
+    public static bool IsCanal(Vector3 p) => p.z > 250f && p.z < 550f;
+    // The sewers (Station 3) are built further still, beyond z 550.
+    public static bool IsSewers(Vector3 p) => p.z > 550f;
 
     public static string AreaAt(Vector3 p)
     {
+        if (IsSewers(p)) return "The Sewers";
         if (IsCanal(p))
         {
             if (p.y > 9f) return "Canal St - Street Exit";
@@ -234,12 +237,17 @@ public static class SaveSystem
             }
         }
         var arrival = UnityEngine.Object.FindAnyObjectByType<FrankieArrival>();
-        bool atCanal = IsCanal(d.playerPosition);
+        bool atCanal = IsCanal(d.playerPosition) || IsSewers(d.playerPosition);
         if (arrival) arrival.LoadState(d.monsterAwake, d.monsterPosition, d.monsterYaw, d.powerOn || atCanal);
         if (atCanal)
         {
             if (!d.monsterAwake && arrival) { arrival.StopAllCoroutines(); arrival.WakeNow(); arrival.monster.gameObject.SetActive(false); }   // not at Hollis St
             UnityEngine.Object.FindAnyObjectByType<CanalArrival>()?.LoadState(d.monsterAwake);
+        }
+        if (IsSewers(d.playerPosition))   // Frankie never follows into the sewers
+        {
+            var frankie = UnityEngine.Object.FindAnyObjectByType<FrankieAI>(FindObjectsInactive.Include);
+            if (frankie) frankie.gameObject.SetActive(false);
         }
 
         // Move the player last; the CharacterController has to be off to be moved directly.
