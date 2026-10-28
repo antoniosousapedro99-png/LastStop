@@ -64,6 +64,7 @@ Something may be down there with him. Or it may be his own mind.
   - **Early 30s**, in the city about **two years**. He came **running from home** after the break with his family: the first job abroad he could find, in a city just far enough away.
   - **He carries an old photo**: creased, of him as a kid with his parents, the only one of him left. It can fade as the game goes on.
   - **He copes with cigarettes, a flask and silence.** (No OCD: removed 2026-10-28, it doesn't translate into gameplay.)
+  - **His derealisation is left ambiguous:** it could be read as undiagnosed mild schizophrenia, but the game never names or diagnoses it. This is part of why the haunting is never explained: real, or his mind?
   - **He rarely speaks**: a few short muttered lines at key moments, some in Portuguese, shown as subtitles.
   - **The core memory the game builds toward: the fight with his father**, the night it all broke, which he has never forgiven himself for. The hopeful ending is making peace with it.
   - **His parents reach out through voicemails in Portuguese** (subtitled): his mother's messages on dead payphones and old station phones; his father never calls until the very end.
