@@ -33,6 +33,20 @@ public static partial class LookTestBuilder
 
         // (The shadow figure on the east tunnel's tracks was removed on 2026-10-27; ShadowFigure and
         // ShadowFigureModel are kept in case it comes back.)
+
+        // ---- the entity: random glimpses of a black human shape at the corner of your eye (both stations)
+        var glimpses = new GameObject("ShadowGlimpses");
+        glimpses.transform.SetParent(group);
+        var figure = Model(ArtDir + "/Characters/ShadowPerson/ShadowPerson.fbx", null, glimpses.transform, null, 1f, 0f);
+        figure.name = "ShadowPerson";
+        var black = EmissiveMat("ShadowPersonBlack", new Color(0.004f, 0.004f, 0.004f));   // unlit: never caught by the torch, a hole in the light
+        foreach (var r in figure.GetComponentsInChildren<Renderer>())
+        {
+            r.sharedMaterials = Enumerable.Repeat(black, r.sharedMaterials.Length).ToArray();
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+        foreach (var c in figure.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
+        glimpses.AddComponent<ShadowGlimpses>().figure = figure;
     }
 
     // An invisible one-time trigger box on the Ignore Raycast layer.
