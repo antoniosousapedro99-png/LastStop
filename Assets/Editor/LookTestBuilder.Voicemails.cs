@@ -18,15 +18,20 @@ public static partial class LookTestBuilder
         float f = SvcFloor;
         var camp = new GameObject("CampPhone").transform;
         camp.SetParent(root);
-        var green = Mat("MaintenancePhone", null, new Color(0.22f, 0.3f, 0.24f), 1f, 0.35f, 0.4f);
-        var black = Mat("PhoneHandset", null, new Color(0.08f, 0.08f, 0.08f), 1f, 0.4f, 0.1f);
-        Vector3 wall = new Vector3(-35.5f, f + 1.45f, 52f);   // on the wall's face
-        var body = Prim(PrimitiveType.Cube, "WallPhone", camp, wall + new Vector3(0f, 0f, -0.045f), new Vector3(0.22f, 0.3f, 0.09f), green);
-        var handset = Prim(PrimitiveType.Cube, "Handset", camp, wall + new Vector3(-0.15f, 0.02f, -0.06f), new Vector3(0.06f, 0.26f, 0.06f), black);
-        Object.DestroyImmediate(handset.GetComponent<Collider>());
-        var cord = Prim(PrimitiveType.Cylinder, "Cord", camp, wall + new Vector3(-0.12f, -0.22f, -0.06f), new Vector3(0.015f, 0.12f, 0.015f), black);
-        Object.DestroyImmediate(cord.GetComponent<Collider>());
-        body.GetComponent<BoxCollider>().size = new Vector3(2.2f, 1.2f, 1.6f);   // easier to aim at (covers the handset)
+        // The wall telephone from the "Low Poly PSX Soviet Subway Metro Props" pack (Sketchfab), in its own flat
+        // colours (it has no textures): dark grey, red buttons, a pale display, a black handset.
+        var body = Model(ArtDir + "/Props/WallPhone/WallPhone.fbx", null, camp, null, 1.2f, -90f);   // its keypad faces into the room
+        body.name = "WallPhone";
+        Color[] colours = { new Color(0.13f, 0.13f, 0.13f), new Color(0.35f, 0.05f, 0.04f), new Color(0.75f, 0.74f, 0.7f), new Color(0.03f, 0.03f, 0.03f) };
+        foreach (var r in body.GetComponentsInChildren<Renderer>())
+        {
+            var mats = r.sharedMaterials;
+            for (int m = 0; m < mats.Length && m < colours.Length; m++) mats[m] = Mat("WallPhone_" + m, null, colours[m], 1f, 0.35f);
+            r.sharedMaterials = mats;
+        }
+        var b = Bounds(body);
+        StandOn(body, new Vector3(-35.5f, f + 1.3f, 52f - b.extents.z));   // flat against the wall's face
+        FitBoxCollider(body).size *= 1.4f;   // a little bigger: easier to aim at
         VoicemailOn(body, "Hollis_Camp_Sister", "Irmã", new string[0], new string[0]);
     }
 

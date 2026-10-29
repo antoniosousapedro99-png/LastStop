@@ -808,6 +808,18 @@ public static partial class LookTestBuilder
         go.transform.position += point - new Vector3(b.center.x, b.min.y, b.center.z);
     }
 
+    // A box collider on the model's root, fitted around everything it draws.
+    static BoxCollider FitBoxCollider(GameObject go)
+    {
+        var b = Bounds(go);
+        var box = go.AddComponent<BoxCollider>();
+        var t = go.transform;
+        box.center = t.InverseTransformPoint(b.center);
+        Vector3 s = t.InverseTransformVector(b.size);
+        box.size = new Vector3(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z));
+        return box;
+    }
+
     static void AddMeshColliders(GameObject go)
     {
         foreach (var mf in go.GetComponentsInChildren<MeshFilter>()) mf.gameObject.AddComponent<MeshCollider>();

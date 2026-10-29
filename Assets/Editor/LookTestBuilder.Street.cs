@@ -358,10 +358,20 @@ public static partial class LookTestBuilder
         shopNote.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
         StickTo(shopNote, street.Find("Shops/SixTwelve").gameObject, StreetY + 1.5f, Vector3.back, 1.5f);   // shop is north of the road
         shopNote.AddComponent<ReadableNote>().text = "CLOSED NIGHTS until further notice.\nStaff will not work past dark while the station stays open.\nSorry for the inconvenience. - Management";
-        // Payphone (placeholder shape until a model is found): it rings with a message from Sousa's mother
-        // (LookTestBuilder.Voicemails.cs).
-        var phone = Prim(PrimitiveType.Cube, "Payphone", lore, new Vector3(-16.5f, StreetY + 1.2f, -14.9f), new Vector3(0.45f, 0.75f, 0.3f), Mat("Payphone", null, new Color(0.25f, 0.27f, 0.3f), 1f, 0.5f, 0.6f));
-        Prim(PrimitiveType.Cylinder, "PayphonePole", lore, new Vector3(-16.5f, StreetY + 0.4f, -14.9f), new Vector3(0.08f, 0.4f, 0.08f), Mat("GlobePost", null, new Color(0.1f, 0.18f, 0.12f), 1f, 0.5f, 0.6f));
+        // Payphone at the kerb ("PSX Public Payphone", Sketchfab), on a post, its keypad toward the pavement: it
+        // rings with a message from Sousa's mother (LookTestBuilder.Voicemails.cs).
+        var phone = Model(ArtDir + "/Props/Payphone/Payphone.fbx", null, lore, null, 1f, 180f,
+                          new System.Collections.Generic.Dictionary<string, string> { { "Material.001", "Props/Payphone/Payphone.png" } });
+        foreach (var r in phone.GetComponentsInChildren<Renderer>())   // its untextured trim: near-black, as in the model
+        {
+            var mats = r.sharedMaterials;
+            for (int m = 0; m < mats.Length; m++) if (mats[m] && !mats[m].mainTexture) mats[m] = Mat("PayphoneTrim", null, new Color(0.05f, 0.045f, 0.04f), 1f, 0.3f);
+            r.sharedMaterials = mats;
+        }
+        phone.transform.localScale *= 0.7f / Bounds(phone).size.y;   // a 70 cm unit
+        StandOn(phone, new Vector3(-16.5f, StreetY + 0.85f, -14.9f));
+        FitBoxCollider(phone);
+        Prim(PrimitiveType.Cylinder, "PayphonePole", lore, new Vector3(-16.5f, StreetY + 0.45f, -14.85f), new Vector3(0.08f, 0.45f, 0.08f), Mat("GlobePost", null, new Color(0.1f, 0.18f, 0.12f), 1f, 0.5f, 0.6f));
 
         // Police tape around the gas station forecourt.
         var tape = Mat("PoliceTape", StripeTexture(), Color.white, 1f, 0.3f);
