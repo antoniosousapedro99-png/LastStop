@@ -8,7 +8,7 @@ public class Journal : MonoBehaviour
 {
     public class Entry { public string id, text; public bool done; }
 
-    public AudioClip scribble;                 // a pencil scratch when a new thought is written
+    public AudioClip scribble;                 // played when a new thought is written (NewNoteUpdate)
     public readonly List<Entry> entries = new List<Entry>();   // oldest first
 
     static Journal current;
@@ -22,8 +22,8 @@ public class Journal : MonoBehaviour
         if (Has(id)) return;
         entries.Add(new Entry { id = id, text = text });
         if (quiet) return;
-        Hud.Notice("Journal updated", 2.5f);
-        if (scribble) AudioSource.PlayClipAtPoint(scribble, transform.position, 0.5f);
+        Hud.Notice("New note in your journal", 3.5f);
+        if (scribble) AudioSource.PlayClipAtPoint(scribble, Camera.main ? Camera.main.transform.position : transform.position, 0.8f);
     }
 
     public void SetDone(string id, bool done)

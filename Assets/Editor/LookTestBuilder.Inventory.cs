@@ -71,12 +71,12 @@ public static partial class LookTestBuilder
 
         // ---- Sousa's journal: first-person hints written as he finds things (J opens it)
         var journal = player.AddComponent<Journal>();
-        journal.scribble = Load<AudioClip>(SfxDir + "/PaperDocument2.wav");
+        journal.scribble = Load<AudioClip>("Assets/Art/Audio/SFX/UI/NewNoteUpdate.ogg");
         player.AddComponent<JournalDirector>();
         var journalScreen = player.AddComponent<JournalScreen>();
         journalScreen.journal = journal;
         journalScreen.look = player.GetComponent<PlayerLook>();
-        journalScreen.pageSound = Load<AudioClip>(SfxDir + "/PaperDocument3.wav");
+        journalScreen.pageSound = Load<AudioClip>("Assets/Art/Audio/SFX/UI/JournalMenuFX.ogg");
     }
 
     // Readies one item model for the stage: no colliders, preview layer only, 'size' metres at its longest,

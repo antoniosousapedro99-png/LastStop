@@ -17,6 +17,7 @@ public class JournalScreen : MonoBehaviour
     float timeScaleBefore = 1f;
     float scroll;
     int openedFrame = -1;
+    AudioSource ui;
     Texture2D page;
     [System.NonSerialized] GUIStyle inkStyle, titleStyle, hintStyle;
 
@@ -54,7 +55,12 @@ public class JournalScreen : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         Hud.Hidden = true;
-        if (pageSound) AudioSource.PlayClipAtPoint(pageSound, transform.position, 0.6f);
+        // Played on a 2D source that ignores the pause (the listener is paused while the journal is open).
+        if (pageSound)
+        {
+            if (!ui) { ui = gameObject.AddComponent<AudioSource>(); ui.spatialBlend = 0f; ui.playOnAwake = false; ui.ignoreListenerPause = true; }
+            ui.PlayOneShot(pageSound, 0.8f);
+        }
     }
 
     void Close()
