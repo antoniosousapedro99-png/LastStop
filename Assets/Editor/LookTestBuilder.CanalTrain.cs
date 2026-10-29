@@ -15,76 +15,8 @@ public static partial class LookTestBuilder
         var g = new GameObject("ParkedTrain").transform;
         g.SetParent(canal);
         float z = CanalZ + 2.9f;   // the north track's middle
-        var doorMat = Mat("TrainDoor", null, new Color(0.55f, 0.56f, 0.58f), 1f, 0.35f, 0.5f);
-        var glass = Mat("TrainDoorWindow", null, new Color(0.04f, 0.045f, 0.05f), 1f, 0.9f, 0.2f);
-        var glow = EmissiveMat("EmergencyStrip", new Color(1f, 0.45f, 0.15f) * 1.5f);
-        var cars = new GameObject[3];
-        float x = ParkedTrainWestX, floorY = -0.25f;
-        Bounds b = default;
-
-        for (int i = 0; i < 3; i++)
-        {
-            var car = Place("Assets/Art/Models/Environment/MetroPSX/SubwayCarOpen.fbx", g, Vector3.zero, 0f);
-            car.name = "ParkedCar_" + (i + 1);
-            foreach (var r in car.GetComponentsInChildren<Renderer>())
-            {
-                var mats = r.sharedMaterials;
-                for (int m = 0; m < mats.Length; m++) if (mats[m]) mats[m] = PropMat(mats[m].name);
-                r.sharedMaterials = mats;
-            }
-            b = Bounds(car);
-            if (b.size.z > b.size.x) { car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation; b = Bounds(car); }
-            car.transform.localScale *= CarLength / b.size.x;
-            b = Bounds(car);
-            StandOn(car, new Vector3(x + b.size.x * 0.5f, -1.3f, z));
-            cars[i] = car;
-            x += b.size.x + 0.2f;   // a short gap between cars (their end doorways line up)
-        }
-        Physics.SyncTransforms();
-        b = Bounds(cars[0]);
-        if (Physics.Raycast(new Vector3(b.center.x, b.min.y + b.size.y * 0.6f, b.center.z), Vector3.down, out var fh, 4f)) floorY = fh.point.y;
-        float doorBottom = b.min.y + 0.2645f * b.size.y, doorTop = b.min.y + 0.7274f * b.size.y, doorH = doorTop - doorBottom;
-        float wallN = b.min.z + 0.07f, wallS = b.max.z - 0.07f;   // the middle of each side wall
-
-        for (int i = 0; i < 3; i++)
-        {
-            var cb = Bounds(cars[i]);
-            // Side doors (three wide doorways each side, and the model's narrow cab door at one end): shut, except
-            // the middle doorway of the middle car on the north side (the wider gap to the tunnel wall), forced half open. (Leaves that land where
-            // there's no doorway sit hidden inside the wall.)
-            foreach (var (frac, width) in new[] { (-0.2997f, 1.41f), (0f, 1.41f), (0.2997f, 1.41f), (-0.4384f, 0.66f), (0.4384f, 0.66f) })
-            {
-                float dx = cb.center.x + frac * cb.size.x;
-                foreach (float side in new[] { -1f, 1f })
-                {
-                    float wz = side < 0 ? wallN : wallS;
-                    if (!IsHole(new Vector3(dx, (doorBottom + doorTop) * 0.5f, cb.center.z + side * (cb.extents.z + 1f)), -side)) continue;   // no doorway here
-                    bool forced = i == 1 && frac == 0f && side < 0;
-                    TrainDoorLeaves(g, new Vector3(dx, doorBottom, wz), width, doorH, forced ? 0.48f : 0f, doorMat, glass);
-                }
-            }
-            // Invisible walls along both sides (the car's thin sides aren't solid: nobody walks through them, or
-            // climbs out through a window), with a gap at the forced door.
-            foreach (float side in new[] { -1f, 1f })
-            {
-                float wz = side < 0 ? wallN : wallS;
-                if (i == 1 && side < 0)
-                {
-                    InnerWall(g, cb.min.x, cb.center.x - 0.5f, wz, floorY);
-                    InnerWall(g, cb.center.x + 0.5f, cb.max.x, wz, floorY);
-                }
-                else InnerWall(g, cb.min.x, cb.max.x, wz, floorY);
-            }
-            // A floor plate across the gap to the next car.
-            if (i < 2) Span("CarGapPlate_" + i, g, new Vector3(cb.max.x - 0.05f, floorY - 0.03f, cb.center.z - 0.5f), new Vector3(cb.max.x + 0.25f, floorY, cb.center.z + 0.5f), doorMat);
-            // A dim orange emergency strip on the ceiling, still lit.
-            var strip = Prim(PrimitiveType.Cube, "EmergencyStrip", g, new Vector3(cb.center.x, floorY + 2.15f, cb.center.z), new Vector3(2f, 0.03f, 0.08f), glow);
-            Object.DestroyImmediate(strip.GetComponent<Collider>());
-            var lamp = new GameObject("EmergencyLight").AddComponent<Light>();
-            lamp.transform.SetParent(g);
-            lamp.transform.position = new Vector3(cb.center.x, floorY + 2f, cb.center.z);
-            lamp.type = LightType.Point; lamp.color = new Color(1f, 0.5f, 0.2f); lamp.intensity = 1.1f; lamp.range = 7f; lamp.shadows = LightShadows.None;
-        }
+        var cars = TrainOfCars(g, ParkedTrainWestX, z, 3, 1, -1f, out float floorY);   // the middle car's north doors forced half open
+        float wallN = Bounds(cars[0]).min.z + 0.07f;   // the middle of the north side wall
 
         // The train's two outer end doorways: shut.
         var first = Bounds(cars[0]); var last = Bounds(cars[2]);
@@ -103,13 +35,8 @@ public static partial class LookTestBuilder
         Object.DestroyImmediate(lever.GetComponent<Collider>());
         PlaceFuelCan(g, new Vector3(cx, floorY, last.center.z + 0.5f), 35f);
 
-        // The doorways between the cars and into the cab are too narrow for his walkable area: walking routes
-        // through each one (WalkLink), so he can follow Sousa all the way down the train.
-        for (int i = 0; i < 2; i++)
-        {
-            float gapX = Bounds(cars[i]).max.x + 0.1f;
-            WalkLink(g, "TrainGapRoute_" + i, null, new Vector3(gapX - 1.2f, floorY, z), new Vector3(gapX, floorY, z), new Vector3(gapX + 1.2f, floorY, z));
-        }
+        // The doorway into the cab is too narrow for his walkable area: a walking route through it (WalkLink; the
+        // gaps between the cars have theirs from TrainOfCars), so he can follow Sousa all the way down the train.
         float cabWall = last.max.x - cabDepth;
         WalkLink(g, "TrainCabRoute", null, new Vector3(cabWall - 1.2f, floorY, z), new Vector3(cabWall, floorY, z), new Vector3(cabWall + 1f, floorY, z));
 
@@ -168,24 +95,34 @@ public static partial class LookTestBuilder
         for (int i = 0; i < count; i++)
         {
             var cb = Bounds(cars[i]);
+            // Doors: the three wide doorways each side slide open and shut (Use); the narrow cab door at one end of
+            // the model stays shut (its leaves sit hidden inside the wall at the other end).
             foreach (var (frac, width) in new[] { (-0.2997f, 1.41f), (0f, 1.41f), (0.2997f, 1.41f), (-0.4384f, 0.66f), (0.4384f, 0.66f) })
             {
                 float dx = cb.center.x + frac * cb.size.x;
                 foreach (float side in new[] { -1f, 1f })
                 {
                     bool forced = i == forcedCar && frac == 0f && side == forcedSide;
-                    TrainDoorLeaves(g, new Vector3(dx, doorBottom, side < 0 ? wallN : wallS), width, doorH, forced ? 0.48f : 0f, doorMat, glass);
+                    TrainDoorLeaves(g, new Vector3(dx, doorBottom, side < 0 ? wallN : wallS), width, doorH, forced ? 0.48f : 0f, doorMat, glass, width > 1f);
                 }
             }
+            // Invisible walls along both sides, with a gap at each wide doorway (its leaves block it when shut).
             foreach (float side in new[] { -1f, 1f })
             {
-                float wz = side < 0 ? wallN : wallS;
-                if (i == forcedCar && side == forcedSide)
+                float wz = side < 0 ? wallN : wallS, from = cb.min.x;
+                foreach (float frac in new[] { -0.2997f, 0f, 0.2997f })
                 {
-                    InnerWall(g, cb.min.x, cb.center.x - 0.5f, wz, floorY);
-                    InnerWall(g, cb.center.x + 0.5f, cb.max.x, wz, floorY);
+                    float dx = cb.center.x + frac * cb.size.x;
+                    InnerWall(g, from, dx - 0.5f, wz, floorY);
+                    from = dx + 0.5f;
                 }
-                else InnerWall(g, cb.min.x, cb.max.x, wz, floorY);
+                InnerWall(g, from, cb.max.x, wz, floorY);
+                // Benches along the wall between the doors, facing across the aisle.
+                foreach (float off in new[] { -0.15f, 0.15f })
+                {
+                    var seat = Prop("seats", g, new Vector3(cb.center.x + off * cb.size.x, floorY, wz - side * 0.4f), side < 0 ? -90f : 90f);
+                    if (seat) StandOn(seat, new Vector3(cb.center.x + off * cb.size.x, floorY, wz - side * (0.08f + Bounds(seat).extents.z)));
+                }
             }
             if (i < count - 1)
             {
@@ -209,18 +146,29 @@ public static partial class LookTestBuilder
 
     // A pair of sliding door leaves filling a side doorway (bottom middle at 'sill'), each with a dark window;
     // 'apart' slides each leaf that far into the wall, leaving a gap between them.
-    static void TrainDoorLeaves(Transform parent, Vector3 sill, float width, float height, float apart, Material metal, Material glass)
+    static void TrainDoorLeaves(Transform parent, Vector3 sill, float width, float height, float apart, Material metal, Material glass, bool slides = false)
     {
         float leaf = width * 0.5f;
+        var pair = new GameObject("TrainDoors").transform;
+        pair.SetParent(parent);
+        pair.position = sill + Vector3.up * height * 0.5f;
+        Transform[] leaves = new Transform[2];
+        int n = 0;
         foreach (float s in new[] { -1f, 1f })
         {
             float cx = sill.x + s * (leaf * 0.5f + apart);
-            var door = Box("TrainDoorLeaf", parent, new Vector3(cx, sill.y + height * 0.5f, sill.z), new Vector3(leaf, height, 0.04f), metal);
+            var door = Box("TrainDoorLeaf", pair, new Vector3(cx, sill.y + height * 0.5f, sill.z), new Vector3(leaf, height, 0.04f), metal);
+            leaves[n++] = door.transform;
             if (apart > 0f) door.transform.rotation = Quaternion.Euler(0f, s * 4f, s * 1.5f);   // wrenched a little crooked
             var pane = Box("TrainDoorWindow", door.transform, new Vector3(cx, sill.y + height * 0.68f, sill.z), new Vector3(leaf * 0.55f, height * 0.3f, 0.05f), glass);
             pane.transform.rotation = door.transform.rotation;
             Object.DestroyImmediate(pane.GetComponent<Collider>());
         }
+        if (!slides) return;
+        var slide = pair.gameObject.AddComponent<SlidingTrainDoor>();
+        slide.leafA = leaves[0]; slide.leafB = leaves[1];
+        slide.along = Vector3.right; slide.apart = 0.48f; slide.startOpen = apart > 0f;
+        slide.slideSound = Load<AudioClip>(SfxDir + "/MetalCabinet1.wav");
     }
 
     // A closed steel door in a car's end doorway at 'x', with an invisible wall across the car's width.

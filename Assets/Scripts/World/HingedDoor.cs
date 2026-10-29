@@ -16,7 +16,7 @@ public class HingedDoor : MonoBehaviour, IInteractable
     public bool needsCabinetKey;           // stays locked until the player has the cabinet key
     public bool needsOfficeKey;            // ...or the Canal St station master's key
 
-    bool open, moving;
+    bool open, moving, unlocked;   // 'unlocked': opened once, so its key or power no longer matters
     Quaternion closedRotation;
 
     void Awake() => closedRotation = transform.localRotation;
@@ -30,6 +30,7 @@ public class HingedDoor : MonoBehaviour, IInteractable
         transform.localRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
         moving = false;
         open = true;
+        unlocked = true;
     }
 
     void Start()
@@ -41,7 +42,9 @@ public class HingedDoor : MonoBehaviour, IInteractable
     {
         get
         {
-            if (open || moving) return null;
+            if (moving) return null;
+            if (open) return "Close " + doorName;
+            if (unlocked) return "Open " + doorName;
             if (needsPower && !needsPower.IsOn) return "Locked - no power";
             if ((needsCabinetKey || needsOfficeKey) && !HasKey()) return "Locked - needs a key";
             if (needsCabinetKey || needsOfficeKey) return "Unlock " + doorName;
@@ -51,9 +54,11 @@ public class HingedDoor : MonoBehaviour, IInteractable
 
     public void Interact(Interactor player)
     {
-        if (needsPower && !needsPower.IsOn) { Hud.Notice("The electric lock is dead."); return; }
-        if ((needsCabinetKey || needsOfficeKey) && !HasKey()) { Hud.Notice("It's locked. There must be a key somewhere."); return; }
-        if (!open && !moving) StartCoroutine(Swing(0f));
+        if (moving) return;
+        if (open) { StartCoroutine(SwingShut()); return; }
+        if (!unlocked && needsPower && !needsPower.IsOn) { Hud.Notice("The electric lock is dead."); return; }
+        if (!unlocked && (needsCabinetKey || needsOfficeKey) && !HasKey()) { Hud.Notice("It's locked. There must be a key somewhere."); return; }
+        StartCoroutine(Swing(0f));
     }
 
     bool HasKey()
@@ -87,5 +92,23 @@ public class HingedDoor : MonoBehaviour, IInteractable
         transform.localRotation = target;
         moving = false;
         open = true;
+        unlocked = true;
+    }
+
+    // Swings shut again (no unlock sound; it stays unlocked).
+    IEnumerator SwingShut()
+    {
+        moving = true;
+        if (openSound) AudioSource.PlayClipAtPoint(openSound, transform.position, 0.8f);
+        Quaternion from = transform.localRotation;
+        for (float t = 0; t < openTime; t += Time.deltaTime)
+        {
+            float k = 1f - Mathf.Pow(1f - t / openTime, 3f);
+            transform.localRotation = Quaternion.Slerp(from, closedRotation, k);
+            yield return null;
+        }
+        transform.localRotation = closedRotation;
+        moving = false;
+        open = false;
     }
 }

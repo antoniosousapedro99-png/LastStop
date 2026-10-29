@@ -233,7 +233,8 @@ public static partial class LookTestBuilder
             t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
                                 && t.GetComponentInParent<HidingLocker>(true) == null && t.GetComponentInParent<SlidingDrawer>(true) == null
                                 && t.GetComponentInParent<TrainDeparture>(true) == null && t.GetComponentInParent<LookAwayChange>(true) == null
-                                && t.GetComponentInParent<EmergencyLatch>(true) == null && t.GetComponentInParent<ShadowGlimpses>(true) == null;
+                                && t.GetComponentInParent<EmergencyLatch>(true) == null && t.GetComponentInParent<ShadowGlimpses>(true) == null
+                                && t.GetComponentInParent<SlidingTrainDoor>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 
