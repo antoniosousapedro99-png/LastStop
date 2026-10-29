@@ -26,6 +26,7 @@ public class MenuSystem : MonoBehaviour
     public DistantNoises noises;
     public Font font;
     public Texture2D panel;
+    public Texture2D watermark;            // the Witchbrew Productions gothic logo, bottom right of the title screen
 
     public static bool IsOpen { get; private set; }   // a menu (or the title) is on screen
     public static int ClosedFrame { get; private set; } = -1;   // the frame the pause menu last closed (Interactor ignores Use then)
@@ -447,6 +448,16 @@ public class MenuSystem : MonoBehaviour
         MenuStyle.Fill(new Rect(0, 0, Screen.width * 0.55f, Screen.height), new Color(0f, 0f, 0f, 0.35f));
         MenuStyle.Label(R(110, 150, 1200, 150), "LAST STOP", 150);
         MenuStyle.Label(R(118, 285, 1200, 50), "LINE 4  -  HOLLIS ST", 34, TextAnchor.MiddleLeft, MenuStyle.Dim);
+        // The studio's logo in the bottom-right corner, as a watermark (40% see-through).
+        if (watermark)
+        {
+            const float w = 420f;
+            float h = w * watermark.height / watermark.width;
+            var old = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, 0.6f);
+            GUI.DrawTexture(R(VirtualWidth - w - 40f, 1080f - h - 30f, w, h), watermark, ScaleMode.ScaleToFit);
+            GUI.color = old;
+        }
     }
 
     void DrawPressKey()

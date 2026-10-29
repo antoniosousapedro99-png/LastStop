@@ -40,6 +40,7 @@ public static partial class LookTestBuilder
         menus.AddComponent<BootLogo>().logo = Load<Texture2D>("Assets/Art/UI/WitchbrewLogo.png");   // Witchbrew Productions, before the title
         var system = menus.AddComponent<MenuSystem>();
         system.player = player;
+        system.watermark = Load<Texture2D>("Assets/Art/UI/WitchbrewGothicLogo.png");
         system.titleCamera = title;
         system.ambience = Object.FindAnyObjectByType<AreaAmbience>();
         system.noises = Object.FindAnyObjectByType<DistantNoises>();
