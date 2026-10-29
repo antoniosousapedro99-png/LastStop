@@ -5,7 +5,7 @@ using UnityEngine;
 // a small memorial on the platform's back wall for Eddie Russo, a track worker killed last winter by a faulty
 // third rail nobody fixed: a photo, a card, burnt-down candles and two wilted bouquets. (Ray's jacket and
 // shoes at the top of the service stairs were removed on 2026-10-28.)
-// The flowers are simple shapes until a model is found. All text is a draft.
+// The bouquets are the "Dry Flower" scan (Sketchfab), simplified to 12,000 triangles. All text is a draft.
 public static partial class LookTestBuilder
 {
     static void BuildDeathTraces()
@@ -38,29 +38,16 @@ public static partial class LookTestBuilder
         float[] candleSides = { -0.35f, -0.15f, 0.2f, 0.38f };
         for (int i = 0; i < candleSides.Length; i++) Candle(g, Floor(candleSides[i], 0.12f + (i % 2) * 0.08f), false);
 
-        // Two wilted bouquets lying on the floor, their paper gone limp, heads drooping brown and dark red.
-        var paper = Mat("BouquetPaper", null, new Color(0.55f, 0.5f, 0.42f), 1f, 0.2f);   // limp brown paper
-        var stem = Mat("WiltedStem", null, new Color(0.25f, 0.27f, 0.15f), 1f, 0.1f);
-        Color[] heads = { new Color(0.35f, 0.08f, 0.08f), new Color(0.4f, 0.28f, 0.16f), new Color(0.3f, 0.12f, 0.14f) };
-        var rng = new System.Random(4);
-        foreach (var (side, yaw) in new[] { (-0.05f, 70f), (0.55f, 115f) })
+        // Two bouquets of dried flowers lying on the floor, heads away from the wall.
+        foreach (var (side, yaw, roll) in new[] { (-0.05f, 70f, 15f), (0.55f, 115f, -25f) })
         {
             var bouquet = new GameObject("WiltedBouquet").transform;
             bouquet.SetParent(g);
             bouquet.SetPositionAndRotation(Floor(side, 0.3f), Quaternion.Euler(0f, yaw + Vector3.SignedAngle(Vector3.forward, n, Vector3.up), 0f));
-            var wrap = Prim(PrimitiveType.Cylinder, "Wrap", bouquet, Vector3.zero, new Vector3(0.06f, 0.1f, 0.035f), paper);
-            wrap.transform.localPosition = new Vector3(0f, 0.03f, -0.05f); wrap.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            Object.DestroyImmediate(wrap.GetComponent<Collider>());
-            for (int i = 0; i < 5; i++)
-            {
-                float spread = (i - 2) * 0.03f;
-                var s = Prim(PrimitiveType.Cylinder, "Stem", bouquet, Vector3.zero, new Vector3(0.008f, 0.12f, 0.008f), stem);
-                s.transform.localPosition = new Vector3(spread, 0.02f, 0.12f); s.transform.localRotation = Quaternion.Euler(90f, 0f, (float)rng.NextDouble() * 20f - 10f);
-                Object.DestroyImmediate(s.GetComponent<Collider>());
-                var head = Prim(PrimitiveType.Sphere, "Head", bouquet, Vector3.zero, new Vector3(0.075f, 0.04f, 0.065f), Mat("WiltedHead" + (i % 3), null, heads[i % 3], 1f, 0.1f));
-                head.transform.localPosition = new Vector3(spread * 1.6f, 0.02f, 0.25f + (float)rng.NextDouble() * 0.03f);   // drooping on the floor
-                Object.DestroyImmediate(head.GetComponent<Collider>());
-            }
+            var flowers = Model(ArtDir + "/Props/DryBouquet/DryBouquet.fbx", null, bouquet, Tex2("Props/DryBouquet/DryBouquet.png"), 1.4f, 0f);
+            // Laid down: its stems toward the wall, heads along the bouquet's forward, turned a little on its side.
+            flowers.transform.rotation = bouquet.rotation * Quaternion.Euler(90f, 0f, 0f) * Quaternion.Euler(0f, roll, 0f);
+            StandOn(flowers, bouquet.position + bouquet.forward * 0.1f);
         }
     }
 

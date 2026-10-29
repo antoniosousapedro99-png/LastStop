@@ -203,22 +203,18 @@ public static partial class LookTestBuilder
         flicker.lamp = light; flicker.minCalm = 3f; flicker.maxCalm = 9f;
     }
 
-    // A small brass key with a paper tag (simple shapes until a key model is found).
+    // A rusty key ("PSX Tower Key", Sketchfab) lying flat, its bow toward -X, with a paper tag on the bow.
+    // The cabinet key and the station master's office key both use it.
     static GameObject BuildKey(Transform parent)
     {
         var key = new GameObject("CabinetKey");
         key.transform.SetParent(parent);
-        var brass = Mat("KeyBrass", null, new Color(0.78f, 0.62f, 0.28f), 1f, 0.75f, 0.9f);
-        var shaft = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        shaft.transform.SetParent(key.transform, false); shaft.transform.localScale = new Vector3(0.07f, 0.006f, 0.012f);
-        shaft.GetComponent<Renderer>().sharedMaterial = brass;
-        var bow = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        bow.transform.SetParent(key.transform, false); bow.transform.localScale = new Vector3(0.035f, 0.003f, 0.035f);
-        bow.transform.localPosition = new Vector3(-0.045f, 0, 0);
-        bow.GetComponent<Renderer>().sharedMaterial = brass;
+        var model = Model(ArtDir + "/Props/RustyKey/RustyKey.fbx", null, key.transform, Tex2("Props/RustyKey/RustyKey.png"), 1f, 90f);
+        model.transform.localScale *= 0.09f / Bounds(model).size.x;   // 9 cm long
+        model.transform.localPosition = Vector3.zero;
         var tag = GameObject.CreatePrimitive(PrimitiveType.Cube);
         tag.transform.SetParent(key.transform, false); tag.transform.localScale = new Vector3(0.04f, 0.002f, 0.025f);
-        tag.transform.localPosition = new Vector3(-0.08f, 0, 0.01f);
+        tag.transform.localPosition = new Vector3(-0.065f, 0.001f, 0.01f);
         tag.GetComponent<Renderer>().sharedMaterial = Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f);
         foreach (var col in key.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(col);
         key.transform.localScale = Vector3.one * 1.5f;   // big enough to spot on the seat
