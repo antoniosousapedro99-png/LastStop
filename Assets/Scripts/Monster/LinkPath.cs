@@ -5,7 +5,8 @@ using UnityEngine;
 // A walking route for Frankie along one of his jump links (NavMeshLink), for places his walkable area
 // can't reach by itself: steel staircases too narrow for his body, and doorways. Instead of leaping,
 // FrankieAI walks the 'points' in order (or backwards, coming the other way).
-// With a 'gate' door, the route only exists while that door is open: close it and he can't follow.
+// With a 'gate' door, the route only exists while that door isn't locked: shut, he opens it on his way
+// (FrankieAI.OpenDoor); locked by a key or the power, he can't get through.
 [RequireComponent(typeof(NavMeshLink))]
 public class LinkPath : MonoBehaviour
 {
@@ -21,7 +22,7 @@ public class LinkPath : MonoBehaviour
 
     void Update()
     {
-        bool open = !gate || gate.IsOpen;
+        bool open = !gate || gate.IsOpen || !gate.Locked;
         if (link.activated != open) link.activated = open;
     }
 

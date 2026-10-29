@@ -6,12 +6,14 @@ using UnityEngine;
 // - Powered doors (the staff room) stay locked until the PowerGrid comes back on, then buzz, click
 //   and swing open by themselves.
 // - Other doors (the locker, the platform cabinet) open with a left click; some need the cabinet key.
+// - Frankie opens room doors on his routes too (see FrankieAI.OpenDoor), but never one still locked.
 public class HingedDoor : MonoBehaviour, IInteractable
 {
     public float openAngle = 95f;          // degrees around the hinge (sign picks the direction)
     public float openTime = 1.2f;
     public PowerGrid needsPower;           // leave empty for a door that just opens when used
     public AudioClip unlockSound, openSound;
+    public AudioClip bangSound;            // Frankie hammering on it or slamming it open
     public string doorName = "door";
     public bool needsCabinetKey;           // stays locked until the player has the cabinet key
     public bool needsOfficeKey;            // ...or the Canal St station master's key
@@ -22,6 +24,26 @@ public class HingedDoor : MonoBehaviour, IInteractable
     void Awake() => closedRotation = transform.localRotation;
 
     public bool IsOpen => open || moving;
+    public bool Closing => open && moving;    // swinging shut ('open' only turns false once it's shut)
+
+    // Still held shut by a key or the power (Frankie can't get through those either).
+    public bool Locked => !unlocked && (needsPower || needsCabinetKey || needsOfficeKey);
+
+    // When the player last shut it (Time.time): shut in Frankie's face mid-chase, he has to batter it first.
+    public float ClosedAt { get; private set; } = -99f;
+
+    // Frankie opens it: over 'seconds' (a slow creak, or a fast slam), its sound at 'volume'.
+    public void OpenByFrankie(float seconds, float volume)
+    {
+        if (open || moving) return;
+        StartCoroutine(Swing(0f, seconds, volume));
+    }
+
+    // One blow of his claws on the shut door.
+    public void Bang()
+    {
+        if (bangSound) AudioSource.PlayClipAtPoint(bangSound, transform.position, 1f);
+    }
 
     // Loading a save: snaps straight to open, no sound.
     public void OpenNow()
@@ -74,18 +96,21 @@ public class HingedDoor : MonoBehaviour, IInteractable
         StartCoroutine(Swing(delay));
     }
 
-    IEnumerator Swing(float delay)
+    // 'time' and 'volume' left out: the door's own opening time, full volume, and the unlock click first.
+    IEnumerator Swing(float delay, float time = -1f, float volume = 1f)
     {
         moving = true;
         yield return new WaitForSeconds(delay);
-        if (unlockSound) AudioSource.PlayClipAtPoint(unlockSound, transform.position, 1f);
-        yield return new WaitForSeconds(unlockSound ? 0.4f : 0f);
-        if (openSound) AudioSource.PlayClipAtPoint(openSound, transform.position, 1f);
+        bool byFrankie = time > 0f;
+        if (!byFrankie) time = openTime;
+        if (unlockSound && !byFrankie) AudioSource.PlayClipAtPoint(unlockSound, transform.position, 1f);
+        yield return new WaitForSeconds(unlockSound && !byFrankie ? 0.4f : 0f);
+        if (openSound) AudioSource.PlayClipAtPoint(openSound, transform.position, volume);
         Quaternion target = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
-        for (float t = 0; t < openTime; t += Time.deltaTime)
+        for (float t = 0; t < time; t += Time.deltaTime)
         {
             // Ease out: fast at first, slowing as it reaches the end.
-            float k = 1f - Mathf.Pow(1f - t / openTime, 3f);
+            float k = 1f - Mathf.Pow(1f - t / time, 3f);
             transform.localRotation = Quaternion.Slerp(closedRotation, target, k);
             yield return null;
         }
@@ -99,6 +124,7 @@ public class HingedDoor : MonoBehaviour, IInteractable
     IEnumerator SwingShut()
     {
         moving = true;
+        ClosedAt = Time.time;
         if (openSound) AudioSource.PlayClipAtPoint(openSound, transform.position, 0.8f);
         Quaternion from = transform.localRotation;
         for (float t = 0; t < openTime; t += Time.deltaTime)

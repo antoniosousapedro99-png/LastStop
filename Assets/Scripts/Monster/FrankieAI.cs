@@ -51,6 +51,8 @@ public class FrankieAI : MonoBehaviour
     public float breather = 3f;                // seconds between one hit and coming at the player again
     public int lockerBangs = 3;                // slams on a locker door before he tears it open
     public float bangEvery = 0.9f;             // seconds between slams
+    public float doorBattering = 1.5f;         // a door shut in his face mid-chase: how long he hammers it first
+    public float slamOpenTime = 0.3f, creakOpenFactor = 1.5f;   // chasing he slams doors open; otherwise a slow creak
 
     [Header("Sounds")]
     public AudioSource voice;                  // breathing, shrieks
@@ -453,10 +455,49 @@ public class FrankieAI : MonoBehaviour
         leaping = true;
         var link = agent.currentOffMeshLinkData;
         var route = LinkPath.Find(link.startPos, link.endPos);
+        if (route && route.gate && (!route.gate.IsOpen || route.gate.Closing)) yield return OpenDoor(route.gate);
         if (route) yield return WalkRoute(route, link.startPos);
         else yield return Jump(link.endPos);
         agent.CompleteOffMeshLink();
         leaping = false;
+    }
+
+    // A shut door on his route (never a locked one: those close the route). Chasing, he slams it open almost
+    // without stopping, unless the player shut it in his face moments ago: then he hammers it for
+    // 'doorBattering' seconds first. Otherwise he pushes it slowly open, creaking, and goes through once
+    // there's room.
+    IEnumerator OpenDoor(HingedDoor door)
+    {
+        while (door.Closing) yield return null;           // slammed as he got there: it has to shut first
+        agent.updateRotation = false;
+        Vector3 flat = door.transform.position - transform.position; flat.y = 0f;
+        if (flat.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(flat);
+        if (Current == Mood.Chase)
+        {
+            if (Time.time - door.ClosedAt < 5f)
+            {
+                for (float t = 0f; t < doorBattering - 0.3f; t += 0.75f)
+                {
+                    playing = "DoorBang";                     // a claw swing for each blow
+                    animator.CrossFadeInFixedTime("Attack", 0.1f, 0, 0f);
+                    animator.speed = clipHitAt / 0.55f;       // the claws hit the door 0.55 s into the swing
+                    yield return new WaitForSeconds(0.55f);
+                    door.Bang();
+                    Noise.Make(door.transform.position, 15f);
+                    yield return new WaitForSeconds(0.2f);
+                }
+            }
+            door.Bang();
+            door.OpenByFrankie(slamOpenTime, 1f);
+            yield return new WaitForSeconds(slamOpenTime * 0.5f);
+        }
+        else
+        {
+            Play("Idle"); animator.speed = 1f;
+            float time = door.openTime * creakOpenFactor;
+            door.OpenByFrankie(time, 0.7f);
+            yield return new WaitForSeconds(time * 0.6f);   // most of the way open
+        }
     }
 
     IEnumerator WalkRoute(LinkPath route, Vector3 from)

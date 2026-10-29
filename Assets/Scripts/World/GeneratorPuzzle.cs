@@ -11,8 +11,7 @@ public class GeneratorPuzzle : MonoBehaviour, IInteractable
     public int fuelNeeded = 2;
     public AudioSource engine;             // the running loop, on the generator
     public AudioClip pour, fitPlug, pull, sputter;
-    public AudioClip failStart, startUp;   // the director's recordings: a failed crank, a successful start (the running loop is 'engine')
-    public float powerAfter = 3f;          // seconds into the start-up sound when the engine catches and the power comes back
+    public AudioClip failStart;            // the director's recording of a failed crank (the running loop is 'engine')
 
     public int FuelPoured { get; private set; }
     public bool PlugFitted { get; private set; }
@@ -74,17 +73,12 @@ public class GeneratorPuzzle : MonoBehaviour, IInteractable
             busy = false;
             yield break;
         }
-        // The second catches: the start-up recording, the power back once the engine catches, then the running
-        // loop takes over (faded in) when the start-up sound ends.
-        if (startUp) OneShot(startUp);
-        else if (pull) AudioSource.PlayClipAtPoint(pull, transform.position, 1f);
-        yield return new WaitForSeconds(startUp ? powerAfter : 1.2f);
-        Running = true;
+        // The second catches: the running loop swells in, and the power comes back a moment later.
+        StartRunning(1f);
+        yield return new WaitForSeconds(1.2f);
         Noise.Make(transform.position, 80f);   // the whole station hears it
         grid.Restore(transform.position);
         busy = false;
-        if (startUp) yield return new WaitForSeconds(Mathf.Max(0f, startUp.length - powerAfter - 1.5f));
-        StartRunning(1.5f);
     }
 
     void StartRunning(float fadeIn = 0f)

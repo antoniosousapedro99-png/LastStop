@@ -386,6 +386,9 @@ public static partial class LookTestBuilder
         staffDoor.doorName = "staff room";
         staffDoor.unlockSound = Load<AudioClip>(SfxDir + "/SwitchButton3_On.wav");
         staffDoor.openSound = Load<AudioClip>(SfxDir + "/OldDoorOpen.wav");
+        staffDoor.bangSound = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
+        // Frankie's way in (the doorway is too narrow for his walkable area): once the power has unlocked it.
+        WalkLink(room, "StaffDoorRoute", staffDoor, new Vector3(StaffDoorX + 0.48f, floorY, 24.4f), new Vector3(StaffDoorX + 0.48f, floorY, 27.1f));
 
         // Desk against the back wall, chair in front of it.
         var desk = Model(ArtDir + "/Props/Office/desk1_weathered.fbx", null, room, Tex2("Props/Office/desk_1_old.jpg"), 1f, 0f);

@@ -168,7 +168,7 @@ public static partial class LookTestBuilder
         var slide = pair.gameObject.AddComponent<SlidingTrainDoor>();
         slide.leafA = leaves[0]; slide.leafB = leaves[1];
         slide.along = Vector3.right; slide.apart = 0.48f; slide.startOpen = apart > 0f;
-        slide.slideSound = Load<AudioClip>(SfxDir + "/MetalCabinet1.wav");
+        slide.slideSound = Load<AudioClip>("Assets/Art/Audio/SFX/Train/MetroDoor.ogg");   // the director's metro door sound
     }
 
     // A closed steel door in a car's end doorway at 'x', with an invisible wall across the car's width.

@@ -369,6 +369,8 @@ public static partial class LookTestBuilder
         door.openAngle = 95f;   // swings into the room
         door.doorName = "service room";
         door.openSound = Load<AudioClip>(SfxDir + "/OldDoorOpen.wav");
+        door.bangSound = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
+        WalkLink(g, "GeneratorDoorRoute", door, new Vector3(67.6f, f, z + 1.2f), new Vector3(67.6f, f, z - 1.8f));   // Frankie's way in
 
         // The generator, a flickering work lamp that runs off its battery, and the maintenance log.
         var generator = Kit("Props/Plumbing/Generator.fbx", null, "Props/Plumbing/Generator.png", g, new Vector3(68f, f, z - 4f), 90f, 1.7f, true);
@@ -384,7 +386,6 @@ public static partial class LookTestBuilder
         puzzle.pull = Load<AudioClip>(SfxDir + "/CrowbarDrag1.wav");
         puzzle.sputter = Load<AudioClip>(SfxDir + "/Rockfall2.wav");
         puzzle.failStart = Load<AudioClip>("Assets/Art/Audio/SFX/Generator/GeneratorFailStart1.ogg");
-        puzzle.startUp = Load<AudioClip>("Assets/Art/Audio/SFX/Generator/GeneratorStart1.ogg");
         CanalLamp(g, "GeneratorRoomLamp_Flicker", new Vector3(68f, 9.28f, z - 3.5f), tubeLit, housing, flicker: true);
         var log = Prim(PrimitiveType.Quad, "GeneratorLog", g, new Vector3(64.02f, f + 1.55f, z - 2.2f), new Vector3(0.21f, 0.28f, 1f), Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f));
         log.transform.rotation = Quaternion.LookRotation(Vector3.left);   // faces into the room
@@ -416,6 +417,8 @@ public static partial class LookTestBuilder
         door.doorName = "station master's office";
         door.needsOfficeKey = true;
         door.openSound = Load<AudioClip>(SfxDir + "/OldDoorOpen.wav");
+        door.bangSound = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
+        WalkLink(g, "OfficeDoorRoute", door, new Vector3(57.6f, f, z - 1.2f), new Vector3(57.6f, f, z + 1.6f));   // Frankie's way in, once unlocked
 
         // Desk with a PC (the save point) and the spare spark plug; a chair; a battery lantern for light.
         var desk = Model(ArtDir + "/Props/Office/desk1_weathered.fbx", null, g, Tex2("Props/Office/desk_1_old.jpg"), 1f, 0f);

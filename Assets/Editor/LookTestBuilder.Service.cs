@@ -57,6 +57,7 @@ public static partial class LookTestBuilder
         door.openTime = 1.8f;
         door.doorName = "maintenance door";
         door.openSound = Load<AudioClip>(SfxDir + "/OldDoorOpen.wav");
+        door.bangSound = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
         return door;
     }
 
@@ -106,7 +107,7 @@ public static partial class LookTestBuilder
         var flicker = light.gameObject.AddComponent<FlickeringLight>();
         flicker.lamp = light; flicker.minCalm = 2f; flicker.maxCalm = 7f;
 
-        // Frankie's way down: through the maintenance door (only while it's open), then down the flights.
+        // Frankie's way down: through the maintenance door (he opens it if it's shut), then down the flights.
         // His walkable area can't fit through the 1 m doorway or along the narrow flights by itself.
         WalkLink(g, "DoorRoute", door, o + new Vector3(ServiceDoorX + 0.5f, -1.3f, 24.5f), o + new Vector3(ServiceDoorX + 0.5f, -1.3f, 27.2f));
         WalkLink(g, "StairRoute", null,
