@@ -1,28 +1,18 @@
+using System.Linq;
 using UnityEngine;
 
 // Sousa's family reaching out: phones around the world that ring faintly as he passes (VoicemailPhone).
 // Answering is optional, and each message listened to counts toward the hopeful ending. Two per station.
-// All lines are DRAFTS for the creative director to rewrite (Portuguese first, English subtitle under it);
-// a recorded voice can be dropped into each phone's 'voice' later.
+// The family's messages will be written by the creative director; until then every phone plays a random
+// scary sound when answered (no text, no effect on the ending). Portuguese first, English subtitle under it,
+// once written; a recorded voice can be dropped into each phone's 'voice' later.
 public static partial class LookTestBuilder
 {
     static void BuildVoicemails()
     {
         // ---- Hollis St 1: the street payphone by the bus stop (visible), his mother.
         var payphone = GameObject.Find("Payphone");
-        VoicemailOn(payphone, "Hollis_Payphone_Mother", "Mãe",
-            new[]
-            {
-                "Filho, sou eu, a mãe. Já nem sei se este número ainda é teu...",
-                "O teu pai não diz nada, mas pergunta por ti. À maneira dele.",
-                "Liga-me quando puderes. Só para eu saber que estás bem. Beijinhos.",
-            },
-            new[]
-            {
-                "Son, it's me, Mom. I don't even know if this number is still yours...",
-                "Your father doesn't say anything, but he asks about you. In his own way.",
-                "Call me when you can. Just so I know you're okay. Love you.",
-            });
+        VoicemailOn(payphone, "Hollis_Payphone_Mother", "Mãe", new string[0], new string[0]);
 
         // ---- Hollis St 2: an old maintenance phone on the squatter camp's north wall (hidden), his sister.
         float f = SvcFloor;
@@ -37,19 +27,7 @@ public static partial class LookTestBuilder
         var cord = Prim(PrimitiveType.Cylinder, "Cord", camp, wall + new Vector3(-0.12f, -0.22f, -0.06f), new Vector3(0.015f, 0.12f, 0.015f), black);
         Object.DestroyImmediate(cord.GetComponent<Collider>());
         body.GetComponent<BoxCollider>().size = new Vector3(2.2f, 1.2f, 1.6f);   // easier to aim at (covers the handset)
-        VoicemailOn(body, "Hollis_Camp_Sister", "Irmã",
-            new[]
-            {
-                "Sou eu. A mãe pediu-me para te ligar, por isso não te armes.",
-                "Fizeste anos e nem atendeste. Ela fez bolo na mesma.",
-                "Não sei o que se passa contigo, Jota. Mas fugir não resolve nada.",
-            },
-            new[]
-            {
-                "It's me. Mom asked me to call you, so don't get any ideas.",
-                "It was your birthday and you didn't even pick up. She baked a cake anyway.",
-                "I don't know what's going on with you, J. But running away doesn't fix anything.",
-            });
+        VoicemailOn(body, "Hollis_Camp_Sister", "Irmã", new string[0], new string[0]);
     }
 
     // Sousa's family photo for the inventory: Sunday lunch years ago (the director's own photo, shrunk to a
@@ -90,5 +68,10 @@ public static partial class LookTestBuilder
         vm.pickUp = Load<AudioClip>(SfxDir + "/SwitchButton1_On.wav");
         vm.hangUp = Load<AudioClip>(SfxDir + "/SwitchButton1_Off.wav");
         vm.lineHiss = Load<AudioClip>(ScareSfx + "/RadioStatic.wav");
+        // Until the director writes the family's messages: a random scary sound each time (see VoicemailPhone).
+        const string phoneSfx = "Assets/Art/Audio/SFX/Phone/";
+        vm.scares = new[] { "PhoneAnsweringMachine", "PhoneGibberish", "PhoneSicklyBreathing", "PhoneBabyCrying", "PhoneWomanCrying" }
+                    .Select(n => Load<AudioClip>(phoneSfx + n + ".ogg")).ToArray();
+        vm.rareScare = Load<AudioClip>(phoneSfx + "PhoneAloAlo.ogg");   // only 5% of the time
     }
 }

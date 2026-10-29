@@ -17,6 +17,13 @@ public class VoicemailPhone : MonoBehaviour, IInteractable
     public AudioSource earpiece;               // the line: hiss, click, voice
     public AudioClip pickUp, hangUp, lineHiss;
     public float ringDistance = 8f, ringFor = 20f, rearmDistance = 10f;
+    // For now (until the director writes the family's messages) every phone plays something scary instead:
+    // a random one of these each time it's answered, and only rarely 'rareScare'. Answering then counts for
+    // nothing (no 'reaching out', and letting it ring out doesn't fade the photo), and it rings again later.
+    public AudioClip[] scares;
+    public AudioClip rareScare;
+    public float rareChance = 0.05f;
+    bool ScareMode => scares != null && scares.Length > 0;
 
     public bool Heard { get; private set; }
     public bool Ignored { get; private set; }  // it rang out without being answered (fades his family photo)
@@ -37,7 +44,7 @@ public class VoicemailPhone : MonoBehaviour, IInteractable
         float distance = Vector3.Distance(player.position, transform.position);
         if (ringing)
         {
-            if (Time.time - ringStarted > ringFor) { StopRinging(); Ignored = true; }
+            if (Time.time - ringStarted > ringFor) { StopRinging(); if (!ScareMode) Ignored = true; }
         }
         else if (!Heard && !playing && armed && distance < ringDistance)
         {
@@ -66,6 +73,16 @@ public class VoicemailPhone : MonoBehaviour, IInteractable
         if (pickUp) earpiece.PlayOneShot(pickUp, 0.8f);
         yield return new WaitForSeconds(0.7f);
         if (lineHiss) { earpiece.clip = lineHiss; earpiece.loop = true; earpiece.volume = 0.12f; earpiece.Play(); }
+        if (ScareMode)
+        {
+            var clip = rareScare && Random.value < rareChance ? rareScare : scares[Random.Range(0, scares.Length)];
+            earpiece.PlayOneShot(clip, 1f);
+            yield return new WaitForSeconds(clip.length);
+            earpiece.Stop(); earpiece.loop = false; earpiece.volume = 1f;
+            if (hangUp) earpiece.PlayOneShot(hangUp, 0.8f);
+            playing = false;
+            yield break;
+        }
         if (voice) AudioSource.PlayClipAtPoint(voice, transform.position, 1f);
         for (int i = 0; i < portuguese.Length; i++)
         {

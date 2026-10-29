@@ -7,7 +7,7 @@ using UnityEngine;
 // Bump the version number if these rules change so Unity re-imports everything.
 public class ImportRules : AssetPostprocessor
 {
-    public override uint GetVersion() => 11;
+    public override uint GetVersion() => 12;
 
     void OnPreprocessTexture()
     {
@@ -22,7 +22,9 @@ public class ImportRules : AssetPostprocessor
         // letters when the picture is shrunk for distance; this setting fills it with the letters' colour.
         if (assetPath.Contains("/Textures/Graffiti/")) { importer.alphaIsTransparency = true; importer.wrapMode = TextureWrapMode.Clamp; }
         // Screen UI (menus, inventory frame): drawn at many sizes, so smooth filtering and no mipmaps.
-        if (assetPath.Contains("/Art/UI/")) { importer.filterMode = FilterMode.Bilinear; importer.mipmapEnabled = false; importer.wrapMode = TextureWrapMode.Clamp; }
+        // UI pictures: smooth, no mipmaps, and kept at their own size (not stretched to a power of two, which
+        // squashed the company logo).
+        if (assetPath.Contains("/Art/UI/")) { importer.filterMode = FilterMode.Bilinear; importer.mipmapEnabled = false; importer.wrapMode = TextureWrapMode.Clamp; importer.npotScale = TextureImporterNPOTScale.None; importer.alphaIsTransparency = true; }
     }
 
     // The first-person arms come with animations (grab, push, idle...). "Legacy" animation lets a
