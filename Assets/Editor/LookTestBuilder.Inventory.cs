@@ -68,6 +68,15 @@ public static partial class LookTestBuilder
         screen.preview = picture;
         screen.frame = Load<Texture2D>(UiDir + "/InventoryFrame.png");
         screen.coverPanel = Load<Texture2D>(UiDir + "/TextBlock.png");
+
+        // ---- Sousa's journal: first-person hints written as he finds things (J opens it)
+        var journal = player.AddComponent<Journal>();
+        journal.scribble = Load<AudioClip>(SfxDir + "/PaperDocument2.wav");
+        player.AddComponent<JournalDirector>();
+        var journalScreen = player.AddComponent<JournalScreen>();
+        journalScreen.journal = journal;
+        journalScreen.look = player.GetComponent<PlayerLook>();
+        journalScreen.pageSound = Load<AudioClip>(SfxDir + "/PaperDocument3.wav");
     }
 
     // Readies one item model for the stage: no colliders, preview layer only, 'size' metres at its longest,

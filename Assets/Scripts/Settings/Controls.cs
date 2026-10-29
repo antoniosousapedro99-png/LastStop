@@ -9,7 +9,7 @@ using UnityEngine.InputSystem.Controls;
 // - Controller: a fixed layout (left stick moves, right stick looks, A jump, B crouch, X use, Y flare,
 //   LB/RB lean, L3 sprint, R3 turn around, d-pad up torch, d-pad down battery, View inventory, Menu pause).
 // - Menus have their own fixed keys (arrows/WASD, Enter, Esc; d-pad/stick, A, B) via the Ui* calls.
-public enum GameAction { Forward, Back, Left, Right, Sprint, Crouch, Jump, LeanLeft, LeanRight, Use, Torch, SwapBattery, Flare, Inventory, Pause, TurnAround }
+public enum GameAction { Forward, Back, Left, Right, Sprint, Crouch, Jump, LeanLeft, LeanRight, Use, Torch, SwapBattery, Flare, Inventory, Pause, TurnAround, Journal }
 
 public static class Controls
 {
@@ -20,7 +20,7 @@ public static class Controls
         (GameAction.Sprint, "SPRINT"), (GameAction.Crouch, "CROUCH"), (GameAction.Jump, "JUMP"),
         (GameAction.LeanLeft, "LEAN LEFT"), (GameAction.LeanRight, "LEAN RIGHT"), (GameAction.TurnAround, "LOOK BACK (HOLD)"), (GameAction.Use, "USE / PICK UP"),
         (GameAction.Torch, "FLASHLIGHT"), (GameAction.SwapBattery, "SWAP BATTERY"), (GameAction.Flare, "FLARE"),
-        (GameAction.Inventory, "INVENTORY"), (GameAction.Pause, "PAUSE"),
+        (GameAction.Inventory, "INVENTORY"), (GameAction.Journal, "JOURNAL"), (GameAction.Pause, "PAUSE"),
     };
 
     static readonly Dictionary<GameAction, string> Defaults = new Dictionary<GameAction, string>
@@ -30,6 +30,7 @@ public static class Controls
         { GameAction.LeanLeft, "<Keyboard>/q" }, { GameAction.LeanRight, "<Keyboard>/e" }, { GameAction.Use, "<Mouse>/leftButton" },
         { GameAction.Torch, "<Keyboard>/f" }, { GameAction.SwapBattery, "<Keyboard>/h" }, { GameAction.Flare, "<Keyboard>/g" },
         { GameAction.Inventory, "<Keyboard>/tab" }, { GameAction.Pause, "<Keyboard>/escape" }, { GameAction.TurnAround, "<Keyboard>/leftAlt" },
+        { GameAction.Journal, "<Keyboard>/j" },
     };
 
     static string PrefKey(GameAction a) => "Key_" + a;
@@ -89,6 +90,7 @@ public static class Controls
             GameAction.Inventory => pad.selectButton,
             GameAction.Pause => pad.startButton,
             GameAction.TurnAround => pad.rightStickButton,
+            GameAction.Journal => pad.dpad.right,
             _ => null,   // movement comes from the left stick (see Move)
         };
     }
@@ -183,7 +185,7 @@ public static class Controls
         GameAction.Sprint => "L3", GameAction.Crouch => "B", GameAction.Jump => "A",
         GameAction.LeanLeft => "LB", GameAction.LeanRight => "RB", GameAction.Use => "X",
         GameAction.Torch => "D-PAD UP", GameAction.SwapBattery => "D-PAD DOWN", GameAction.Flare => "Y",
-        GameAction.Inventory => "VIEW", GameAction.Pause => "MENU", GameAction.TurnAround => "R3", _ => "?",
+        GameAction.Inventory => "VIEW", GameAction.Pause => "MENU", GameAction.TurnAround => "R3", GameAction.Journal => "D-PAD RIGHT", _ => "?",
     };
 
     // ---------------------------------------------------------------- menu navigation (fixed keys)

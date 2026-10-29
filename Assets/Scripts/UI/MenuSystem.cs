@@ -28,6 +28,7 @@ public class MenuSystem : MonoBehaviour
     public Texture2D panel;
 
     public static bool IsOpen { get; private set; }   // a menu (or the title) is on screen
+    public static int ClosedFrame { get; private set; } = -1;   // the frame the pause menu last closed (Interactor ignores Use then)
 
     enum Page { PressKey, Main, Pause, Options, Credits, Confirm, Keys, Pad }
     Page page;
@@ -147,7 +148,8 @@ public class MenuSystem : MonoBehaviour
             SaveSystem.PlaySeconds += Time.deltaTime;   // zero while paused
             // In the game: the Pause control (or Esc) pauses, unless Esc just closed the inventory.
             bool pause = Controls.Pressed(GameAction.Pause) || (Keyboard.current?.escapeKey.wasPressedThisFrame ?? false);
-            if (pause && !InventoryScreen.IsOpen && InventoryScreen.ClosedFrame != Time.frameCount) OpenPause();
+            if (pause && !InventoryScreen.IsOpen && InventoryScreen.ClosedFrame != Time.frameCount
+                && !JournalScreen.IsOpen && JournalScreen.ClosedFrame != Time.frameCount) OpenPause();
             return;
         }
 
@@ -368,6 +370,7 @@ public class MenuSystem : MonoBehaviour
     void ClosePause()
     {
         IsOpen = false;
+        ClosedFrame = Time.frameCount;
         Time.timeScale = timeScaleBefore;
         AudioListener.pause = false;
         Hud.Hidden = false;

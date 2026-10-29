@@ -88,6 +88,13 @@ public static partial class LookTestBuilder
         ai.clipWalkSpeed = 0.4f; ai.clipRunSpeed = 1.15f; ai.clipHitAt = 0.6f;
         ai.walkFootfalls = new[] { 0.02f, 0.52f }; ai.runFootfalls = new[] { 0.43f, 0.98f };
         ai.maxWalkPlayback = 2.3f; ai.maxRunPlayback = 3f;
+        // Where he slips away to when the player stays out of his reach (on the street) for 20 s: deep in the
+        // tunnels and lower levels of both stations (the furthest one from the player is used).
+        ai.hideaways = new[]
+        {
+            FrankieSpawn, new Vector3(75f, -1.3f, 22.75f), new Vector3(-56f, -9.3f, 47f),
+            new Vector3(-110f, -1.3f, 302.75f), new Vector3(75f, -1.3f, 318.25f), new Vector3(-46f, -9.3f, 346f),
+        };
         ai.voice = voice; ai.feet = feet;
         // His own sounds, made from the Darkworld pack with ffmpeg (see Assets/Art/CREDITS.md).
         ai.breaths = Clips("Frankie/FrankieBreath1", "Frankie/FrankieBreath2", "Frankie/FrankieBreath3");

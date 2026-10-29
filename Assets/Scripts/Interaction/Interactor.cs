@@ -37,7 +37,10 @@ public class Interactor : MonoBehaviour
         lastNote = note;
 
         bool aiming = Shotgun.IsAiming;
-        if (!aiming && Target != null && Controls.Pressed(GameAction.Use) && Cursor.lockState == CursorLockMode.Locked)
+        // (Not on the frame the pause menu closes, or just after: the click on "Resume" isn't a Use. Without
+        // this, resuming while hiding in a locker stepped straight out of it.)
+        bool justResumed = Time.frameCount - MenuSystem.ClosedFrame <= 2 || Time.frameCount - JournalScreen.ClosedFrame <= 2;
+        if (!aiming && Target != null && Controls.Pressed(GameAction.Use) && Cursor.lockState == CursorLockMode.Locked && !justResumed)
         {
             Target.Interact(this);
             Interacted?.Invoke();

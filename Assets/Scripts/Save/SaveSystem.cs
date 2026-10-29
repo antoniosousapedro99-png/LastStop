@@ -176,6 +176,8 @@ public static class SaveSystem
             if (phone.Heard) d.heardVoicemails.Add(phone.id);
             if (phone.Ignored) d.ignoredVoicemails.Add(phone.id);
         }
+        var journal = Journal.Current;
+        if (journal) journal.Save(d.journalIds, d.journalTexts);
 
         var monster = UnityEngine.Object.FindAnyObjectByType<FrankieAI>();   // only found while he's awake
         if (monster)
@@ -207,6 +209,7 @@ public static class SaveSystem
             if (d.heardVoicemails.Contains(phone.id)) phone.SetHeard();
             if (d.ignoredVoicemails.Contains(phone.id)) phone.SetIgnored();
         }
+        Journal.Current?.Load(d.journalIds, d.journalTexts);
         PlaySeconds = d.playSeconds;
 
         var inv = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();

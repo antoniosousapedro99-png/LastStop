@@ -35,6 +35,7 @@ public class SaveData
     public List<string> firedScares = new List<string>();   // one-time scares that already happened
     public List<string> heardVoicemails = new List<string>();   // family messages listened to (VoicemailPhone ids)
     public List<string> ignoredVoicemails = new List<string>(); // ...and those he let ring out (they fade the photo)
+    public List<string> journalIds = new List<string>(), journalTexts = new List<string>();   // thoughts written so far
 
     // Canal St Junction
     public int generatorFuel;

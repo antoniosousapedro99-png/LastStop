@@ -50,8 +50,9 @@ public class InventoryScreen : MonoBehaviour
 
     void Update()
     {
-        if (Controls.Pressed(GameAction.Inventory) && !MenuSystem.IsOpen && !SaveMenu.IsOpen) { if (IsOpen) Close(); else Open(); return; }
+        if (Controls.Pressed(GameAction.Inventory) && !MenuSystem.IsOpen && !SaveMenu.IsOpen && !JournalScreen.IsOpen) { if (IsOpen) Close(); else Open(); return; }
         if (!IsOpen) return;
+        if (Controls.Pressed(GameAction.Journal)) { Close(); FindAnyObjectByType<JournalScreen>()?.Open(); return; }   // over to the journal
         if (Controls.UiBack()) { Close(); return; }
 
         Refresh();
@@ -185,6 +186,10 @@ public class InventoryScreen : MonoBehaviour
             }
             if (GUI.Button(row, GUIContent.none, GUIStyle.none)) selected = i;
         }
+
+        // How to reach the journal from here.
+        smallStyle.normal.textColor = new Color(0.75f, 0.68f, 0.68f);
+        GUI.Label(R(new Rect(44, FrameH - 30, 400, 26)), "[" + (Controls.UsingGamepad ? "D-PAD RIGHT" : Controls.Label(GameAction.Journal)) + "] JOURNAL", smallStyle);
 
         // What the selected item is.
         if (entries.Count > 0)

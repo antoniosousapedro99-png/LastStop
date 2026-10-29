@@ -23,7 +23,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent), typeof(FrankieSenses))]
 public class FrankieAI : MonoBehaviour
 {
-    public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff, BreakIn }
+    public enum Mood { Wander, Investigate, Chase, Search, Attack, Retreat, Repelled, Reveal, WalkOff, BreakIn, SlipAway }
 
     public Animator animator;
     public float walkSpeed = 0.9f, chaseSpeed = 3.5f;
@@ -41,6 +41,10 @@ public class FrankieAI : MonoBehaviour
     // into the clip ('clipHitAt'), so it is sped up to match 'hitAt'.
     public float hitAt = 0.5f, attackLength = 1f, clipHitAt = 0.8f;
     public float lungeDistance = 1.5f;         // how far he leaps forward before the claws land
+    // If the player stays somewhere he can't walk (up on the street) for this long while he's near, he backs
+    // off into the dark and, once out of sight, reappears at the far one of these spots (deep in the tunnels).
+    public float giveUpAfter = 20f;
+    public Vector3[] hideaways;
     public float hitArc = 50f;                 // the claws only catch a player within this angle of straight ahead
     public float leapHeight = 0.6f, leapSpeed = 4f;   // his jumps between platform and tracks
     public float revealStare = 2.5f;           // seconds he keeps staring after the player notices him
@@ -152,8 +156,11 @@ public class FrankieAI : MonoBehaviour
         if (flare && !staged && Current != Mood.Repelled && Vector3.Distance(flare.position, transform.position) < flareKeepAway)
             SetMood(Mood.Repelled);
 
+        if (Current != Mood.SlipAway && Current != Mood.Reveal && Current != Mood.WalkOff && CheckUnreachable()) SetMood(Mood.SlipAway);
+
         switch (Current)
         {
+            case Mood.SlipAway: SlipAway(); break;
             case Mood.Wander: Wander(); break;
             case Mood.Investigate: Investigate(); break;
             case Mood.Chase: Chase(flare); break;
@@ -391,6 +398,41 @@ public class FrankieAI : MonoBehaviour
         {
             if (cracks.Length > 0) Say(cracks[Random.Range(0, cracks.Length)], 0.8f);   // his neck snaps as he turns
             SetMood(Mood.WalkOff);
+        }
+    }
+
+    // ---- giving up on a player he can't reach (e.g. up on the street)
+    float unreachableFor;
+    Vector3 slipTo;
+
+    bool CheckUnreachable()
+    {
+        bool off = senses.Player && !NavMesh.SamplePosition(senses.Player.position, out _, 1.5f, NavMesh.AllAreas)
+                   && Vector3.Distance(transform.position, senses.Player.position) < 30f;
+        unreachableFor = off ? unreachableFor + Time.deltaTime : 0f;
+        if (unreachableFor < giveUpAfter || hideaways == null || hideaways.Length == 0) return false;
+        unreachableFor = 0f;
+        // The hideaway furthest from the player, in the same station (and on his walkable area).
+        float best = -1f;
+        foreach (var h in hideaways)
+        {
+            if (SaveSystem.IsCanal(h) != SaveSystem.IsCanal(transform.position)) continue;   // only in the station he's in
+            if (!NavMesh.SamplePosition(h, out var hit, 2f, NavMesh.AllAreas)) continue;
+            float d = Vector3.Distance(hit.position, senses.Player.position);
+            if (d > best) { best = d; slipTo = hit.position; }
+        }
+        return best > 0f;
+    }
+
+    // Backs away down into the dark; the moment the player can't see him (or after a while), he's gone, and
+    // turns up at the hideaway, roaming again.
+    void SlipAway()
+    {
+        if (moodTime < 0.1f) { agent.speed = walkSpeed * 1.5f; agent.SetDestination(slipTo); }
+        if ((moodTime > 2f && !SeenByPlayer) || moodTime > 15f)
+        {
+            agent.Warp(slipTo);
+            SetMood(Mood.Wander);
         }
     }
 
