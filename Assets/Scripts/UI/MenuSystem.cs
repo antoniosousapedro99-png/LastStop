@@ -451,7 +451,7 @@ public class MenuSystem : MonoBehaviour
         // The studio's logo in the bottom-right corner, as a watermark (40% see-through).
         if (watermark)
         {
-            const float w = 420f;
+            const float w = 336f;   // 20% smaller than the first 420
             float h = w * watermark.height / watermark.width;
             var old = GUI.color;
             GUI.color = new Color(1f, 1f, 1f, 0.6f);
