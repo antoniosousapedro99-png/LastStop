@@ -6,7 +6,7 @@ using UnityEngine;
 public class ItemGlow : MonoBehaviour
 {
     public Color colour = new Color(1f, 0.92f, 0.75f);   // warm candle-white
-    public float strength = 0.22f;                       // emission at the peak of a "breath"
+    public float strength = 0.44f;                       // emission at the peak of a "breath" (doubled 2026-10-29: testers missed items)
     public float breathSeconds = 2.6f;                   // one slow pulse
 
     Renderer[] renderers;
