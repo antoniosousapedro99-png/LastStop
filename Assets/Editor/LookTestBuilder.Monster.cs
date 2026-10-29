@@ -139,7 +139,7 @@ public static partial class LookTestBuilder
         // (No longer given to Frankie: the sting on first seeing him was loud rather than scary. Removed 2026-10-29.)
 
         var musicSource = arrivalObject.AddComponent<AudioSource>();
-        musicSource.clip = Load<AudioClip>("Assets/Art/Audio/Music/Svirls/Chase1.ogg");
+        musicSource.clip = Load<AudioClip>("Assets/Art/Audio/Music/Svirls/Chase3.ogg");
         musicSource.playOnAwake = false;
         var chaseMusic = arrivalObject.AddComponent<ChaseMusic>();
         chaseMusic.monster = ai;
