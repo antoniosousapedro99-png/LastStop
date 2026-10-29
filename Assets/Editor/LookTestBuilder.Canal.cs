@@ -375,14 +375,16 @@ public static partial class LookTestBuilder
         var puzzle = generator.AddComponent<GeneratorPuzzle>();
         puzzle.grid = canalGrid;
         var engine = generator.AddComponent<AudioSource>();
-        engine.clip = Load<AudioClip>(SfxDir + "/Scares/MachineHum.wav");
-        engine.loop = true; engine.playOnAwake = false; engine.volume = 1f; engine.pitch = 1.35f;
+        engine.clip = Load<AudioClip>("Assets/Art/Audio/SFX/Generator/GeneratorWorkingDroneLoop.ogg");   // the director's running loop
+        engine.loop = true; engine.playOnAwake = false; engine.volume = 1f;
         engine.spatialBlend = 1f; engine.rolloffMode = AudioRolloffMode.Linear; engine.minDistance = 3f; engine.maxDistance = 45f;
         puzzle.engine = engine;
         puzzle.pour = Load<AudioClip>(SfxDir + "/WaterSplash1.wav");
         puzzle.fitPlug = Load<AudioClip>(SfxDir + "/SwitchButton3_On.wav");
         puzzle.pull = Load<AudioClip>(SfxDir + "/CrowbarDrag1.wav");
         puzzle.sputter = Load<AudioClip>(SfxDir + "/Rockfall2.wav");
+        puzzle.failStart = Load<AudioClip>("Assets/Art/Audio/SFX/Generator/GeneratorFailStart1.ogg");
+        puzzle.startUp = Load<AudioClip>("Assets/Art/Audio/SFX/Generator/GeneratorStart1.ogg");
         CanalLamp(g, "GeneratorRoomLamp_Flicker", new Vector3(68f, 9.28f, z - 3.5f), tubeLit, housing, flicker: true);
         var log = Prim(PrimitiveType.Quad, "GeneratorLog", g, new Vector3(64.02f, f + 1.55f, z - 2.2f), new Vector3(0.21f, 0.28f, 1f), Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f));
         log.transform.rotation = Quaternion.LookRotation(Vector3.left);   // faces into the room

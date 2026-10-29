@@ -11,6 +11,8 @@ public class GeneratorPuzzle : MonoBehaviour, IInteractable
     public int fuelNeeded = 2;
     public AudioSource engine;             // the running loop, on the generator
     public AudioClip pour, fitPlug, pull, sputter;
+    public AudioClip failStart, startUp;   // the director's recordings: a failed crank, a successful start (the running loop is 'engine')
+    public float powerAfter = 3f;          // seconds into the start-up sound when the engine catches and the power comes back
 
     public int FuelPoured { get; private set; }
     public bool PlugFitted { get; private set; }
@@ -62,29 +64,59 @@ public class GeneratorPuzzle : MonoBehaviour, IInteractable
     {
         busy = true;
         pulls++;
-        if (pull) AudioSource.PlayClipAtPoint(pull, transform.position, 1f);
-        yield return new WaitForSeconds(0.4f);
         if (pulls < 2)
         {
-            if (sputter) AudioSource.PlayClipAtPoint(sputter, transform.position, 1f);
+            // The first crank fails: the whole failed attempt plays out before he can try again.
             Noise.Make(transform.position, 25f);
+            if (failStart) { OneShot(failStart); yield return new WaitForSeconds(failStart.length); }
+            else { if (pull) AudioSource.PlayClipAtPoint(pull, transform.position, 1f); yield return new WaitForSeconds(1.9f); }
             Hud.Notice("It coughs and dies. Again.", 2.5f);
-            yield return new WaitForSeconds(1.5f);
             busy = false;
             yield break;
         }
-        if (sputter) AudioSource.PlayClipAtPoint(sputter, transform.position, 1f);
-        yield return new WaitForSeconds(0.8f);
-        StartRunning();
+        // The second catches: the start-up recording, the power back once the engine catches, then the running
+        // loop takes over (faded in) when the start-up sound ends.
+        if (startUp) OneShot(startUp);
+        else if (pull) AudioSource.PlayClipAtPoint(pull, transform.position, 1f);
+        yield return new WaitForSeconds(startUp ? powerAfter : 1.2f);
+        Running = true;
         Noise.Make(transform.position, 80f);   // the whole station hears it
         grid.Restore(transform.position);
         busy = false;
+        if (startUp) yield return new WaitForSeconds(Mathf.Max(0f, startUp.length - powerAfter - 1.5f));
+        StartRunning(1.5f);
     }
 
-    void StartRunning()
+    void StartRunning(float fadeIn = 0f)
     {
         Running = true;
-        if (engine) { engine.loop = true; engine.Play(); }
+        if (!engine) return;
+        engine.loop = true;
+        engine.Play();
+        if (fadeIn > 0f) StartCoroutine(FadeIn(engine, fadeIn));
+    }
+
+    static IEnumerator FadeIn(AudioSource source, float seconds)
+    {
+        float target = source.volume;
+        for (float t = 0f; t < seconds; t += Time.deltaTime) { source.volume = target * t / seconds; yield return null; }
+        source.volume = target;
+    }
+
+    // A one-off sound at the generator, on its own speaker set up like the engine's (so fading the running
+    // loop in doesn't dip the end of the start-up sound).
+    AudioSource oneShots;
+    void OneShot(AudioClip clip)
+    {
+        if (!engine) { AudioSource.PlayClipAtPoint(clip, transform.position, 1f); return; }
+        if (!oneShots)
+        {
+            oneShots = engine.gameObject.AddComponent<AudioSource>();
+            oneShots.playOnAwake = false; oneShots.spatialBlend = engine.spatialBlend; oneShots.rolloffMode = engine.rolloffMode;
+            oneShots.minDistance = engine.minDistance; oneShots.maxDistance = engine.maxDistance;
+            oneShots.outputAudioMixerGroup = engine.outputAudioMixerGroup;
+        }
+        oneShots.PlayOneShot(clip, 1f);
     }
 
     // Loading a save.
