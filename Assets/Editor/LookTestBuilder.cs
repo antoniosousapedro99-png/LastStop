@@ -714,6 +714,16 @@ public static partial class LookTestBuilder
         return cab;
     }
 
+    // One piece of the "PSX Industrial Pack" (Sketchfab) that uses its first texture (rocks, bricks, debris),
+    // stretched to 'size' (x, y, z), standing on its origin.
+    static GameObject IndustrialPiece(Transform parent, string piece, Vector3 size)
+    {
+        var go = Model(ArtDir + "/Props/Industrial/" + piece + ".fbx", null, parent, Tex2("Props/Industrial/T_Industrial.png"), 1f, 0f);
+        var s = Bounds(go).size;
+        go.transform.localScale = Vector3.Scale(go.transform.localScale, new Vector3(size.x / s.x, size.y / s.y, size.z / s.z));
+        return go;
+    }
+
     static Material EmissiveMat(string name, Color glow)
     {
         string path = MatDir + "/M_" + name + ".mat";

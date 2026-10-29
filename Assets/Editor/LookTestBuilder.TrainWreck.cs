@@ -28,20 +28,25 @@ public static partial class LookTestBuilder
             float x = start + R(0f, moundLength);
             float top = (ceilY - floorY) * (1f - (x - start) / moundLength) + 0.15f;   // the slope's height here
             float size = R(0.25f, 0.85f);
-            var chunk = Box("Rubble", g, Vector3.zero, new Vector3(size, size * R(0.5f, 0.9f), size * R(0.7f, 1.2f)), i % 4 == 0 ? dark : concrete);
+            // Rocks, and every fourth a broken cement block (the industrial pack's Rock and BrickCement).
+            var chunk = IndustrialPiece(g, i % 4 == 0 ? "BrickCement" : "Rock", new Vector3(size, size * R(0.5f, 0.9f), size * R(0.7f, 1.2f)));
+            chunk.name = "Rubble";
             chunk.transform.position = new Vector3(x, floorY + R(0f, Mathf.Max(0.05f, top - size * 0.4f)), wallN + R(0.2f, width - 0.2f));
             chunk.transform.rotation = Quaternion.Euler(R(-40f, 40f), R(0f, 360f), R(-40f, 40f));
-            Object.DestroyImmediate(chunk.GetComponent<Collider>());
         }
         // Loose bits spilled across the floor toward the debris wall.
         for (int i = 0; i < 14; i++)
         {
             float size = R(0.1f, 0.3f);
-            var bit = Box("RubbleBit", g, Vector3.zero, new Vector3(size, size * 0.6f, size), concrete);
+            var bit = IndustrialPiece(g, i % 2 == 0 ? "Brick" : "Rock", new Vector3(size, size * 0.6f, size));
+            bit.name = "RubbleBit";
             bit.transform.rotation = Quaternion.Euler(R(-20f, 20f), R(0f, 360f), R(-20f, 20f));
             StandOn(bit, new Vector3(R(start + moundLength - 0.5f, nearX - 0.5f), floorY, wallN + R(0.2f, width - 0.2f)));
-            Object.DestroyImmediate(bit.GetComponent<Collider>());
         }
+        // A low spread of dirt and debris where the mound meets the floor (the industrial pack's PileDebris).
+        var spread = IndustrialPiece(g, "PileDebris", new Vector3(1.8f, 0.3f, width - 0.3f));
+        spread.name = "RubbleSpread";
+        StandOn(spread, new Vector3(start + moundLength + 0.2f, floorY - 0.05f, midZ));
 
         // ---- the ceiling caved in: torn panels hanging down at angles, one end still up at the ceiling
         (float x, float z, float droop, float yaw)[] panels =

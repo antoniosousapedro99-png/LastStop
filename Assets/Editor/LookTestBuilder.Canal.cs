@@ -363,10 +363,27 @@ public static partial class LookTestBuilder
 
         var hinge = new GameObject("GeneratorRoomDoor");
         hinge.transform.SetParent(g);
-        hinge.transform.position = new Vector3(67f, f, z - 0.15f);
-        Box("Door", hinge.transform, new Vector3(67.6f, f + 1.09f, z - 0.15f), new Vector3(1.16f, 2.18f, 0.05f), Mat("DoorMetal", Tex("Door_01.jpg"), new Color(0.7f, 0.7f, 0.7f), 1f, 0.3f, 0.3f));
+        // The Soviet metro pack's door with a DANGER HIGH VOLTAGE sign, the sign toward the hall. It's hinged on
+        // its east side (the sign's side of the model needs it that way round, handle to the west).
+        hinge.transform.position = new Vector3(68.2f, f, z - 0.15f);
+        var leaf = Model(ArtDir + "/Props/SovietMetro/DangerDoor.fbx", null, hinge.transform, null, 1f, 0f);
+        leaf.name = "Door";
+        foreach (var r in leaf.GetComponentsInChildren<Renderer>())
+        {
+            var mats = r.sharedMaterials;
+            for (int m = 0; m < mats.Length; m++)
+                mats[m] = mats[m].name.Contains("dangersign") ? Mat("DangerSign", Tex2("Props/SovietMetro/DangerHighVoltage.jpg"), Color.white, 1f, 0.2f)
+                        : mats[m].name.Contains("kapimaterial2") ? Mat("DoorHandleGrey", null, new Color(0.57f, 0.57f, 0.57f), 1f, 0.5f, 0.7f)
+                        : Mat("DoorDarkBrown", null, new Color(0.37f, 0.15f, 0.1f), 1f, 0.25f, 0.3f);
+            r.sharedMaterials = mats;
+        }
+        var ds = Bounds(leaf).size;   // thin along X, wide along Z at first
+        leaf.transform.localScale = Vector3.Scale(leaf.transform.localScale, new Vector3(1f, 2.18f / ds.y, 1.16f / ds.z));
+        leaf.transform.rotation = Quaternion.Euler(0f, 90f, 0f) * leaf.transform.rotation;   // across the doorway, sign to the north
+        leaf.transform.position += new Vector3(67.6f, f + 1.09f, z - 0.15f) - Bounds(leaf).center;
+        FitBoxCollider(leaf);
         var door = hinge.AddComponent<HingedDoor>();
-        door.openAngle = 95f;   // swings into the room
+        door.openAngle = -95f;   // swings into the room
         door.doorName = "service room";
         door.openSound = Load<AudioClip>(SfxDir + "/OldDoorOpen.wav");
         door.bangSound = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");

@@ -29,13 +29,25 @@ public static partial class LookTestBuilder
         // ---- arrival: a brick chamber with a ladder up the south wall to the latch's hatch (shut overhead)
         SewerRoom(g, "Arrival", -2f, 2f, 0f, 4f, 0f, 3f, (2, -1f, 1f, 2.3f));
         Span("ArrivalHatch", g, o + new Vector3(-0.6f, 2.9f, 0f), o + new Vector3(0.6f, 2.98f, 1.1f), Mat("LatchSteel", Tex2(SewerTex + "Metal.jpg"), new Color(0.55f, 0.53f, 0.5f), 1f, 0.35f, 0.6f));
-        var rung = Mat("LadderSteel", null, new Color(0.35f, 0.33f, 0.3f), 1f, 0.4f, 0.7f);
-        for (int i = 0; i < 8; i++)   // ladder rungs up the south wall
+        // A ladder leaning on the south wall up to the hatch: one side of the Soviet metro pack's stepladder
+        // (Tools/Blender/ladder_half.py), dark steel. Turned so its top leans toward the wall (-Z).
+        var ladder = Model(ArtDir + "/Props/SovietMetro/Ladder.fbx", null, g, null, 1f, 0f);
+        ladder.name = "Ladder";
+        var ladderSteel = Mat("LadderSteel", null, new Color(0.35f, 0.33f, 0.3f), 1f, 0.4f, 0.7f);
+        foreach (var lr in ladder.GetComponentsInChildren<Renderer>()) { var ms = lr.sharedMaterials; for (int m = 0; m < ms.Length; m++) ms[m] = ladderSteel; lr.sharedMaterials = ms; }
+        ladder.transform.localScale *= 2.85f / Bounds(ladder).size.y;
+        var mf = ladder.GetComponentInChildren<MeshFilter>();
+        Vector3 topSum = Vector3.zero, footSum = Vector3.zero; int tops = 0, feet = 0;
+        float lowY = Bounds(ladder).min.y, highY = Bounds(ladder).max.y;
+        foreach (var v in mf.sharedMesh.vertices)
         {
-            var r = Prim(PrimitiveType.Cylinder, "LadderRung", g, o + new Vector3(0f, 0.3f + i * 0.33f, 0.12f), new Vector3(0.025f, 0.25f, 0.025f), rung);
-            r.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
-            Object.DestroyImmediate(r.GetComponent<Collider>());
+            var w = mf.transform.TransformPoint(v);
+            if (w.y > highY - 0.2f) { topSum += w; tops++; } else if (w.y < lowY + 0.2f) { footSum += w; feet++; }
         }
+        Vector3 lean = topSum / tops - footSum / feet; lean.y = 0f;
+        ladder.transform.rotation = Quaternion.FromToRotation(lean.normalized, Vector3.back) * ladder.transform.rotation;
+        StandOn(ladder, o + new Vector3(0f, 0f, 0.5f));
+        ladder.transform.position += Vector3.forward * (o.z + 0.03f - Bounds(ladder).min.z);   // its top against the wall
         EmergencyLight(g, o + new Vector3(1.6f, 2.5f, 3.6f), 1.6f, 6f);
 
         // ---- main tunnel: a walkway on the west, a knee-deep channel on the east
@@ -100,8 +112,8 @@ public static partial class LookTestBuilder
         SewerRoom(g, "Outfall", -1.5f, 1.5f, 74f, 90f, 0f, 3f, (0, -1.5f, 1.5f, 3f), (2, -1.5f, 1.5f, 3f));
         SewerWaterPlane(g, "OutfallWater", -1.5f, 1.5f, 74f, 90f, 0.15f);
         for (float x = -1.35f; x <= 1.36f; x += 0.3f)
-            Prim(PrimitiveType.Cylinder, "GrateBar", g, o + new Vector3(x, 1.5f, 88.5f), new Vector3(0.06f, 1.5f, 0.06f), rung);
-        Span("GrateRail", g, o + new Vector3(-1.5f, 2.8f, 88.45f), o + new Vector3(1.5f, 2.95f, 88.55f), rung);
+            Prim(PrimitiveType.Cylinder, "GrateBar", g, o + new Vector3(x, 1.5f, 88.5f), new Vector3(0.06f, 1.5f, 0.06f), ladderSteel);
+        Span("GrateRail", g, o + new Vector3(-1.5f, 2.8f, 88.45f), o + new Vector3(1.5f, 2.95f, 88.55f), ladderSteel);
         var night = Prim(PrimitiveType.Quad, "RiverNight", g, o + new Vector3(0f, 1.5f, 89.98f), new Vector3(3f, 3f, 1f), EmissiveMat("RiverNight", new Color(0.12f, 0.16f, 0.24f)));
         night.transform.rotation = Quaternion.LookRotation(Vector3.forward);
         Object.DestroyImmediate(night.GetComponent<Collider>());
