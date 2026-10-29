@@ -59,7 +59,6 @@ public static partial class LookTestBuilder
         var doorMetal = Mat("DoorMetal", Tex("Door_01.jpg"), new Color(0.7f, 0.7f, 0.7f), 1f, 0.3f, 0.3f);
         var puddle = TransparentMat("Puddle", new Color(0.01f, 0.012f, 0.012f, 0.6f), 0.98f);
         var tubeLit = EmissiveMat("TubeLit", Fluorescent * 2.2f);
-        var redGlow = EmissiveMat("EmergencyGlow", Emergency * 3f);
 
         // Layout rule (see GeometryCheck.cs): pieces meet edge to edge and never overlap along a face,
         // otherwise their surfaces fight for the same pixels and flicker. Walls run the full height,
@@ -163,9 +162,9 @@ public static partial class LookTestBuilder
             Span("EndCap", tunnel, Mirror(new Vector3(end, -1.5f, 19.7f), side), Mirror(new Vector3(end + 0.3f, top, 25.8f), side), tunnelConcrete);
         }
         // Red emergency lamp deep in the east tunnel: a distant warning colour at the edge of the fog.
-        var red = Box("EmergencyLamp", root.Find("Tunnel_E"), new Vector3(31, 1.2f, 20.03f), new Vector3(0.25f, 0.18f, 0.06f), redGlow);
+        var red = WallLamp(root.Find("Tunnel_E"), "EmergencyLamp", new Vector3(31, 1.2f, 20.1f), Emergency * 2.5f, out Vector3 redOut);
         var redLight = AddLight(red, LightType.Point, Emergency, 8f, 7f);
-        redLight.transform.localPosition = new Vector3(0, 0, 0.4f);
+        redLight.transform.position = Bounds(red).center + redOut * 0.4f;
 
         // Second puddle on the platform floor, under a working lamp.
         Puddle("PlatformPuddle", hall, new Vector3(-0.8f, 0.01f, 17.4f), 2.6f, 1.6f, puddle);
@@ -655,6 +654,64 @@ public static partial class LookTestBuilder
             probe.customBakedTexture = AssetDatabase.LoadAssetAtPath<Texture>(path);
         }
         else Debug.LogWarning("Reflection bake failed");
+    }
+
+    // A textured surface that also glows, in 'glow', where 'glowMask' is light (a lamp's glass).
+    static Material GlowMaskMat(string name, Texture2D tex, Texture2D glowMask, Color glow)
+    {
+        var mat = Mat(name, tex, Color.white, 1f, 0.3f);
+        mat.EnableKeyword("_EMISSION");
+        mat.SetTexture("_EmissionMap", glowMask);
+        mat.SetColor("_EmissionColor", glow);
+        mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        EditorUtility.SetDirty(mat);
+        return mat;
+    }
+
+    // The caged bulkhead lamp ("Low Poly PSX Wall Lamp", Sketchfab), its glass glowing in 'glow'. It faces +Z
+    // (its back is on -Z) and stands on its origin.
+    static GameObject CagedLamp(Transform parent, string name, Color glow)
+    {
+        var lamp = Model(ArtDir + "/Props/WallLamp/WallLamp.fbx", null, parent, Tex2("Props/WallLamp/WallLamp.png"), 1.3f, 0f);
+        lamp.name = name;
+        var mat = GlowMaskMat("WallLamp_" + ColorUtility.ToHtmlStringRGB(glow), Tex2("Props/WallLamp/WallLamp.png"), Tex2("Props/WallLamp/WallLampLight.png"), glow);
+        foreach (var r in lamp.GetComponentsInChildren<Renderer>())
+        {
+            var mats = r.sharedMaterials;
+            for (int i = 0; i < mats.Length; i++) mats[i] = mat;
+            r.sharedMaterials = mats;
+        }
+        return lamp;
+    }
+
+    // A caged lamp fixed to the nearest wall (or ceiling) within 1 m of 'pos', its back flat against it; with
+    // nothing that close it hangs where it is, facing down. 'outward' is the way it faces.
+    static GameObject WallLamp(Transform parent, string name, Vector3 pos, Color glow, out Vector3 outward)
+    {
+        Physics.SyncTransforms();
+        Vector3 at = pos; outward = Vector3.down; float nearest = 1.01f;
+        foreach (var d in new[] { Vector3.left, Vector3.right, Vector3.back, Vector3.forward, Vector3.up })
+            if (Physics.Raycast(pos, d, out var hit, 1f, ~0, QueryTriggerInteraction.Ignore) && hit.distance < nearest)
+            { nearest = hit.distance; at = hit.point; outward = hit.normal; }
+        var lamp = CagedLamp(parent, name, glow);
+        lamp.transform.rotation = Quaternion.LookRotation(outward, Mathf.Abs(outward.y) > 0.7f ? Vector3.forward : Vector3.up);
+        var b = Bounds(lamp);
+        float half = Mathf.Abs(Vector3.Dot(b.extents, new Vector3(Mathf.Abs(outward.x), Mathf.Abs(outward.y), Mathf.Abs(outward.z))));
+        lamp.transform.position += at + outward * half - b.center;
+        return lamp;
+    }
+
+    // The rusty green electrical cabinet ("PSX Industrial Pack", Sketchfab) stretched to 'size' (width, height,
+    // depth), its door facing 'normal', centred on 'centre'.
+    static GameObject RustyCabinet(Transform parent, string name, Vector3 centre, Vector3 size, Vector3 normal)
+    {
+        var cab = Model(ArtDir + "/Props/Industrial/TransformerBox.fbx", null, parent, Tex2("Props/Industrial/T_Industrial2.png"), 1f, 0f);
+        cab.name = name;
+        var s = Bounds(cab).size;   // its door faces +Z at first
+        cab.transform.localScale = Vector3.Scale(cab.transform.localScale, new Vector3(size.x / s.x, size.y / s.y, size.z / s.z));
+        cab.transform.rotation = Quaternion.LookRotation(normal) * cab.transform.rotation;
+        cab.transform.position += centre - Bounds(cab).center;
+        return cab;
     }
 
     static Material EmissiveMat(string name, Color glow)

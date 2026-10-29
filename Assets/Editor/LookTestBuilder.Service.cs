@@ -279,13 +279,14 @@ public static partial class LookTestBuilder
             leg.transform.rotation = Quaternion.FromToRotation(Vector3.up, new Vector3(-Mathf.Cos(a) * 0.3f, 1.6f, -Mathf.Sin(a) * 0.3f));
             Object.DestroyImmediate(leg.GetComponent<Collider>());
         }
-        var head = Prim(PrimitiveType.Cube, "LampHead", tripod, foot + new Vector3(0f, 1.75f, 0f), new Vector3(0.35f, 0.25f, 0.15f), Mat("WorkLightYellow", null, new Color(0.75f, 0.6f, 0.15f), 1f, 0.4f));
-        Object.DestroyImmediate(head.GetComponent<Collider>());
         var spot = new GameObject("WorkLight").AddComponent<Light>();
         spot.transform.SetParent(tripod);
         spot.transform.position = foot + new Vector3(0f, 1.75f, 0f);
         spot.transform.LookAt(new Vector3(-62f, f + 0.8f, 51.6f));
+        // Its head: a caged lamp with warm white glass, pointing where the light shines.
+        var head = CagedLamp(tripod, "LampHead", new Color(1f, 0.85f, 0.6f) * 2f);
         head.transform.rotation = spot.transform.rotation;
+        head.transform.position += foot + new Vector3(0f, 1.75f, 0f) - Bounds(head).center;
         spot.type = LightType.Spot; spot.color = new Color(1f, 0.93f, 0.8f); spot.intensity = 35f; spot.range = 18f; spot.spotAngle = 80f;
         spot.shadows = LightShadows.Soft;
     }
@@ -371,12 +372,14 @@ public static partial class LookTestBuilder
         turns.frontYaw = 110f;                                // the model faces west at yaw 0, so at 200 it faces 110 degrees
         turns.seenDistance = 9f; turns.awayDistance = 12f;
 
-        // A radio hissing static on the floor.
-        var radio = Prim(PrimitiveType.Cube, "Radio", g, new Vector3(-33.6f, f + 0.12f, 51.4f), new Vector3(0.42f, 0.24f, 0.14f), Mat("RadioBrown", null, new Color(0.3f, 0.2f, 0.14f), 1f, 0.3f));
-        radio.transform.rotation = Quaternion.Euler(0f, 200f, 0f);
-        var grille = Prim(PrimitiveType.Quad, "Grille", radio.transform, Vector3.zero, Vector3.one, Mat("RadioGrille", null, new Color(0.08f, 0.08f, 0.08f), 1f, 0.2f));
-        grille.transform.localPosition = new Vector3(-0.15f, 0f, -0.51f); grille.transform.localScale = new Vector3(0.5f, 0.7f, 1f); grille.transform.localRotation = Quaternion.identity;
-        Object.DestroyImmediate(grille.GetComponent<Collider>());
+        // A battered boombox ("90s Radio PSX", Sketchfab) hissing static on the floor by the north wall. Its
+        // speakers face the model's -X, so at yaw 290 they face out into the camp.
+        var radio = Model(ArtDir + "/Props/Radio/Radio.fbx", null, g, Tex2("Props/Radio/Radio.png"), 1f, 0f);
+        radio.name = "Radio";
+        radio.transform.localScale *= 0.45f / Bounds(radio).size.z;   // 45 cm wide
+        radio.transform.rotation = Quaternion.Euler(0f, 290f, 0f) * radio.transform.rotation;
+        StandOn(radio, new Vector3(-33.6f, f, 51.4f));
+        FitBoxCollider(radio);
         var hiss = radio.AddComponent<AudioSource>();
         hiss.clip = Load<AudioClip>(SfxDir + "/Scares/RadioStatic.wav");
         hiss.loop = true; hiss.playOnAwake = true; hiss.volume = 0.45f; hiss.spatialBlend = 1f;

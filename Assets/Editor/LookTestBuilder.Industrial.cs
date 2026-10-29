@@ -337,19 +337,13 @@ public static partial class LookTestBuilder
         return panel;
     }
 
-    // A grey electrical cabinet standing on the floor against a wall (its back 1 cm off the wall).
-    // 'floorPoint' is on the floor at the wall, the middle of the cabinet's width. Plain grey all round, with
-    // its door picture (and warning sign) on the front only, the right way round.
+    // A rusty green electrical cabinet standing on the floor against a wall (its back 1 cm off the wall).
+    // 'floorPoint' is on the floor at the wall, the middle of the cabinet's width. ('vents' is left over from
+    // the old placeholder, which had a vented door picture; the model has one look.)
     static void ElectricCabinet(Transform parent, Vector3 floorPoint, Vector3 normal, float width = 1f, float height = 1.9f, float depth = 0.45f, bool vents = false)
     {
-        Vector3 across = Vector3.Cross(Vector3.up, normal);
         Vector3 c = floorPoint + normal * (depth * 0.5f + 0.01f) + Vector3.up * (height * 0.5f);
-        Vector3 size = new Vector3(Mathf.Abs(across.x) * width + Mathf.Abs(normal.x) * depth, height, Mathf.Abs(across.z) * width + Mathf.Abs(normal.z) * depth);
-        var body = Box("ElectricCabinet", parent, c, size, cabinetBody);
-        // A quad shows its picture on the side facing its -Z, so it is turned to look into the wall.
-        var front = Prim(PrimitiveType.Quad, "Front", body.transform, c + normal * (depth * 0.5f + 0.002f), new Vector3(width, height, 1f), vents ? cabinetVent : cabinetGrey);
-        front.transform.rotation = Quaternion.LookRotation(-normal);
-        Object.DestroyImmediate(front.GetComponent<Collider>());
+        FitBoxCollider(RustyCabinet(parent, "ElectricCabinet", c, new Vector3(width, height, depth), normal));
     }
 
     // A bundle of black cable conduits running along a wall between two points (on the wall surface).
@@ -374,8 +368,7 @@ public static partial class LookTestBuilder
     {
         float spread = (count - 1) * 0.07f, h = spread + 0.26f, d = 0.13f, w = spread + 0.2f;
         Vector3 c = point + normal * (d * 0.5f) + Vector3.up * (spread * 0.5f);
-        Vector3 size = new Vector3(Mathf.Abs(along.x) * w + Mathf.Abs(normal.x) * d, h, Mathf.Abs(along.z) * w + Mathf.Abs(normal.z) * d);
-        Object.DestroyImmediate(Box("JunctionBox", parent, c, size, cabinetBody).GetComponent<Collider>());
+        RustyCabinet(parent, "JunctionBox", c, new Vector3(w, h, d), normal);   // a small one, no collider
         Physics.SyncTransforms();
         for (int i = 0; i < count; i++)
         {

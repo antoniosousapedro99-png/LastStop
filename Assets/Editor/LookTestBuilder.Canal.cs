@@ -70,13 +70,13 @@ public static partial class LookTestBuilder
         lamp.GetComponent<PoweredLight>().grid = canalGrid;
     }
 
-    // A dim red emergency light that works without power (a small glowing box and a point light).
+    // A dim red emergency light that works without power: a caged lamp with red glass on the nearest wall,
+    // and a point light just in front of it.
     static void EmergencyLight(Transform parent, Vector3 pos, float intensity = 2.5f, float range = 7f)
     {
-        var box = Prim(PrimitiveType.Cube, "EmergencyLamp", parent, pos, new Vector3(0.3f, 0.12f, 0.12f), EmissiveMat("EmergencyGlow", Emergency * 3f));
-        Object.DestroyImmediate(box.GetComponent<Collider>());
-        var light = AddLight(box, LightType.Point, Emergency, intensity, range);
-        light.transform.localPosition = Vector3.down * 0.6f;
+        var lamp = WallLamp(parent, "EmergencyLamp", pos, Emergency * 2.5f, out Vector3 outward);
+        var light = AddLight(lamp, LightType.Point, Emergency, intensity, range);
+        light.transform.position = Bounds(lamp).center + outward * 0.5f;
     }
 
     // ---------------------------------------------------------------- lower level: platform hall and tunnels
