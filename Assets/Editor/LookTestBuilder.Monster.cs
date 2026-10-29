@@ -100,7 +100,7 @@ public static partial class LookTestBuilder
         ai.breaths = Clips("Frankie/FrankieBreath1", "Frankie/FrankieBreath2", "Frankie/FrankieBreath3");
         // His scream when he spots you (the strongest 3 s of each close scream).
         ai.shrieks = new[] { Load<AudioClip>(CharacterSfx + "/FrankieScreamClose1.ogg"), Load<AudioClip>(CharacterSfx + "/FrankieScreamClose2.ogg") };
-        ai.steps = Clips("Frankie/FrankieStep1", "Frankie/FrankieStep2", "Frankie/FrankieStep3", "Frankie/FrankieStep4");
+        ai.steps = Clips("Frankie/FrankieWalk1", "Frankie/FrankieWalk2", "Frankie/FrankieWalk3", "Frankie/FrankieWalk4");   // the director's FrankieWalking, cut into its four steps
         ai.cracks = Clips("Frankie/FrankieCrack1", "Frankie/FrankieCrack2", "Frankie/FrankieCrack3");
         ai.hitSound = Load<AudioClip>(SfxDir + "/DesignedPunch1.wav");
         man.SetActive(false);   // nowhere in the level until he wakes (see FrankieArrival)
@@ -136,7 +136,7 @@ public static partial class LookTestBuilder
         var sting = arrivalObject.AddComponent<AudioSource>();
         sting.clip = Load<AudioClip>("Assets/Art/Audio/Music/Svirls/Jumpscare.ogg");
         sting.playOnAwake = false; sting.spatialBlend = 0f; sting.ignoreListenerVolume = true;
-        ai.sting = sting;
+        // (No longer given to Frankie: the sting on first seeing him was loud rather than scary. Removed 2026-10-29.)
 
         var musicSource = arrivalObject.AddComponent<AudioSource>();
         musicSource.clip = Load<AudioClip>("Assets/Art/Audio/Music/Svirls/Chase1.ogg");
