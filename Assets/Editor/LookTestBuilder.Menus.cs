@@ -37,6 +37,7 @@ public static partial class LookTestBuilder
         menus.AddComponent<EndCard>();    // the end of Station 2, down Canal St's emergency latch
         menus.AddComponent<ScreenFade>(); // black fades (the train ride between stations)
         menus.AddComponent<SaveMenu>();   // the save / load screen (the staff PC and Load game open it)
+        menus.AddComponent<BootLogo>().logo = Load<Texture2D>("Assets/Art/UI/WitchbrewLogo.png");   // Witchbrew Productions, before the title
         var system = menus.AddComponent<MenuSystem>();
         system.player = player;
         system.titleCamera = title;

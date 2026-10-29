@@ -140,7 +140,7 @@ public class MenuSystem : MonoBehaviour
     void Update()
     {
         Controls.TrackDevice();   // so prompts name the controller's buttons when it's in use
-        if (starting) return;
+        if (starting || BootLogo.Showing) return;   // nothing until the company logo has faded
         if (SaveMenu.IsOpen || SaveMenu.ClosedFrame == Time.frameCount) return;   // the save/load screen has the keys
 
         if (!IsOpen)
