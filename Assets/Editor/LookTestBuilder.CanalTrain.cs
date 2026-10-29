@@ -129,6 +129,80 @@ public static partial class LookTestBuilder
         link.bidirectional = true;
     }
 
+    // A row of 'count' intact carriages on the track at 'z', the first one's west end at 'westX', 0.2 m apart:
+    // every side door shut (except, if 'forcedCar' >= 0, the middle door of that car on side 'forcedSide' (-1
+    // north, +1 south), forced half open), thick invisible walls along both sides (the cars' thin sides aren't
+    // solid), floor plates and walking routes for Frankie across the gaps, and a dim orange emergency strip in
+    // each car. Returns the cars; 'floorY' is their floor. (Hollis St's departure train uses it.)
+    static GameObject[] TrainOfCars(Transform g, float westX, float z, int count, int forcedCar, float forcedSide, out float floorY)
+    {
+        var doorMat = Mat("TrainDoor", null, new Color(0.55f, 0.56f, 0.58f), 1f, 0.35f, 0.5f);
+        var glass = Mat("TrainDoorWindow", null, new Color(0.04f, 0.045f, 0.05f), 1f, 0.9f, 0.2f);
+        var glow = EmissiveMat("EmergencyStrip", new Color(1f, 0.45f, 0.15f) * 1.5f);
+        var cars = new GameObject[count];
+        float x = westX;
+        floorY = -0.25f;
+        for (int i = 0; i < count; i++)
+        {
+            var car = Place("Assets/Art/Models/Environment/MetroPSX/SubwayCarOpen.fbx", g, Vector3.zero, 0f);
+            car.name = "TrainCar_" + (i + 1);
+            foreach (var r in car.GetComponentsInChildren<Renderer>())
+            {
+                var mats = r.sharedMaterials;
+                for (int m = 0; m < mats.Length; m++) if (mats[m]) mats[m] = PropMat(mats[m].name);
+                r.sharedMaterials = mats;
+            }
+            var b = Bounds(car);
+            if (b.size.z > b.size.x) { car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation; b = Bounds(car); }
+            car.transform.localScale *= CarLength / b.size.x;
+            b = Bounds(car);
+            StandOn(car, new Vector3(x + b.size.x * 0.5f, -1.3f, z));
+            cars[i] = car;
+            x += b.size.x + 0.2f;
+        }
+        Physics.SyncTransforms();
+        var fb = Bounds(cars[0]);
+        if (Physics.Raycast(new Vector3(fb.center.x, fb.min.y + fb.size.y * 0.6f, fb.center.z), Vector3.down, out var fh, 4f)) floorY = fh.point.y;
+        float doorBottom = fb.min.y + 0.2645f * fb.size.y, doorTop = fb.min.y + 0.7274f * fb.size.y, doorH = doorTop - doorBottom;
+        float wallN = fb.min.z + 0.07f, wallS = fb.max.z - 0.07f;
+        for (int i = 0; i < count; i++)
+        {
+            var cb = Bounds(cars[i]);
+            foreach (var (frac, width) in new[] { (-0.2997f, 1.41f), (0f, 1.41f), (0.2997f, 1.41f), (-0.4384f, 0.66f), (0.4384f, 0.66f) })
+            {
+                float dx = cb.center.x + frac * cb.size.x;
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    bool forced = i == forcedCar && frac == 0f && side == forcedSide;
+                    TrainDoorLeaves(g, new Vector3(dx, doorBottom, side < 0 ? wallN : wallS), width, doorH, forced ? 0.48f : 0f, doorMat, glass);
+                }
+            }
+            foreach (float side in new[] { -1f, 1f })
+            {
+                float wz = side < 0 ? wallN : wallS;
+                if (i == forcedCar && side == forcedSide)
+                {
+                    InnerWall(g, cb.min.x, cb.center.x - 0.5f, wz, floorY);
+                    InnerWall(g, cb.center.x + 0.5f, cb.max.x, wz, floorY);
+                }
+                else InnerWall(g, cb.min.x, cb.max.x, wz, floorY);
+            }
+            if (i < count - 1)
+            {
+                Span("CarGapPlate_" + i, g, new Vector3(cb.max.x - 0.05f, floorY - 0.03f, cb.center.z - 0.5f), new Vector3(cb.max.x + 0.25f, floorY, cb.center.z + 0.5f), doorMat);
+                float gapX = cb.max.x + 0.1f;
+                WalkLink(g, "TrainGapRoute_" + i, null, new Vector3(gapX - 1.2f, floorY, z), new Vector3(gapX, floorY, z), new Vector3(gapX + 1.2f, floorY, z));
+            }
+            var strip = Prim(PrimitiveType.Cube, "EmergencyStrip", g, new Vector3(cb.center.x, floorY + 2.15f, cb.center.z), new Vector3(2f, 0.03f, 0.08f), glow);
+            Object.DestroyImmediate(strip.GetComponent<Collider>());
+            var lamp = new GameObject("EmergencyLight").AddComponent<Light>();
+            lamp.transform.SetParent(g);
+            lamp.transform.position = new Vector3(cb.center.x, floorY + 2f, cb.center.z);
+            lamp.type = LightType.Point; lamp.color = new Color(1f, 0.5f, 0.2f); lamp.intensity = 1.1f; lamp.range = 7f; lamp.shadows = LightShadows.None;
+        }
+        return cars;
+    }
+
     // True if a horizontal ray from outside the car at 'from' (toward the car, direction 'dirZ') finds no wall
     // within 1.2 m: a doorway.
     static bool IsHole(Vector3 from, float dirZ) => !Physics.Raycast(from, new Vector3(0f, 0f, dirZ), 1.2f, ~0, QueryTriggerInteraction.Ignore);

@@ -17,7 +17,8 @@ public class Drizzle : MonoBehaviour
     void LateUpdate()
     {
         transform.position = player.position + Vector3.up * height;
-        bool outdoors = player.position.y > streetLevel;
+        // Above street height and not at Canal St or in the sewers (Canal St's upper floor is that high too).
+        bool outdoors = player.position.y > streetLevel && !SaveSystem.IsCanal(player.position) && !SaveSystem.IsSewers(player.position);
         if (outdoors == wasOutdoors) return;
         wasOutdoors = outdoors;
         foreach (var ps in systems)

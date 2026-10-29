@@ -6,51 +6,32 @@ using UnityEngine;
 public static partial class LookTestBuilder
 {
     // ---------------------------------------------------------------- the departure train (east tunnel)
+    // Three carriages in a row (like Canal St's parked train), their west end open toward the platform with a
+    // crate to climb in by; every side door shut; dim orange emergency strips. The driver's cab is at the far
+    // (east) end of the last car, behind its partition (door open): the controls, the note and the flickering
+    // cab light. Frankie can follow through the cars. In the finale the whole train pulls away.
     static void BuildDepartureTrain(float tunnelEnd, Material crate)
     {
         var tunnel = root.Find("Tunnel_E");
-        var car = Place("Assets/Art/Models/Environment/MetroPSX/SubwayCarOpen.fbx", tunnel, Vector3.zero, 0f);
-        car.name = "DepartureTrain";
-        foreach (var r in car.GetComponentsInChildren<Renderer>())
-        {
-            var mats = r.sharedMaterials;
-            for (int i = 0; i < mats.Length; i++) if (mats[i]) mats[i] = PropMat(mats[i].name);
-            r.sharedMaterials = mats;
-        }
-        var b = Bounds(car);
-        if (b.size.z > b.size.x) car.transform.rotation = Quaternion.Euler(0, 90f, 0) * car.transform.rotation;
-        car.transform.rotation = Quaternion.Euler(0, 180f, 0) * car.transform.rotation;   // open end toward the platform (west)
-        b = Bounds(car);
-        car.transform.localScale *= CarLength / b.size.x;
-        b = Bounds(car);
-        float centreX = tunnelEnd - 1f - b.size.x * 0.5f;
-        StandOn(car, new Vector3(centreX, -1.3f, 22.75f));
-        b = Bounds(car);
-        float faceX = b.min.x;                                        // the open end, facing the player
-        Physics.SyncTransforms();
+        var train = new GameObject("DepartureTrain").transform;   // moves as one in the finale
+        train.SetParent(tunnel);
+        train.position = new Vector3(tunnelEnd - 3f, -1.3f, 22.75f);   // its root at the cab end: sounds and noise come from there
+        const float z = 22.75f, cabDepth = 2.6f;
+        float westX = tunnelEnd - 1f - (3f * CarLength + 0.4f);
+        var cars = TrainOfCars(train, westX, z, 3, -1, 0f, out float floorY);
+        var first = Bounds(cars[0]); var last = Bounds(cars[2]);
+        float faceX = first.min.x;                                   // the open end, facing the platform
+        float wallN = last.min.z + 0.13f;
 
-        float floorY = -0.25f;
-        if (Physics.Raycast(new Vector3(faceX + 3f, b.min.y + b.size.y * 0.6f, 22.75f), Vector3.down, out var fh, 4f)) floorY = fh.point.y;
-        float wallN = b.min.z + 0.13f, wallS = b.max.z - 0.13f;
-        const float cabDepth = 2.6f;                                  // the cab: the first 2.6 m inside the door
-
-        // Pieces made in world space under the tunnel, then moved onto the car so they ride along with it.
-        var onCar = new System.Collections.Generic.List<Transform>();
-        // The cab's back wall: the carriage's own end wall with a closed door (LookTestBuilder.TrainCab.cs).
-        onCar.Add(CabPartition(tunnel, car, faceX + cabDepth, floorY, -1));
-        foreach (var w in new[] { wallN - 0.05f, wallS + 0.05f })
-        {
-            var inner = new GameObject("CabInnerWall").AddComponent<BoxCollider>();   // the thin car sides don't stop the player
-            inner.transform.SetParent(tunnel, true);
-            inner.transform.position = new Vector3(faceX + cabDepth * 0.5f, floorY + 1.2f, w);
-            inner.size = new Vector3(cabDepth, 2.4f, 0.1f);
-            onCar.Add(inner.transform);
-        }
+        // The far end shut; the cab partition (door open) just inside it.
+        EndDoor(train, last.max.x - 0.08f, z, floorY);
+        CabPartition(train, cars[2], last.max.x - cabDepth, floorY, 1, doorOpen: true);
+        WalkLink(train, "TrainCabRoute", null, new Vector3(last.max.x - cabDepth - 1.2f, floorY, z), new Vector3(last.max.x - cabDepth, floorY, z), new Vector3(last.max.x - cabDepth + 1f, floorY, z));
 
         // The driver's controls against the north wall: a grey desk with a lever (the dead man's handle).
         var console = new GameObject("TrainConsole").transform;
-        console.SetParent(tunnel, true);
-        float cx = faceX + 1.4f;
+        console.SetParent(train, true);
+        float cx = last.max.x - 1.3f;
         var desk = Mat("ConsoleGrey", null, new Color(0.3f, 0.32f, 0.35f), 1f, 0.35f, 0.3f);
         Span("Desk", console, new Vector3(cx - 0.45f, floorY, wallN), new Vector3(cx + 0.45f, floorY + 1.0f, wallN + 0.45f), desk);
         var lever = Prim(PrimitiveType.Cube, "Handle", console, new Vector3(cx, floorY + 1.12f, wallN + 0.28f), new Vector3(0.05f, 0.22f, 0.05f), Mat("HandleBlack", null, new Color(0.12f, 0.12f, 0.12f), 1f, 0.5f));
@@ -59,30 +40,25 @@ public static partial class LookTestBuilder
         Object.DestroyImmediate(knob.GetComponent<Collider>());
         var slot = Prim(PrimitiveType.Cube, "KeySlot", console, new Vector3(cx - 0.25f, floorY + 1.005f, wallN + 0.25f), new Vector3(0.08f, 0.01f, 0.05f), Mat("SlotDark", null, new Color(0.05f, 0.05f, 0.05f), 1f, 0.2f));
         Object.DestroyImmediate(slot.GetComponent<Collider>());
-        onCar.Add(console);
 
         // A note taped to the wall above the controls.
-        var note = Prim(PrimitiveType.Quad, "CabNote", tunnel, new Vector3(cx + 0.1f, floorY + 1.6f, wallN + 0.015f), new Vector3(0.21f, 0.27f, 1f), Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f));
+        var note = Prim(PrimitiveType.Quad, "CabNote", train, new Vector3(cx + 0.1f, floorY + 1.6f, wallN + 0.015f), new Vector3(0.21f, 0.27f, 1f), Mat("NotePaper", null, new Color(0.9f, 0.88f, 0.8f), 1f, 0.1f));
         note.transform.rotation = Quaternion.LookRotation(Vector3.back) * Quaternion.Euler(0, 0, 3f);   // faces into the cab
         Object.DestroyImmediate(note.GetComponent<Collider>());
         note.AddComponent<BoxCollider>().size = new Vector3(1f, 1f, 0.05f);
         note.AddComponent<ReadableNote>().text = "CAR 4471 - DO NOT MOVE\nReverser key went home with the day driver again.\nSpare is in the staff room, desk drawer.\n- Night supervisor";
-        onCar.Add(note.transform);
 
-        // The same faint, flickering cab light, steadying when the train wakes.
+        // The faint, flickering cab light, steadying when the train wakes.
         var cab = new GameObject("CabLight");
-        cab.transform.SetParent(tunnel, true);
-        cab.transform.position = new Vector3(faceX + 1.2f, floorY + 2f, 22.75f);
+        cab.transform.SetParent(train, true);
+        cab.transform.position = new Vector3(last.max.x - 1.2f, floorY + 2f, z);
         var light = cab.AddComponent<Light>();
         light.type = LightType.Point; light.color = new Color(1f, 0.55f, 0.3f);
         light.intensity = 2.5f; light.range = 6f; light.shadows = LightShadows.Soft;
         var flicker = cab.AddComponent<FlickeringLight>();
         flicker.lamp = light; flicker.minCalm = 3f; flicker.maxCalm = 9f;
-        onCar.Add(cab.transform);
 
-        foreach (var t in onCar) t.SetParent(car.transform, true);
-
-        // A crate pushed against the door to climb in by (two short hops, as at the west train).
+        // A crate pushed against the open end to climb in by (two short hops, as at the west train).
         var climb = new GameObject("CabClimbCrate").transform;
         climb.SetParent(tunnel);
         var step = Place("Assets/Art/Models/Props/Crates/WideCrate.fbx", climb, Vector3.zero, 0f);
@@ -92,10 +68,10 @@ public static partial class LookTestBuilder
         step.transform.localScale *= 0.57f / sb.size.y;
         sb = Bounds(step);
         if (sb.size.x < sb.size.z) { step.transform.rotation = Quaternion.Euler(0, 90f, 0) * step.transform.rotation; sb = Bounds(step); }
-        StandOn(step, new Vector3(faceX - sb.size.x * 0.5f - 0.02f, -1.3f, 22.75f));
+        StandOn(step, new Vector3(faceX - sb.size.x * 0.5f - 0.02f, -1.3f, z));
 
-        // Invisible walls in the gaps beside the car, so the only way on is through the door.
-        foreach (var gap in new[] { (20f, b.min.z), (b.max.z, 25.5f) })
+        // Invisible walls in the gaps beside the train, so the only way on is through the open end.
+        foreach (var gap in new[] { (20f, first.min.z), (first.max.z, 25.5f) })
         {
             var g = new GameObject("TrainSideBlocker").AddComponent<BoxCollider>();
             g.transform.SetParent(tunnel, true);
@@ -103,14 +79,21 @@ public static partial class LookTestBuilder
             g.size = new Vector3(0.2f, 4.3f, Mathf.Max(0.05f, gap.Item2 - gap.Item1));
         }
 
-        // (The cab is too small for Frankie to walk into; in the finale he lunges in from the crate.)
+        // Frankie's way in: a leap from the track bed up into the open end.
+        var link = new GameObject("DepartureTrainLink").AddComponent<Unity.AI.Navigation.NavMeshLink>();
+        link.transform.SetParent(tunnel);
+        link.transform.position = Vector3.zero;
+        link.startPoint = new Vector3(faceX - 1.6f, -1.3f, z);
+        link.endPoint = new Vector3(faceX + 1f, floorY, z);
+        link.width = 0f;
+        link.bidirectional = true;
 
         // The engine and the departure itself.
-        var engine = car.AddComponent<AudioSource>();
+        var engine = train.gameObject.AddComponent<AudioSource>();
         engine.clip = Load<AudioClip>("Assets/Art/Audio/Ambience/HeltonYan/DSGNDron_Noise-Empty Engine Room_HY_SD.wav");
         engine.loop = true; engine.playOnAwake = false; engine.spatialBlend = 1f;
         engine.rolloffMode = AudioRolloffMode.Linear; engine.minDistance = 3f; engine.maxDistance = 45f;
-        var departure = car.AddComponent<TrainDeparture>();
+        var departure = train.gameObject.AddComponent<TrainDeparture>();
         departure.cabLight = light;
         departure.cabFlicker = flicker;
         departure.engine = engine;
