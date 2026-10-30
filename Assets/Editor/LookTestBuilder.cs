@@ -224,6 +224,7 @@ public static partial class LookTestBuilder
         BuildScares();            // one-time scares (after the lamps and the monster model exist)
         BuildCanal();             // Station 2, Canal St Junction, far beyond z 300 (needs the monster)
         BuildSewers();            // Station 3, the sewers: a first draft, far beyond z 600 (LookTestBuilder.Sewers.cs)
+        BuildVents();             // air ducts, measured against the walls and ceilings built above (LookTestBuilder.Vents.cs)
         PipeSupports();           // hangers and wall straps for every pipe (needs all the walls and ceilings)
         BuildMenus();             // last: the menus switch the player off until "New game"
 
