@@ -23,17 +23,26 @@ public static partial class LookTestBuilder
     const float CisternRadius = 14f;      // the shaft's inner face
     const float CisternFloor = -16f;      // its bottom, 16 m below the tunnels
 
-    static Material sewerBrick, sewerFloor, sewerMud, sewerWater, sewerGrate;
+    static Material sewerBrick, sewerFloor, sewerMud, sewerWater, sewerGrate, sewerCeiling, sewerConcrete;
+    const string FoxTexDir = "Assets/Art/Textures/FoxTex/";
 
     static void BuildSewers()
     {
         var g = Group("Sewers");
         valveWheels.Clear();
         reliefGates.Clear();
-        sewerBrick = Mat("SewerBrick", Tex2(SewerTex + "bricks.jpg"), new Color(0.72f, 0.66f, 0.58f), 2f, 0.15f);
-        sewerFloor = Mat("SewerFloor", Tex2(SewerTex + "concrete_base.png"), Color.white, 2.5f, 0.2f);   // the same concrete as the tunnels' walkways
+        // The rooms match the tunnels: the tunnels' own brick (at the size the tunnels show it),
+        // cracked old stone slabs underfoot (FoxTex), plain concrete for ceilings, beams and base courses.
+        sewerBrick = Mat("SewerBrick", Tex2(SewerTex + "brick_modern_01.jpg"), Color.white, 4f, 0.15f);
+        sewerFloor = Mat("SewerFloor", Load<Texture2D>(FoxTexDir + "StoneSlabsCracked.png"), new Color(0.85f, 0.83f, 0.8f), 3f, 0.25f);
+        sewerCeiling = Mat("SewerCeiling", Tex2(SewerTex + "concrete_base_03.jpg"), new Color(0.75f, 0.73f, 0.7f), 3f, 0.1f);
+        sewerConcrete = Mat("SewerConcrete", Tex2(SewerTex + "concrete_dirty.jpg"), new Color(0.8f, 0.78f, 0.74f), 2f, 0.15f);
         sewerMud = Mat("SewerMud", Tex2(SewerTex + "soil_mud.jpg"), new Color(0.5f, 0.46f, 0.38f), 2f, 0.3f);
-        sewerWater = TransparentMat("SewerWater", new Color(0.04f, 0.06f, 0.045f, 0.82f), 0.95f);
+        // Murky green water whose rippling surface pictures play as a loop (WaterFrames, set up below).
+        var waterFrames = new Texture2D[20];
+        for (int i = 0; i < 20; i++) waterFrames[i] = Load<Texture2D>(FoxTexDir + "Water/WaterSurface_" + (i + 1).ToString("00") + ".png");
+        sewerWater = TransparentMat("SewerWater", new Color(0.26f, 0.32f, 0.22f, 0.86f), 0.9f);
+        sewerWater.SetTexture("_BaseMap", waterFrames[0]);
         sewerGrate = Mat("SewerGrate", Tex2(SewerTex + "Metal.jpg"), new Color(0.45f, 0.43f, 0.4f), 1f, 0.35f, 0.6f);
         Vector3 o = SewerOrigin;
 
@@ -59,6 +68,7 @@ public static partial class LookTestBuilder
         ladder.transform.rotation = Quaternion.FromToRotation(lean.normalized, Vector3.back) * ladder.transform.rotation;
         StandOn(ladder, o + new Vector3(0f, 0f, 0.5f));
         ladder.transform.position += Vector3.forward * (o.z + 0.03f - Bounds(ladder).min.z);   // its top against the wall
+        ClearPillars(o + new Vector3(0f, 2f, 0.3f), 1.2f);   // the ladder and the hatch need that bit of wall
         EmergencyLight(g, o + new Vector3(1.6f, 2.5f, 3.6f), 1.6f, 6f);
 
         // ---- the tunnels (positions relative to the sewer origin; a port's height is the channel's bottom)
@@ -136,6 +146,7 @@ public static partial class LookTestBuilder
         Cistern(g);
         var grate = RiverOutlet(g, o + new Vector3(100f, 0f, 137f), ladderSteel, -1f);
         Flooding(g, grate);
+        SewerDressing(g);   // signs, colours, the schematic, props and rubbish (LookTestBuilder.SewerDressing.cs)
 
         // ---- sound: running water in the cistern and down the tunnels
         foreach (var (name, at, range) in new[] { ("CisternFlow", CisternCentre + Vector3.down * 4f, 40f), ("RingFlowTop", new Vector3(40f, 0f, 30f), 30f), ("SpillwayFlow", new Vector3(55f, 0f, 130.5f), 35f) })
@@ -147,6 +158,10 @@ public static partial class LookTestBuilder
             flow.loop = true; flow.playOnAwake = true; flow.volume = 0.5f; flow.spatialBlend = 1f;
             flow.rolloffMode = AudioRolloffMode.Linear; flow.minDistance = 4f; flow.maxDistance = range;
         }
+
+        // ---- the water surfaces ripple
+        var ripples = g.gameObject.AddComponent<WaterFrames>();
+        ripples.material = sewerWater; ripples.frames = waterFrames;
 
         // ---- where Sousa lands after climbing down Canal St's latch
         var arrival = new GameObject("SewerArrival").transform;
@@ -189,14 +204,79 @@ public static partial class LookTestBuilder
         var gaps = new List<(int, float, float, float)>();
         foreach (var d in doors) gaps.Add((d.side, d.at - 2.2f, d.at + 2.2f, 3.6f - floor));   // 3.6 m above the walkways, even in a sunken room
         SewerRoom(g, name, x0, x1, z0, z1, floor, floor + height, gaps.ToArray());
+        RoomStructure(g, name, x0, x1, z0, z1, floor, floor + height, doors);
         if (floor < 0f)   // a sunken room: each doorway's threshold rises to the walkways' height
             foreach (var d in doors) WallPiece(g, name + "_Threshold", d.side, d.at - 2.2f, d.at + 2.2f, x0, x1, z0, z1, floor, 0f);
         CagedBulb(g, name + "_Bulb", SewerOrigin + new Vector3((x0 + x1) * 0.5f, floor + height - 0.3f, (z0 + z1) * 0.5f), 1.3f, 6f, cable: 0.4f);
     }
 
+    // What makes a room part of the same brick system as the tunnels instead of a plain box: brick pillars
+    // standing out from the walls about every 3.5 m (clear of the doorways), a concrete base course along the
+    // foot of each wall (broken at the doorways), and concrete beams across the ceiling's shorter span.
+    static void RoomStructure(Transform g, string name, float x0, float x1, float z0, float z1, float floor, float top, (int side, float at)[] doors)
+    {
+        Vector3 o = SewerOrigin;
+        for (int side = 0; side < 4; side++)
+        {
+            bool alongX = side == 0 || side == 2;
+            float a0 = alongX ? x0 : z0, a1 = alongX ? x1 : z1, length = a1 - a0;
+            // 'in' is how far out from the wall; this gives a box between a0..a1 along the wall, 'from'..'to' out.
+            Vector3 Lo(float a, float from, float y) => side switch
+            {
+                0 => new Vector3(a, y, z0 + from), 2 => new Vector3(a, y, z1 - from), 1 => new Vector3(x1 - from, y, a), _ => new Vector3(x0 + from, y, a),
+            };
+            void Piece(string part, float a, float b, float from, float to, float yLo, float yHi, Material mat)
+            {
+                Vector3 p = Lo(a, from, yLo), q = Lo(b, to, yHi);
+                Span(name + part, g, o + Vector3.Min(p, q), o + Vector3.Max(p, q), mat);
+            }
+            var gaps = new List<float>();
+            foreach (var d in doors) if (d.side == side) gaps.Add(d.at);
+            int count = Mathf.Max(1, Mathf.RoundToInt(length / 3.5f));
+            for (int k = 1; k < count; k++)
+            {
+                float at = a0 + length * k / count;
+                if (gaps.Exists(d => Mathf.Abs(d - at) < 2.9f)) continue;
+                Piece("_Pillar", at - 0.3f, at + 0.3f, 0f, 0.25f, floor, top, sewerBrick);
+            }
+            // The base course, in runs between the doorways, kept 5 mm off the wall and the floor (never sharing
+            // their faces); along z it stops just short of the corners, where the runs along x already are.
+            gaps.Sort();
+            float run = alongX ? a0 : a0 + 0.13f, end = alongX ? a1 : a1 - 0.13f;
+            foreach (float d in gaps) { if (d - 2.2f > run) Piece("_BaseCourse", run, d - 2.2f, 0.005f, 0.125f, floor + 0.005f, floor + 0.5f, sewerConcrete); run = d + 2.2f; }
+            if (end > run) Piece("_BaseCourse", run, end, 0.005f, 0.125f, floor + 0.005f, floor + 0.5f, sewerConcrete);
+        }
+        // Beams across the ceiling's shorter span.
+        bool acrossZ = x1 - x0 >= z1 - z0;
+        float span0 = acrossZ ? x0 : z0, span1 = acrossZ ? x1 : z1;
+        int beams = Mathf.Max(1, Mathf.RoundToInt((span1 - span0) / 3.5f));
+        for (int k = 1; k < beams; k++)
+        {
+            float at = span0 + (span1 - span0) * k / beams;
+            // (5 mm short of the walls and the ceiling, never sharing their faces)
+            if (acrossZ) Span(name + "_Beam", g, o + new Vector3(at - 0.2f, top - 0.4f, z0 + 0.005f), o + new Vector3(at + 0.2f, top - 0.005f, z1 - 0.005f), sewerConcrete);
+            else Span(name + "_Beam", g, o + new Vector3(x0 + 0.005f, top - 0.4f, at - 0.2f), o + new Vector3(x1 - 0.005f, top - 0.005f, at + 0.2f), sewerConcrete);
+        }
+    }
+
+    // Takes away any wall pillar within 'radius' of 'at' (where a valve, a gate or a pump stands against the wall).
+    static void ClearPillars(Vector3 at, float radius)
+    {
+        Physics.SyncTransforms();
+        foreach (var hit in Physics.OverlapSphere(at, radius, ~0, QueryTriggerInteraction.Ignore))
+            if (hit && hit.name.EndsWith("_Pillar")) Object.DestroyImmediate(hit.gameObject);
+    }
+
     // A sunken room's dry landing: solid from its floor up to the walkways' height over x0..x1, z0..z1.
+    // (Any of the room's pillars or base course that would stand inside it come out.)
     static void Landing(Transform g, string name, float floor, float x0, float x1, float z0, float z1)
-        => Span(name + "_Landing", g, SewerOrigin + new Vector3(x0, floor, z0), SewerOrigin + new Vector3(x1, 0f, z1), sewerFloor);
+    {
+        Vector3 lo = SewerOrigin + new Vector3(x0, floor, z0), hi = SewerOrigin + new Vector3(x1, 0f, z1);
+        Physics.SyncTransforms();
+        foreach (var hit in Physics.OverlapBox((lo + hi) * 0.5f, (hi - lo) * 0.5f + Vector3.one * 0.01f, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore))
+            if (hit && (hit.name.EndsWith("_Pillar") || hit.name.EndsWith("_BaseCourse"))) Object.DestroyImmediate(hit.gameObject);
+        Span(name + "_Landing", g, lo, hi, sewerFloor);
+    }
 
     // Steps from a landing's edge down to a sunken room's floor: 'from' is the middle of the top step's
     // edge on the landing, 'down' the way they descend, 'width' across. Each step rises no more than a
@@ -221,7 +301,7 @@ public static partial class LookTestBuilder
         Vector3 o = SewerOrigin;
         float z0 = z - 2.2f, z1 = z + 2.2f;
         Span(name + "_Floor", g, o + new Vector3(x0 + 0.3f, -0.2f, z0), o + new Vector3(x1 - 0.3f, 0f, z1), sewerFloor);
-        Span(name + "_Ceiling", g, o + new Vector3(x0 + 0.55f, 3.6f, z0), o + new Vector3(x1 - 0.55f, 3.8f, z1), sewerBrick);
+        Span(name + "_Ceiling", g, o + new Vector3(x0 + 0.55f, 3.6f, z0), o + new Vector3(x1 - 0.55f, 3.8f, z1), sewerCeiling);
         Span(name + "_WallL", g, o + new Vector3(x0 + 0.55f, -2.2f, z0 - 0.3f), o + new Vector3(x1 - 0.55f, 3.8f, z0), sewerBrick);
         Span(name + "_WallR", g, o + new Vector3(x0 + 0.55f, -2.2f, z1), o + new Vector3(x1 - 0.55f, 3.8f, z1 + 0.3f), sewerBrick);
         CagedBulb(g, name + "_Bulb", o + new Vector3((x0 + x1) * 0.5f, 3.3f, z), 1f, 5f, flicker: true, cable: 0.2f);
@@ -258,6 +338,7 @@ public static partial class LookTestBuilder
     {
         Vector3 o = SewerOrigin;
         SewerRoom(g, "PumpRoom", 43f, 67f, 125f, 141f, 0f, 6f, false, (0, 52.8f, 57.2f, 3.6f), (1, 134.8f, 139.2f, 3.6f));
+        RoomStructure(g, "PumpRoom", 43f, 67f, 125f, 141f, 0f, 6f, new[] { (0, 55f), (1, 137f) });
         CagedBulb(g, "PumpRoom_BulbA", o + new Vector3(55f, 5.7f, 127f), 1.2f, 8f, cable: 0.4f);
         CagedBulb(g, "PumpRoom_BulbB", o + new Vector3(55f, 5.7f, 137f), 1.2f, 8f, flicker: true, cable: 0.4f);
         Span("PumpRoom_FloorTop", g, o + new Vector3(43f, -3f, 125f), o + new Vector3(67f, 0f, 129f), sewerFloor);
@@ -271,6 +352,7 @@ public static partial class LookTestBuilder
         // Two dead pumps on plinths along the far wall (placeholders).
         foreach (float x in new[] { 47f, 59f })
         {
+            ClearPillars(o + new Vector3(x, 1.5f, 140.3f), 2f);
             Span("PumpPlinth", g, o + new Vector3(x - 1.5f, 0f, 138f), o + new Vector3(x + 1.5f, 0.4f, 140.6f), sewerFloor);
             var body = Prim(PrimitiveType.Cylinder, "Pump", g, o + new Vector3(x, 1.4f, 139.3f), new Vector3(1.8f, 1f, 1.8f), pipeSteel);
             Object.DestroyImmediate(body.GetComponent<Collider>());
@@ -284,6 +366,7 @@ public static partial class LookTestBuilder
     static GameObject Valve(Transform g, string name, Vector3 wallFloor, Vector3 inward)
     {
         Vector3 pipeAt = wallFloor + inward * 0.35f;
+        ClearPillars(pipeAt + Vector3.up * 1.3f, 1.1f);
         Pipe(g, name + "_Pipe", pipeAt, pipeAt + Vector3.up * 3.5f, 0.2f, pipeRust);
         var wheel = Prim(PrimitiveType.Cylinder, name + "_Wheel", g, pipeAt + Vector3.up * 1.3f + inward * 0.3f, new Vector3(0.7f, 0.03f, 0.7f),
                          Mat("ValveRed", null, new Color(0.5f, 0.12f, 0.08f), 1f, 0.4f, 0.4f));
@@ -419,7 +502,7 @@ public static partial class LookTestBuilder
         Vector3 o = SewerOrigin;
         const float t = 0.3f;
         if (floor) Span(name + "_Floor", g, o + new Vector3(x0, y0 - 0.2f, z0), o + new Vector3(x1, y0, z1), sewerFloor);
-        Span(name + "_Ceiling", g, o + new Vector3(x0, y1, z0), o + new Vector3(x1, y1 + 0.2f, z1), sewerBrick);
+        Span(name + "_Ceiling", g, o + new Vector3(x0, y1, z0), o + new Vector3(x1, y1 + 0.2f, z1), sewerCeiling);
         for (int side = 0; side < 4; side++)
         {
             bool alongX = side == 0 || side == 2;

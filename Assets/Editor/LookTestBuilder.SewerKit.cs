@@ -22,6 +22,10 @@ public static partial class LookTestBuilder
         { "concrete_dirty", "Environment/Sewer/concrete_dirty.jpg" }, { "soil_mud", "Environment/Sewer/soil_mud.jpg" },
         { "concrete_bare_01", "Environment/Sewer/concrete_bare_01.jpg" }, { "brick_pavement", "Environment/Sewer/brick_pavement.jpg" },
         { "Metal", "Environment/Sewer/Metal.jpg" },
+        // The pack's rubbish and rubble.
+        { "Trash_01", "Environment/Sewer/Trash_01.png" }, { "Trash", "Environment/Sewer/Trash.png" }, { "Garbage_bag", "Environment/Sewer/Garbage_bag.png" },
+        { "debris", "Environment/Sewer/debris.jpg" }, { "debris_01", "Environment/Sewer/debris_01.jpg" }, { "debris_02", "Environment/Sewer/debris_02.jpg" },
+        { "debris_03", "Environment/Sewer/debris_03.png" },
     };
 
     // One piece of the kit at the world origin (turned by 'yaw'), solid, textured.
