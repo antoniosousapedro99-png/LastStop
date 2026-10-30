@@ -245,16 +245,13 @@ public static partial class LookTestBuilder
         MachineLoop(g, "TurbineHum", new Vector3(-50f, f + 1f, 51f), "MachineHum", 0.6f, 22f, 0.85f);
         MachineLoop(g, "TransformerBuzz", new Vector3(-67.2f, f + 1.2f, 50.2f), "TransformerBuzz", 0.35f, 12f, 1f);
 
-        // Pipe runs high along the north wall.
+        // Pipe runs high along the north wall (the industrial pack's metal pipe, in 4 m sections).
         for (int i = 0; i < 6; i++)
-        {
-            var pipe = Prim(PrimitiveType.Cylinder, "WallPipe", g, new Vector3(-66f + i * 4f, -5.4f, 53.6f), new Vector3(0.35f, 2f, 0.35f), svcMetal);
-            pipe.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
-            Object.DestroyImmediate(pipe.GetComponent<Collider>());
-        }
+            MetalPipe(g, "WallPipe", new Vector3(-66f + i * 4f, -5.4f, 53.6f), 4f, 0.35f, true);
 
-        // The pipe you can knock on: a fat vertical pipe in the north-east corner.
-        var knockPipe = Prim(PrimitiveType.Cylinder, "KnockPipe", g, new Vector3(-45f, (f - 4.5f) * 0.5f, 53.2f), new Vector3(0.5f, (-4.5f - f) * 0.5f, 0.5f), svcMetal);
+        // The pipe you can knock on: a fat vertical pipe in the north-east corner (solid, so the crosshair finds it).
+        var knockPipe = MetalPipe(g, "KnockPipe", new Vector3(-45f, (f - 4.5f) * 0.5f, 53.2f), -4.5f - f, 0.5f, false);
+        knockPipe.AddComponent<BoxCollider>();   // (a box fits the stretched model; a capsule would bulge)
         var here = knockPipe.AddComponent<AudioSource>();
         here.playOnAwake = false; here.spatialBlend = 1f; here.minDistance = 2f; here.maxDistance = 20f;
         var farObject = new GameObject("PipeEcho");
@@ -470,5 +467,16 @@ public static partial class LookTestBuilder
         go.AddComponent<AudioLowPassFilter>().cutoffFrequency = cutoff;
         go.AddComponent<AudioReverbFilter>().reverbPreset = AudioReverbPreset.StoneCorridor;
         return go.GetComponent<AudioSource>();
+    }
+
+    // The industrial pack's metal pipe, 'length' long and 'width' thick, centred on 'centre'; lying along x
+    // when 'alongX', otherwise standing up.
+    static GameObject MetalPipe(Transform parent, string name, Vector3 centre, float length, float width, bool alongX)
+    {
+        var pipe = IndustrialPiece(parent, "MetalPipe", new Vector3(width, length, width));   // the model stands upright
+        pipe.name = name;
+        if (alongX) pipe.transform.rotation = Quaternion.Euler(0f, 0f, 90f) * pipe.transform.rotation;
+        pipe.transform.position += centre - Bounds(pipe).center;
+        return pipe;
     }
 }

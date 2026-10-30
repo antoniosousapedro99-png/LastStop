@@ -115,7 +115,6 @@ public static partial class LookTestBuilder
 
         // A wooden crate pushed against the door: jump onto it from the track, then up into the car
         // (two hops of about half a metre each; the player's jump is 0.6 m).
-        var brick = Mat("Bricks", Load<Texture2D>(StreetDir + "/Urban/brick_wall.jpg"), new Color(0.6f, 0.5f, 0.45f), 1f, 0.15f);
         var climb = new GameObject("ClimbCrates").transform;
         climb.SetParent(tunnel);
         var step = Place("Assets/Art/Models/Props/Crates/WideCrate.fbx", climb, Vector3.zero, 0f);
@@ -135,13 +134,11 @@ public static partial class LookTestBuilder
         var rng = new System.Random(11);
         for (int i = 0; i < 9; i++)
         {
-            var loose = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            loose.name = "LooseBrick"; loose.transform.SetParent(climb, false);
-            loose.transform.localScale = new Vector3(0.22f, 0.07f, 0.11f);
-            loose.transform.position = new Vector3(faceX + 0.3f + (float)rng.NextDouble() * 2.4f, -1.26f, 21.5f + (float)rng.NextDouble() * 2.5f);
-            loose.transform.rotation = Quaternion.Euler(0, (float)rng.NextDouble() * 180f, 0);
-            loose.GetComponent<Renderer>().sharedMaterial = brick;
-            Object.DestroyImmediate(loose.GetComponent<Collider>());
+            // The industrial pack's red brick, with the odd cement block among them.
+            var loose = IndustrialPiece(climb, i % 3 == 2 ? "BrickCement" : "Brick", i % 3 == 2 ? new Vector3(0.11f, 0.11f, 0.22f) : new Vector3(0.11f, 0.07f, 0.22f));
+            loose.name = "LooseBrick";
+            loose.transform.rotation = Quaternion.Euler(0, (float)rng.NextDouble() * 180f, 0) * loose.transform.rotation;
+            StandOn(loose, new Vector3(faceX + 0.3f + (float)rng.NextDouble() * 2.4f, -1.3f, 21.5f + (float)rng.NextDouble() * 2.5f));
         }
 
         // Invisible walls in the gaps beside the car, so the only way on is through the door.
@@ -159,16 +156,17 @@ public static partial class LookTestBuilder
         block.transform.SetParent(car.transform, true);
         block.transform.position = new Vector3(midX, floorY + 1.2f, 22.75f);
         block.size = new Vector3(0.3f, 2.4f, 4f);
+        // The pile itself: the industrial pack's wooden crates and a heap of rubbish, dropped from above so
+        // physics tumbles them into a heap at the end of the build (SettleLitter).
         for (int i = 0; i < 6; i++)
         {
-            var junk = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            junk.name = "Debris"; junk.transform.SetParent(car.transform, true);
-            junk.transform.localScale = Vector3.one; // world-size below
-            junk.transform.SetParent(tunnel, true);
-            junk.transform.localScale = new Vector3(0.5f + (float)rng.NextDouble() * 0.6f, 0.3f + (float)rng.NextDouble() * 0.7f, 0.4f + (float)rng.NextDouble() * 0.9f);
-            junk.transform.position = new Vector3(midX + 0.2f + (float)rng.NextDouble() * 0.6f, floorY + junk.transform.localScale.y * 0.5f + (i > 3 ? 0.5f : 0f), wallN + 0.3f + (float)rng.NextDouble() * (wallS - wallN - 0.6f));
-            junk.transform.rotation = Quaternion.Euler((float)rng.NextDouble() * 25f, (float)rng.NextDouble() * 60f, (float)rng.NextDouble() * 25f);
-            junk.GetComponent<Renderer>().sharedMaterial = i % 2 == 0 ? crate : brick;
+            Vector3 size = new Vector3(0.5f + (float)rng.NextDouble() * 0.6f, 0.3f + (float)rng.NextDouble() * 0.7f, 0.4f + (float)rng.NextDouble() * 0.9f);
+            var junk = i % 3 == 1 ? IndustrialPiece(tunnel, "PileTrash", new Vector3(size.x + 0.3f, 0.35f, size.z + 0.3f)) : IndustrialPiece(tunnel, "CrateWood", size);
+            junk.name = "Debris";
+            looseLitter.Add(junk);
+            var at = new Vector3(midX + 0.2f + (float)rng.NextDouble() * 0.6f, floorY + 0.6f + i * 0.45f, wallN + 0.5f + (float)rng.NextDouble() * (wallS - wallN - 1f));
+            junk.transform.rotation = Quaternion.Euler((float)rng.NextDouble() * 25f, (float)rng.NextDouble() * 60f, (float)rng.NextDouble() * 25f) * junk.transform.rotation;
+            junk.transform.position += at - Bounds(junk).center;
         }
         var fallen = Prop("seats", tunnel, new Vector3(midX + 1.2f, floorY, 22.75f), 25f);
         if (fallen) fallen.transform.rotation = Quaternion.Euler(0, 0, 70f) * fallen.transform.rotation;

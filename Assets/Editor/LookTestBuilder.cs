@@ -729,7 +729,17 @@ public static partial class LookTestBuilder
     {
         var go = Model(ArtDir + "/Props/Industrial/" + piece + ".fbx", null, parent, Tex2("Props/Industrial/T_Industrial.png"), 1f, 0f);
         var s = Bounds(go).size;
-        go.transform.localScale = Vector3.Scale(go.transform.localScale, new Vector3(size.x / s.x, size.y / s.y, size.z / s.z));
+        var stretch = new Vector3(size.x / s.x, size.y / s.y, size.z / s.z);   // per world axis
+        // A model can come in turned (e.g. lying on its side), so each of its own axes takes the stretch
+        // of the world axis it points along.
+        var scale = go.transform.localScale;
+        for (int k = 0; k < 3; k++)
+        {
+            var dir = go.transform.rotation * (k == 0 ? Vector3.right : k == 1 ? Vector3.up : Vector3.forward);
+            int w = Mathf.Abs(dir.x) > Mathf.Abs(dir.y) ? (Mathf.Abs(dir.x) > Mathf.Abs(dir.z) ? 0 : 2) : (Mathf.Abs(dir.y) > Mathf.Abs(dir.z) ? 1 : 2);
+            scale[k] *= stretch[w];
+        }
+        go.transform.localScale = scale;
         return go;
     }
 
