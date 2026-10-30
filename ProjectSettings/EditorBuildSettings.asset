@@ -8,5 +8,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LookTest.unity
     guid: 5fe09dc804b2c32429e922b07d401afa
+  - enabled: 1
+    path: Assets/Scenes/LookTest_Dressing.unity
+    guid: ec3562d10ef464440adf9780e8cdfedd
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

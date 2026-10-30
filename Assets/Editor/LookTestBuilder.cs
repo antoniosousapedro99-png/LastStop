@@ -39,6 +39,7 @@ public static partial class LookTestBuilder
         tileOrigin.Clear();
         builtPipes.Clear();
         EnsureFolder(MatDir);
+        DressingScene.SaveIfOpen();   // the hand-placed props are in their own scene, which this closes
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         root = new GameObject("Level").transform;
 
@@ -238,8 +239,9 @@ public static partial class LookTestBuilder
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 
         EditorSceneManager.SaveScene(scene, ScenePath);
-        EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+        DressingScene.AddToBuildSettings();
         AssetDatabase.SaveAssets();
+        DressingScene.OpenBesideLevel();   // the hand-placed props back beside the new level
         Debug.Log("Look test built: " + ScenePath);
     }
 
