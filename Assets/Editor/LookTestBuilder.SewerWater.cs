@@ -19,58 +19,23 @@ public static partial class LookTestBuilder
     static readonly Dictionary<string, SluiceGate> reliefGates = new Dictionary<string, SluiceGate>();
     const float CisternStart = -0.5f, CisternStep = 0.75f, CisternPurged = -8.6f;   // four steps: -0.5 -> -3.5 (the walkway, at -3, is clear)
 
+    // STAGE 1 (the layout): still water in the low places only, so the deep parts are swum, not fallen into.
+    // The valves are placeholders until stage 2 wires them (relief gates, the shaft draining, the purge, the exit).
     static void Flooding(Transform parent, Transform grate)
     {
         var g = new GameObject("Flooding").transform;
         g.SetParent(parent);
         Vector3 o = SewerOrigin;
-        // (x0, x1, z0, z1): the box each body of water fills; 'rest' is where it settles once drained (under
-        // the room's floor, so it's gone).
-        var cistern = Zone(g, "Cistern", CisternStart, -75.4f, -34.6f, 36.6f, 77.4f, CisternWalk - 5.6f, true);
-        var pit1 = Zone(g, "Pit1", -0.3f, -40f, -30f, 11f, 25f, -1.2f);
-        var pit2 = Zone(g, "Pit2", -0.4f, -99f, -81f, 11f, 21f, -2.4f);
-        var pit3 = Zone(g, "Pit3", -0.4f, -33f, -23f, 76f, 86f, -3.2f);
-        var pit4 = Zone(g, "Pit4", -0.4f, -44f, -34f, 110f, 120f, -2.2f);
-        var spillway = Zone(g, "Spillway", -0.6f, -63f, -47f, 107f, 110f, -0.6f);
-
-        // The spillway's current drags a swimmer west and under, against the culvert grate; the cistern's
-        // whirlpool sucks in round the central platform while the tank is deep.
+        var cistern = Zone(g, "Cistern", -1f, CisternCentre.x - CisternRadius, CisternCentre.x + CisternRadius, CisternCentre.z - CisternRadius, CisternCentre.z + CisternRadius, CisternFloor - 0.4f, true);
+        Zone(g, "Siphon", -0.4f, -3f, 3f, 80f, 98f, -0.4f);
+        Zone(g, "Pit2", -0.4f, 71f, 89f, 21f, 39f, -2.4f);
+        var spillway = Zone(g, "Spillway", -0.6f, 43f, 67f, 129f, 132f, -0.6f);
+        // The spillway drags a swimmer along to the culvert grate and under.
         var current = new GameObject("SpillwayCurrent").AddComponent<WaterCurrent>();
         current.transform.SetParent(g);
-        current.area = new Bounds(o + new Vector3(-55f, 0f, 108.5f), new Vector3(16f, 20f, 3f));
-        current.flow = new Vector3(-1.8f, 0f, 0f); current.down = 0.8f;
+        current.area = new Bounds(o + new Vector3(55f, 0f, 130.5f), new Vector3(24f, 20f, 3f));
+        current.flow = new Vector3(1.8f, 0f, 0f); current.down = 0.8f;
         current.zone = spillway;
-        var whirl = new GameObject("CisternWhirlpool").AddComponent<WaterCurrent>();
-        whirl.transform.SetParent(g);
-        whirl.transform.position = o + CisternCentre;
-        whirl.radius = 9f; whirl.pull = 1.3f; whirl.down = 0.9f;
-        whirl.zone = cistern; whirl.activeAbove = o.y + CisternWalk - 0.3f;
-
-        // The valves.
-        var squealClip = Load<AudioClip>(SfxDir + "/OldDoorCreak.wav");
-        var clunk = Load<AudioClip>(SfxDir + "/MetalCabinet1.wav");
-        var groan = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
-        var exit = grate.gameObject.AddComponent<RiverExit>();
-        exit.grate = grate;
-        exit.exitArea = new Bounds(o + new Vector3(-93.5f, 1f, 115f), new Vector3(3f, 4f, 4.4f));
-        exit.grind = squealClip;
-        exit.endCard = Object.FindAnyObjectByType<EndCard>(FindObjectsInactive.Include);
-        foreach (var (name, gate, zone, drainTo) in new[] { ("Valve1", "Gate1", pit1, -1.2f), ("Valve2", "Gate2", pit2, -2.4f), ("Valve3", "Gate3", pit3, -3.2f),
-                                                            ("Valve4", "Gate4", pit4, -2.2f), ("FinalValve", null, (FloodZone)null, 0f) })
-        {
-            var wheel = valveWheels[name];
-            var valve = wheel.AddComponent<SewerValve>();
-            valve.id = name; valve.wheel = wheel.transform;
-            valve.zone = zone; valve.drainTo = o.y + drainTo;
-            valve.gate = gate != null ? reliefGates[gate] : null;
-            valve.cistern = cistern; valve.cisternStart = o.y + CisternStart; valve.cisternStep = CisternStep; valve.cisternPurged = o.y + CisternPurged;
-            valve.final = name == "FinalValve";
-            if (valve.final) valve.exit = exit;
-            valve.squeal = wheel.AddComponent<AudioSource>();
-            valve.squeal.clip = squealClip; valve.squeal.loop = true; valve.squeal.playOnAwake = false; valve.squeal.pitch = 0.55f;
-            valve.squeal.spatialBlend = 1f; valve.squeal.minDistance = 2f; valve.squeal.maxDistance = 25f; valve.squeal.volume = 0.8f;
-            valve.clunk = clunk; valve.groan = groan;
-        }
 
         // The player: swimming, and holding his breath.
         var player = Object.FindAnyObjectByType<PlayerMovement>(FindObjectsInactive.Include).gameObject;
