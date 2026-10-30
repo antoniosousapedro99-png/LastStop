@@ -29,10 +29,11 @@ The Ridgeback - Codyanka (the monster), The Man Who Never Clocked Out
 PSX Derelict Furniture, PSX Old Stuff Pack
 Trash and Debris, Retro PSX Trash bag, Sewer pack
 Shotgun PS1, PSX First Person Arms
-Blood and graffiti textures
+Blood and graffiti textures, FoxTex textures, PSX Industrial Pack
 
 EFFECTS
 Rain Particles - Game Seed Assets
+FusionWater - nailuj05 (floating)
 
 INTERFACE
 FREE PSX UI - rohhsa
