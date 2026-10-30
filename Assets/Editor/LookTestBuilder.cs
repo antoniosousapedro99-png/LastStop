@@ -53,7 +53,7 @@ public static partial class LookTestBuilder
         var concrete = Mat("Concrete", Tex("ConcreteBare.png"), new Color(0.6f, 0.6f, 0.58f), 2f, 0.1f);
         var tunnelConcrete = Mat("TunnelConcrete", Tex("ConcreteBare.png"), new Color(0.55f, 0.53f, 0.5f), 2f, 0.1f);
         var ceiling = Mat("Ceiling", Tex("ConcreteBare.png"), new Color(0.4f, 0.4f, 0.38f), 2.5f, 0.05f);
-        var gravel = Mat("PitGravel", Tex("Floor.png"), new Color(0.6f, 0.57f, 0.52f), 1.5f, 0.05f);
+        var gravel = PitGravel();
         var trackBed = Mat("TrackBed", Tex("road_rails.jpg"), new Color(0.8f, 0.78f, 0.74f), 2.6f, 0.1f);
         var railMetal = Mat("RailMetal", Tex("metal_02.png"), new Color(0.55f, 0.52f, 0.5f), 1f, 0.6f, 0.8f);
         var housing = Mat("LampHousing", null, new Color(0.12f, 0.12f, 0.12f), 1f, 0.3f, 0.5f);
@@ -160,7 +160,7 @@ public static partial class LookTestBuilder
                 Span("DoorThreshold", tunnel, new Vector3(ServiceDoorX, -1.5f, 25.5f), new Vector3(ServiceDoorX + 1f, -1.3f, 25.8f), concrete);
             }
             Span("Ceiling", tunnel, Mirror(new Vector3(18.3f, TunnelTop, 20), side), Mirror(new Vector3(end, top, 25.5f), side), tunnelConcrete);
-            Span("EndCap", tunnel, Mirror(new Vector3(end, -1.5f, 19.7f), side), Mirror(new Vector3(end + 0.3f, top, 25.8f), side), tunnelConcrete);
+            EndlessTunnel(tunnel, "TunnelEnd_" + s, side * end, side, 20f, 25.5f, TunnelTop, bedZ, trackBed);   // no end wall: it runs on into the dark
         }
         // Red emergency lamp deep in the east tunnel: a distant warning colour at the edge of the fog.
         var red = WallLamp(root.Find("Tunnel_E"), "EmergencyLamp", new Vector3(31, 1.2f, 20.1f), Emergency * 2.5f, out Vector3 redOut);
@@ -186,6 +186,10 @@ public static partial class LookTestBuilder
             vendingPower.lights = new[] { glow };
             vendingPower.glowParts = new Renderer[0];
         }
+        // Rusty mesh barriers along the platform edge at both ends, where trains don't stop (the west one
+        // leaves the steps down to the tracks free). Frankie's jump links skip them (BakeUnderground).
+        FenceLine(props, "TrackBarrier_E", new Vector3(10f, 0f, 19.75f), new Vector3(18f, 0f, 19.75f));
+        FenceLine(props, "TrackBarrier_W", new Vector3(-14f, 0f, 19.75f), new Vector3(-10f, 0f, 19.75f));
         var map = Prop("metro_map", props, new Vector3(1.9f, 1.05f, 9f), -90f);
         if (map) { var mb = Bounds(map); map.transform.position += new Vector3(1.995f - mb.max.x, 0, 0); }
 

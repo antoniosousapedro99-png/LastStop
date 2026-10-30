@@ -117,11 +117,15 @@ public static partial class LookTestBuilder
                     from = dx + 0.5f;
                 }
                 InnerWall(g, from, cb.max.x, wz, floorY);
-                // Benches along the wall between the doors, facing across the aisle.
+                // Benches along the wall between the doors, facing across the aisle, short enough to leave
+                // 25 cm clear of the doorway on each side.
                 foreach (float off in new[] { -0.15f, 0.15f })
                 {
-                    var seat = Prop("seats", g, new Vector3(cb.center.x + off * cb.size.x, floorY, wz - side * 0.4f), side < 0 ? -90f : 90f);
-                    if (seat) StandOn(seat, new Vector3(cb.center.x + off * cb.size.x, floorY, wz - side * (0.08f + Bounds(seat).extents.z)));
+                    float bx = cb.center.x + off * cb.size.x;
+                    var seat = Prop("seats", g, new Vector3(bx, floorY, wz - side * 0.4f), side < 0 ? -90f : 90f);
+                    if (!seat) continue;
+                    FitAlongX(seat, 0.2997f * cb.size.x - 1.41f - 0.5f);
+                    StandOn(seat, new Vector3(bx, floorY, wz - side * (0.08f + Bounds(seat).extents.z)));
                 }
             }
             if (i < count - 1)

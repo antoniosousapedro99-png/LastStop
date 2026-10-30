@@ -178,7 +178,9 @@ public static partial class LookTestBuilder
         AssetDatabase.DeleteAsset(path);
         AssetDatabase.CreateAsset(surface.navMeshData, path);
 
-        EdgeLinks(go.transform, "PlatformEdgeLink", -18f, 18f, 19.6f, 1);
+        // Not where the barriers stand at the platform ends (x -14..-10 and 10..18).
+        EdgeLinks(go.transform, "PlatformEdgeLink", -18f, -14f, 19.6f, 1);
+        EdgeLinks(go.transform, "PlatformEdgeLink", -10f, 10f, 19.6f, 1);
     }
 
     // Jump links side by side along a whole platform edge (x 'fromX'..'toX'), so Frankie can drop onto

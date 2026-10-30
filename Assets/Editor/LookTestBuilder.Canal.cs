@@ -33,7 +33,7 @@ public static partial class LookTestBuilder
         var concrete = Mat("Concrete", Tex("ConcreteBare.png"), new Color(0.6f, 0.6f, 0.58f), 2f, 0.1f);
         var tunnelConcrete = Mat("TunnelConcrete", Tex("ConcreteBare.png"), new Color(0.55f, 0.53f, 0.5f), 2f, 0.1f);
         var ceiling = Mat("Ceiling", Tex("ConcreteBare.png"), new Color(0.4f, 0.4f, 0.38f), 2.5f, 0.05f);
-        var gravel = Mat("PitGravel", Tex("Floor.png"), new Color(0.6f, 0.57f, 0.52f), 1.5f, 0.05f);
+        var gravel = PitGravel();
         var trackBed = Mat("TrackBed", Tex("road_rails.jpg"), new Color(0.8f, 0.78f, 0.74f), 2.6f, 0.1f);
         var housing = Mat("LampHousing", null, new Color(0.12f, 0.12f, 0.12f), 1f, 0.3f, 0.5f);
         var tubeLit = EmissiveMat("TubeLit", Fluorescent * 2.2f);
@@ -115,10 +115,17 @@ public static partial class LookTestBuilder
         Span("EastHeaderS", g, new Vector3(40f, 5.2f, z + 12f), new Vector3(40.3f, 9.4f, z + 12.3f), wallTile);
 
         // Tunnels beyond the hall (concrete, ceiling 3 m above the platform).
-        CanalTunnel(g, "TunnelNW", -140f, -40.3f, z, z + 5.5f, tunnelConcrete, true);
-        CanalTunnel(g, "TunnelSW", -100f, -40.3f, z + 15.5f, z + 21f, tunnelConcrete, true, CanalServiceDoorX);
-        CanalTunnel(g, "TunnelNE", 40.3f, 145f, z, z + 5.5f, tunnelConcrete, false);
-        CanalTunnel(g, "TunnelSE", 40.3f, 95f, z + 15.5f, z + 21f, tunnelConcrete, false);
+        CanalTunnel(g, "TunnelNW", -140f, -40.3f, z, z + 5.5f, tunnelConcrete, true, "TrackN", z + 1.6f);
+        CanalTunnel(g, "TunnelSW", -100f, -40.3f, z + 15.5f, z + 21f, tunnelConcrete, true, "TrackS", z + 17.2f, CanalServiceDoorX);
+        CanalTunnel(g, "TunnelNE", 40.3f, 145f, z, z + 5.5f, tunnelConcrete, false, "TrackN", z + 1.6f);
+        CanalTunnel(g, "TunnelSE", 40.3f, 95f, z + 15.5f, z + 21f, tunnelConcrete, false, "TrackS", z + 17.2f);
+        // Rusty mesh barriers along both island edges at each end, where trains don't stop (the west ones
+        // start past the staff steps). Frankie's jump links skip them (BakeCanal).
+        foreach (float ez in new[] { z + 5.75f, z + 15.25f })
+        {
+            FenceLine(g, "TrackBarrier_W", new Vector3(-36f, 0f, ez), new Vector3(-28f, 0f, ez));
+            FenceLine(g, "TrackBarrier_E", new Vector3(32f, 0f, ez), new Vector3(40f, 0f, ez));
+        }
 
         // Staff steps at the west end, down from the island to each track bed.
         for (int k = 0; k < 5; k++)
@@ -180,7 +187,8 @@ public static partial class LookTestBuilder
     }
 
     // A tunnel x0..x1 between walls at z0 and z1; 'doorX' (if given) leaves a 1 m doorway in the south wall.
-    static void CanalTunnel(Transform g, string name, float x0, float x1, float z0, float z1, Material mat, bool capWest, float doorX = float.NaN)
+    // Its far end is invisible, with the tunnel and its track ('track', bed at 'bedZ') running on beyond.
+    static void CanalTunnel(Transform g, string name, float x0, float x1, float z0, float z1, Material mat, bool capWest, string track, float bedZ, float doorX = float.NaN)
     {
         Span(name + "_WallN", g, new Vector3(x0, -1.5f, z0 - 0.3f), new Vector3(x1, 3.2f, z0), mat);
         if (float.IsNaN(doorX)) Span(name + "_WallS", g, new Vector3(x0, -1.5f, z1), new Vector3(x1, 3.2f, z1 + 0.3f), mat);
@@ -192,8 +200,8 @@ public static partial class LookTestBuilder
             Span(name + "_DoorThreshold", g, new Vector3(doorX, -1.5f, z1), new Vector3(doorX + 1f, -1.3f, z1 + 0.3f), mat);
         }
         Span(name + "_Ceiling", g, new Vector3(x0, 3f, z0), new Vector3(x1, 3.2f, z1), mat);
-        if (capWest) Span(name + "_Cap", g, new Vector3(x0 - 0.3f, -1.5f, z0 - 0.3f), new Vector3(x0, 3.2f, z1 + 0.3f), mat);
-        else Span(name + "_Cap", g, new Vector3(x1, -1.5f, z0 - 0.3f), new Vector3(x1 + 0.3f, 3.2f, z1 + 0.3f), mat);
+        var bed = Mat("TrackBed_" + track, Tex("road_rails.jpg"), new Color(0.8f, 0.78f, 0.74f), 2.6f, 0.1f);   // the same as CanalTrack's
+        EndlessTunnel(g, name, capWest ? x0 : x1, capWest ? -1 : 1, z0, z1, 3f, bedZ, bed);
     }
 
     static void PlaceFuelCan(Transform parent, Vector3 floorPoint, float yaw)
@@ -320,16 +328,17 @@ public static partial class LookTestBuilder
         EmergencyLight(g, new Vector3(67.6f, 9.6f, z + 0.25f), 2f, 7f);   // over the generator room door
 
         // Ticket gate line at x 63: low barriers with two gates and an open aisle (the gates are dead).
-        var glassBarrier = Mat("GateBarrier", null, new Color(0.35f, 0.36f, 0.38f), 1f, 0.5f, 0.6f);
-        Span("GateBarrierN", g, new Vector3(62.9f, f, z), new Vector3(63.1f, f + 1.05f, z + 7.6f), glassBarrier);
-        Span("GateBarrierS", g, new Vector3(62.9f, f, z + 13.4f), new Vector3(63.1f, f + 1.05f, z + 21f), glassBarrier);
-        Prop("automatic_ticket_gate", g, new Vector3(63f, f, z + 8.6f), 90f);
-        Prop("automatic_ticket_gate", g, new Vector3(63f, f, z + 12.4f), 90f);
+        // Rusty mesh fence panels from each wall right up to its gate.
+        var gateN = Prop("automatic_ticket_gate", g, new Vector3(63f, f, z + 8.6f), 90f);
+        var gateS = Prop("automatic_ticket_gate", g, new Vector3(63f, f, z + 12.4f), 90f);
+        FenceLine(g, "GateBarrierN", new Vector3(63f, f, z), new Vector3(63f, f, gateN ? Bounds(gateN).min.z : z + 7.6f));
+        FenceLine(g, "GateBarrierS", new Vector3(63f, f, gateS ? Bounds(gateS).max.z : z + 13.4f), new Vector3(63f, f, z + 21f));
 
         // The ticket booth against the north wall on the platform side; the office key on its back counter.
         var booth = new GameObject("TicketBooth").transform;
         booth.SetParent(g);
-        var boothMat = Mat("BoothPanel", null, new Color(0.45f, 0.42f, 0.36f), 1f, 0.3f, 0.2f);
+        // Worn grey-green painted steel panels (cut from a cabinet door picture: Textures/Generated/BoothPanel.png).
+        var boothMat = Mat("BoothPanel", Load<Texture2D>("Assets/Art/Textures/Generated/BoothPanel.png"), new Color(0.72f, 0.8f, 0.72f), 1f, 0.3f, 0.35f);
         Span("BoothFront", booth, new Vector3(55f, f, z + 3.3f), new Vector3(58.2f, f + 1.1f, z + 3.5f), boothMat);
         Span("BoothGlass", booth, new Vector3(55f, f + 1.1f, z + 3.38f), new Vector3(58.2f, f + 2.4f, z + 3.42f), TransparentMat("ShopGlass", new Color(0.35f, 0.45f, 0.5f, 0.22f), 0.95f));
         Span("BoothWallW", booth, new Vector3(55f, f, z), new Vector3(55.2f, f + 2.4f, z + 3.3f), boothMat);
@@ -590,8 +599,12 @@ public static partial class LookTestBuilder
         AssetDatabase.DeleteAsset(path);
         AssetDatabase.CreateAsset(surface.navMeshData, path);
         // Links so he can jump between the island and the track beds anywhere, not only use the staff steps.
-        EdgeLinks(go.transform, "IslandEdgeLink", -40f, 40f, CanalZ + 5.5f, -1);
-        // The south track runs right against the edge, so he lands on the raised bed between its rails.
-        EdgeLinks(go.transform, "IslandEdgeLink", -40f, 40f, CanalZ + 15.5f, 1, 1.9f, 1.15f);
+        // Not where the barriers stand at the island's ends (x -36..-28 and 32..40).
+        foreach (var (from, to) in new[] { (-40f, -36f), (-28f, 32f) })
+        {
+            EdgeLinks(go.transform, "IslandEdgeLink", from, to, CanalZ + 5.5f, -1);
+            // The south track runs right against the edge, so he lands on the raised bed between its rails.
+            EdgeLinks(go.transform, "IslandEdgeLink", from, to, CanalZ + 15.5f, 1, 1.9f, 1.15f);
+        }
     }
 }
