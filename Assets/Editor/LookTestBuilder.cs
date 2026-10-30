@@ -38,6 +38,7 @@ public static partial class LookTestBuilder
         tileSize.Clear();
         tileOrigin.Clear();
         builtPipes.Clear();
+        looseLitter.Clear();
         EnsureFolder(MatDir);
         DressingScene.SaveIfOpen();   // the hand-placed props are in their own scene, which this closes
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -231,6 +232,7 @@ public static partial class LookTestBuilder
         BuildVents();             // air ducts, measured against the walls and ceilings built above (LookTestBuilder.Vents.cs)
         PipeSupports();           // hangers and wall straps for every pipe (needs all the walls and ceilings)
         BuildMenus();             // last: the menus switch the player off until "New game"
+        SettleLitter();           // the scattered rubbish drops and comes to rest on the floor (LookTestBuilder.CanalDressing.cs)
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
         // (doors, lockers, the inventory's turntable) must NOT be static, or its merged copy stays frozen.

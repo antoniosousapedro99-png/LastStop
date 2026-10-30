@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -165,7 +166,42 @@ public static partial class LookTestBuilder
             go.transform.localScale *= k.size / Mathf.Max(0.001f, Mathf.Max(b.size.x, b.size.y, b.size.z));
             go.transform.rotation = (k.flat ? Messy(rng, 5f) : OnItsSide(rng)) * go.transform.rotation;
             StandOn(go, floor.point + Vector3.up * 0.008f);   // a hair above the floor, so flat paper doesn't flicker
+            if (!k.flat) looseLitter.Add(go);   // knocked-over things settle with physics at the end (SettleLitter)
         }
+    }
+
+    // Cups, cans and boxes knocked over by Scatter, still to settle.
+    static readonly List<GameObject> looseLitter = new List<GameObject>();
+
+    // Lowering a knocked-over piece until its lowest point touches the floor isn't enough: a soda cup lying on
+    // its straw hovers. So, once the whole level is built, every knocked-over piece is dropped for real: it
+    // gets a body and a rough collider, the physics runs for a couple of seconds (nothing else moves), then
+    // both are taken off again and the piece stays where it came to rest.
+    static void SettleLitter()
+    {
+        if (looseLitter.Count == 0) return;
+        // Everything else that could move holds still meanwhile.
+        var others = new List<Rigidbody>();
+        foreach (var body in Object.FindObjectsByType<Rigidbody>(FindObjectsInactive.Include))
+            if (!body.isKinematic) { body.isKinematic = true; others.Add(body); }
+        var added = new List<Component>();
+        foreach (var go in looseLitter)
+        {
+            if (!go) continue;
+            var shape = go.AddComponent<MeshCollider>();
+            shape.convex = true;
+            var body = go.AddComponent<Rigidbody>();
+            body.mass = 0.2f; body.linearDamping = 0.5f; body.angularDamping = 2f;
+            added.Add(body); added.Add(shape);
+        }
+        var mode = Physics.simulationMode;
+        Physics.simulationMode = SimulationMode.Script;
+        Physics.SyncTransforms();
+        for (int i = 0; i < 150; i++) Physics.Simulate(0.02f);   // 3 seconds
+        Physics.simulationMode = mode;
+        foreach (var c in added) Object.DestroyImmediate(c);   // the bodies first, then the colliders (the list holds them in that order)
+        foreach (var body in others) body.isKinematic = false;
+        looseLitter.Clear();
     }
 
     static Vector2 Random2(System.Random rng)
