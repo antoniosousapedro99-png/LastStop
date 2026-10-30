@@ -70,7 +70,7 @@ public class JournalDirector : MonoBehaviour
         if (running) Write("running", "The generator's running. The log said backup power opens the emergency latch on the lower level.");
 
         // ---- Station 3, the sewers (draft)
-        if (sewers) Write("sewers", "The sewers. The water's high... there has to be a pumping station somewhere ahead.");
+        if (sewers) Write("sewers", "The sewers. The water's high... there have to be valves somewhere to let it out.");
 
         // ---- what's done (crossed out)
         Done("start", journal.Has("fusebox") || hollisPower || !hollis);

@@ -41,6 +41,9 @@ public class SaveData
     public int generatorFuel;
     public bool generatorPlug, generatorRunning;
 
+    // The sewers
+    public List<string> sewerValves = new List<string>();   // valves turned open (SewerValve ids, the final one too)
+
     // Frankie
     public bool monsterAwake;
     public Vector3 monsterPosition;

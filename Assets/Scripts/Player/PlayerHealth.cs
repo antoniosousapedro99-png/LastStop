@@ -39,6 +39,13 @@ public class PlayerHealth : MonoBehaviour
         if (Hits >= maxHits) StartCoroutine(Die());
     }
 
+    // Out of air under water (BreathHold): dead at once, whatever his hits.
+    public void Drown()
+    {
+        if (Dead) return;
+        StartCoroutine(Die());
+    }
+
     // Loading a save: how many hits were already taken (never enough to be dead).
     public void SetHits(int hits) => Hits = Mathf.Clamp(hits, 0, maxHits - 1);
 
@@ -53,7 +60,7 @@ public class PlayerHealth : MonoBehaviour
     IEnumerator Die()
     {
         Dead = true;
-        foreach (var b in new MonoBehaviour[] { GetComponent<PlayerMovement>(), GetComponent<PlayerLook>(), GetComponent<FlareHandler>(),
+        foreach (var b in new MonoBehaviour[] { GetComponent<PlayerMovement>(), GetComponent<PlayerSwim>(), GetComponent<PlayerLook>(), GetComponent<FlareHandler>(),
                                                 GetComponentInChildren<Interactor>(), GetComponent<PlayerLean>(), GetComponent<PlayerCrouch>() })
             if (b) b.enabled = false;
         var cam = transform.Find("Main Camera");

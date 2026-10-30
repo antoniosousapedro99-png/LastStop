@@ -179,6 +179,8 @@ public static class SaveSystem
         var journal = Journal.Current;
         if (journal) journal.Save(d.journalIds, d.journalTexts);
 
+        foreach (var valve in SewerValve.All) if (valve.Done) d.sewerValves.Add(valve.id);
+
         var monster = UnityEngine.Object.FindAnyObjectByType<FrankieAI>();   // only found while he's awake
         if (monster)
         {
@@ -219,6 +221,13 @@ public static class SaveSystem
         inv.fuelCans = d.fuelCans; inv.hasSparkPlug = d.hasSparkPlug; inv.hasOfficeKey = d.hasOfficeKey;
         var generator = UnityEngine.Object.FindAnyObjectByType<GeneratorPuzzle>();
         if (generator) generator.LoadState(d.generatorFuel, d.generatorPlug, d.generatorRunning);
+        // The sewer valves already open: the four first (they set the cistern's level), the final one last.
+        foreach (bool finalOne in new[] { false, true })
+            foreach (string id in d.sewerValves)
+            {
+                var valve = SewerValve.Find(id);
+                if (valve && valve.final == finalOne) valve.SetDone();
+            }
 
         var player = inv.transform;
         var battery = player.GetComponentInChildren<FlashlightBattery>(true);

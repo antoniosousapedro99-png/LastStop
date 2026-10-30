@@ -20,6 +20,9 @@ public class PlayerCrouch : MonoBehaviour
 
     void Awake() => controller = GetComponent<CharacterController>();
 
+    // Back on his feet at once (PlayerSwim: in deep water the crouch key dives instead).
+    public void StandUp() => IsCrouched = false;
+
     void Update()
     {
         if (Controls.Pressed(GameAction.Crouch))

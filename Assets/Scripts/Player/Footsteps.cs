@@ -22,7 +22,7 @@ public class Footsteps : MonoBehaviour
 
     void Update()
     {
-        if (!movement.IsGrounded || movement.CurrentSpeed < 0.3f) return;
+        if (!movement.enabled || !movement.IsGrounded || movement.CurrentSpeed < 0.3f) return;   // (not while swimming)
         distanceSinceStep += movement.CurrentSpeed * Time.deltaTime;
         if (distanceSinceStep < strideLength) return;
         distanceSinceStep = 0f;
@@ -38,6 +38,9 @@ public class Footsteps : MonoBehaviour
             if (surface != null && surface.steps.Length > 0) { set = surface.steps; level *= surface.volumeScale; }
         }
         if (splashes != null && splashes.Length > 0 && WaterPuddle.At(feet)) { set = splashes; level = splashVolume; }
+        // Wading: every step splashes, louder (and heard further) the deeper the water.
+        float wading = PlayerSwim.Current ? PlayerSwim.Current.Depth : 0f;
+        if (splashes != null && splashes.Length > 0 && wading > 0.15f) { set = splashes; level = splashVolume + Mathf.Min(wading, 1f) * 0.35f; }
 
         // Pick a different clip than last time and vary pitch a little, so it never sounds looped.
         int index = Random.Range(0, set.Length);
@@ -47,6 +50,6 @@ public class Footsteps : MonoBehaviour
         // Crouched steps are softer: you're placing your feet carefully.
         audioSource.PlayOneShot(set[index], movement.IsCrouched ? level * 0.5f : level);
         // Frankie can hear steps: running carries 15 m, walking 6 m, crouching nothing.
-        Noise.Make(feet, movement.IsCrouched ? 0f : movement.CurrentSpeed > 3f ? runNoise : walkNoise);
+        Noise.Make(feet, movement.IsCrouched ? 0f : (movement.CurrentSpeed > 3f ? runNoise : walkNoise) + (wading > 0.15f ? 6f : 0f));
     }
 }
