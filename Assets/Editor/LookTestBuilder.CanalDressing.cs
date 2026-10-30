@@ -4,7 +4,7 @@ using UnityEngine;
 // Canal St Junction, dressed as a busy station everyone fled in a panic: newspapers, cups and cans
 // strewn thinly across the platform and mezzanine (a little more by the ticket gates), snacks and
 // unopened soda cans left behind on the benches, bins knocked over, "out of service" cones and barriers
-// kicked aside (never blocking the way), old ads and Line 4 notices on the walls, a few graffiti tags,
+// kicked aside (never blocking the way), Line 4 notices on the walls, a few graffiti tags,
 // and a little blood: a spatter by the west staff steps and a drag trail along the south track to the
 // maintenance door.
 public static partial class LookTestBuilder
@@ -52,13 +52,8 @@ public static partial class LookTestBuilder
         Toppled(Kit(BarrierDir + "/TrafficCone.fbx", null, BarrierDir + "/Cones.png", g, Vector3.zero, 0f, 0.7f), new Vector3(61.8f, mezz, z + 10.9f), 200f);
         Kit(BarrierDir + "/TrafficCone.fbx", null, BarrierDir + "/Cones.png", g, new Vector3(64.4f, mezz, z + 8.9f), 0f, 0.7f);
 
-        // ---- old ads across the tracks and on the mezzanine, the line map on the west end wall
-        string[] ads = { "Poster_01", "Poster_02", "Poster_03", "Poster_04", "Poster_05", "Poster_06", "Poster_07", "Poster_08" };
-        float[] northAds = { -30f, -10f, 10f, 30f }, southAds = { -20f, 0f, 20f };
-        for (int i = 0; i < northAds.Length; i++) WallProp(ads[i], g, new Vector3(northAds[i], 1f, z + 10.5f), Vector3.back, 0.4f, 1.3f);
-        for (int i = 0; i < southAds.Length; i++) WallProp(ads[4 + i], g, new Vector3(southAds[i], 1f, z + 10.5f), Vector3.forward, 0.4f, 1.3f);
-        WallProp(ads[7], g, new Vector3(52f, mezz + 1.5f, z + 5f), Vector3.back, mezz + 0.9f, 1.3f);
-        WallProp(ads[2], g, new Vector3(66f, mezz + 1.5f, z + 16f), Vector3.forward, mezz + 0.9f, 1.3f);
+        // ---- the line map on the west end wall (the Metro kit's film posters are never used: the creative
+        // director removed them on 2026-10-30)
         WallProp("metro_map", g, new Vector3(-37f, 1.5f, z + 10.5f), Vector3.left, 1.05f, 0.9f);
 
         // ---- Line 4 notices (readable by looking at them)
