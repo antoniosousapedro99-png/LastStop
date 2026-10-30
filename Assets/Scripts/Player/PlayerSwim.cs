@@ -11,7 +11,7 @@ public class PlayerSwim : MonoBehaviour
 {
     public float swimDepth = 1.15f;        // water this deep at the feet: swimming (the cistern's 1.3 m swims, the waist-deep 1 m wades)
     public float wadeFrom = 0.15f;         // shallower than this doesn't slow him
-    public float swimSpeed = 1.6f, diveSpeed = 1.3f, riseSpeed = 1.5f, floatSpeed = 1f;
+    public float swimSpeed = 1.9f, diveSpeed = 1.3f, riseSpeed = 1.5f, floatSpeed = 1f;
     public float floatDepth = 1.45f;       // floating: the feet this far under the surface (eyes just above it)
     public AudioSource source;             // strokes and splashes (2D: they're his own)
     public AudioClip[] strokes;

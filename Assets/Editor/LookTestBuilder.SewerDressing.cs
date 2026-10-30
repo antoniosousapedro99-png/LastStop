@@ -121,7 +121,7 @@ public static partial class LookTestBuilder
                 string arrow = other.way == heading ? "▲" : other.way == rightHand ? "►" : "◄";
                 lines.Add(Coloured(arrow + " " + other.to));
             }
-            Vector3 stand = SewerOrigin + at + from.way * 6f + Vector3.up * 1.8f;
+            Vector3 stand = SewerOrigin + at + from.way * (6f * KitWide) + Vector3.up * 1.8f;
             WallSign(g, stand, rightHand, string.Join("\n", lines), SignPaint, 2.6f);
         }
     }
@@ -133,9 +133,10 @@ public static partial class LookTestBuilder
         Vector3 outward = side switch { 0 => Vector3.back, 1 => Vector3.right, 2 => Vector3.forward, _ => Vector3.left };
         Vector3 doorMid = side switch { 0 => new Vector3(at, 0f, z0), 1 => new Vector3(x1, 0f, at), 2 => new Vector3(at, 0f, z1), _ => new Vector3(x0, 0f, at) };
         Vector3 rightHand = Vector3.Cross(Vector3.up, outward);
-        // 2.75 m to the side of the door, or less in a narrow room so the plate stays clear of the corner.
+        // Just past the doorway's edge, or less in a narrow room so the plate stays clear of the corner.
         float room = side switch { 0 => at - x0, 2 => x1 - at, 1 => at - z0, _ => z1 - at };   // room left on the right-hand side
-        Vector3 stand = SewerOrigin + doorMid - outward * 1f + rightHand * Mathf.Min(2.75f, room - 0.6f) + Vector3.up * 1.9f;
+        float past = DoorHalf(side, at, x0, x1, z0, z1) + 0.65f;
+        Vector3 stand = SewerOrigin + doorMid - outward * 1f + rightHand * Mathf.Min(past, room - 0.6f) + Vector3.up * 1.9f;
         WallSign(g, stand, outward, Coloured("◄ " + text.Replace("\n", "\n   ")), SignPaint, 1.1f);
     }
 

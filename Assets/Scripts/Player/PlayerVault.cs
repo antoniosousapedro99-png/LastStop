@@ -1,14 +1,14 @@
 using System.Collections;
 using UnityEngine;
 
-// Vaulting: hold Jump while facing a ledge between knee and chest height (0.5 to 1.4 m: the platform edge
+// Vaulting: hold Jump while facing a ledge between knee and chest height (0.5 to 1.55 m: the platform edge
 // from the tracks, crates, low walls) and the player heaves themselves up onto it in 0.7 s.
 // A quick tap of Jump at a ledge is still an ordinary jump (PlayerMovement does it when the key comes up).
 // It can't be done while winded (out of sprint stamina), and it's loud: Frankie hears it like running.
 [RequireComponent(typeof(CharacterController))]
 public class PlayerVault : MonoBehaviour
 {
-    public float minHeight = 0.5f, maxHeight = 1.4f;   // ledge heights it works on, above the feet
+    public float minHeight = 0.5f, maxHeight = 1.55f;   // ledge heights it works on, above the feet
     public float reach = 0.8f;                          // how far ahead a ledge can be
     public float holdTime = 0.25f;                      // seconds Jump must be held to vault
     public float duration = 0.7f;

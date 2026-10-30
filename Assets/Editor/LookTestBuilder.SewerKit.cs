@@ -3,6 +3,9 @@ using UnityEngine;
 
 // Fitting the Sewer pack's round tunnel pieces together (Models/Environment/Sewer/Sewers.fbx, the "Serwers"
 // set: 6.6 m wide, a 2 m water channel between two walkways 0.77 m higher, 5.5 m of headroom).
+// Every piece is built bigger than the pack made it (KitWide across and along, KitTall up) and its water
+// channel is dug deeper (to SewerWalkwayRise below the walkways), so the walkways are roomy and the canal
+// is over your head. The deepened meshes are saved beside the pack (Sewer/Deepened) for the scene to keep.
 // Each piece's open ends ("ports") are found from its mesh: a face of its bounds that the tunnel's whole
 // cross-section touches. A port is the bottom-middle of the channel at that face, with the way out of the
 // piece. Bends and junctions are placed at a point (where their channels' centre lines cross), turned so
@@ -10,7 +13,14 @@ using UnityEngine;
 public static partial class LookTestBuilder
 {
     const string SewerKitFbx = ArtDir + "/Environment/Sewer/Sewers.fbx";
-    public const float SewerWalkwayRise = 0.77f;   // the walkways stand this much above the channel's bottom
+    const float KitWide = 1.3f, KitTall = 1.15f;    // how much bigger than the pack's pieces
+    public const float SewerWalkwayRise = 2.35f;   // the walkways stand this much above the channel's bottom
+    const float ChannelWater = -0.35f;              // the canals' water surface, relative to the walkways
+    const float ChannelHalf = 1.3f;                 // half the channel's width (the pack's 2 m, made wider)
+    const string DeepenedDir = ArtDir + "/Environment/Sewer/Deepened";
+    static readonly Dictionary<string, Mesh> deepened = new Dictionary<string, Mesh>();
+    // Every stretch of channel laid so far (bottom-middle at each end), for the water that fills them.
+    static readonly List<(Vector3 a, Vector3 b)> kitChannels = new List<(Vector3, Vector3)>();
 
     struct Port { public Vector3 pos, dir; public Port(Vector3 p, Vector3 d) { pos = p; dir = d; } }
 
@@ -28,14 +38,49 @@ public static partial class LookTestBuilder
         { "debris_03", "Environment/Sewer/debris_03.png" },
     };
 
-    // One piece of the kit at the world origin (turned by 'yaw'), solid, textured.
+    // One piece of the kit at the world origin (turned by 'yaw'), made bigger and its channel deeper, solid, textured.
     static GameObject KitPiece(Transform parent, string piece, float yaw)
     {
         var go = Model(SewerKitFbx, piece, parent, null, 1f, yaw, sewerKitTextures);
         go.transform.position = Vector3.zero;
+        // Bigger: each of the model's own axes takes the stretch of the world axis it points along.
+        var scale = go.transform.localScale;
+        for (int k = 0; k < 3; k++)
+        {
+            var dir = go.transform.rotation * (k == 0 ? Vector3.right : k == 1 ? Vector3.up : Vector3.forward);
+            scale[k] *= Mathf.Abs(dir.y) > 0.7f ? KitTall : KitWide;
+        }
+        go.transform.localScale = scale;
+        var mf = go.GetComponent<MeshFilter>();
+        mf.sharedMesh = Deepened(piece, mf);
         go.AddComponent<MeshCollider>();
         return go;
     }
+
+    // The piece's mesh with its channel floor lowered to SewerWalkwayRise below the walkways (the channel's
+    // walls stretch down with it). Its lowest points are the channel's floor; the walkways stay put.
+    static Mesh Deepened(string piece, MeshFilter mf)
+    {
+        if (deepened.TryGetValue(piece, out var done) && done) return done;
+        var mesh = Object.Instantiate(mf.sharedMesh);
+        mesh.name = piece + "_Deep";
+        var verts = mesh.vertices;
+        float low = float.MaxValue;
+        foreach (var v in verts) low = Mathf.Min(low, mf.transform.TransformPoint(v).y);
+        float extra = SewerWalkwayRise - SewerKitRise * KitTall;
+        Vector3 drop = mf.transform.InverseTransformVector(Vector3.down * extra);   // the same for every turn of the piece
+        for (int i = 0; i < verts.Length; i++)
+            if (mf.transform.TransformPoint(verts[i]).y < low + 0.03f) verts[i] += drop;
+        mesh.vertices = verts;
+        mesh.RecalculateBounds();
+        if (!UnityEditor.AssetDatabase.IsValidFolder(DeepenedDir)) UnityEditor.AssetDatabase.CreateFolder(ArtDir + "/Environment/Sewer", "Deepened");
+        string path = DeepenedDir + "/" + piece + ".asset";
+        UnityEditor.AssetDatabase.DeleteAsset(path);
+        UnityEditor.AssetDatabase.CreateAsset(mesh, path);
+        deepened[piece] = mesh;
+        return mesh;
+    }
+    const float SewerKitRise = 0.77f;   // the pack's own walkway height above its channel's floor
 
     // The ports of a piece as it stands now, in world space.
     static List<Port> PortsOf(GameObject go)
@@ -84,7 +129,7 @@ public static partial class LookTestBuilder
             var cross = new Vector3(alongZ.pos.x, ports[0].pos.y, alongX.pos.z);
             go.transform.position += at - cross;
             var result = new Dictionary<Vector3, Port>();
-            foreach (var p in ports) result[p.dir] = new Port(p.pos + at - cross, p.dir);
+            foreach (var p in ports) { result[p.dir] = new Port(p.pos + at - cross, p.dir); kitChannels.Add((at, p.pos + at - cross)); }
             return result;
         }
         Debug.LogWarning("Sewer kit: " + piece + " has no turn with ports facing all the ways asked at " + at);
@@ -92,19 +137,20 @@ public static partial class LookTestBuilder
     }
 
     // Straight tunnel sections from port 'a' (facing the way to go) to the point 'to' on its axis, as whole
-    // 6.77 m sections stretched a little to fit. Returns the port at the far end (facing on, the same way).
+    // sections (6.77 m in the pack, 8.8 m made bigger) stretched a little to fit. Returns the port at the far end (facing on, the same way).
     static Port KitTunnel(Transform parent, Port a, Vector3 to, string piece = "Serwers_009")
     {
         Vector3 along = to - a.pos; along.y = 0f;
         float length = Vector3.Dot(along, a.dir);
         if (length < 0.05f) return a;
-        if (length < 5f && piece == "Serwers_009") piece = "Serwers_008";   // a short gap: the 3.46 m section
+        kitChannels.Add((a.pos, a.pos + a.dir * length));
+        if (length < 5f * KitWide && piece == "Serwers_009") piece = "Serwers_008";   // a short gap: the short section
         // A section, turned to run along a.dir: find its ports and its natural length.
         var probe = KitPiece(parent, piece, 0f);
         var ports = PortsOf(probe);
         float yaw = Vector3.SignedAngle(ports[1].pos - ports[0].pos, a.dir, Vector3.up);
         Object.DestroyImmediate(probe);
-        int sections = Mathf.Max(1, Mathf.RoundToInt(length / 6.77f));
+        int sections = Mathf.Max(1, Mathf.RoundToInt(length / (6.77f * KitWide)));
         float each = length / sections;
         for (int i = 0; i < sections; i++)
         {
