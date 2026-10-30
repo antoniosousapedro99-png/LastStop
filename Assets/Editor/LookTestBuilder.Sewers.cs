@@ -32,7 +32,7 @@ public static partial class LookTestBuilder
         valveWheels.Clear();
         reliefGates.Clear();
         sewerBrick = Mat("SewerBrick", Tex2(SewerTex + "bricks.jpg"), new Color(0.72f, 0.66f, 0.58f), 2f, 0.15f);
-        sewerFloor = Mat("SewerFloor", Tex2(SewerTex + "concrete_dirty_2.jpg"), new Color(0.7f, 0.7f, 0.66f), 3f, 0.2f);
+        sewerFloor = Mat("SewerFloor", Tex2(SewerTex + "concrete_base.png"), Color.white, 2.5f, 0.2f);   // the same concrete as the tunnels' walkways
         sewerMud = Mat("SewerMud", Tex2(SewerTex + "soil_mud.jpg"), new Color(0.5f, 0.46f, 0.38f), 2f, 0.3f);
         sewerWater = TransparentMat("SewerWater", new Color(0.04f, 0.06f, 0.045f, 0.82f), 0.95f);
         sewerGrate = Mat("SewerGrate", Tex2(SewerTex + "Metal.jpg"), new Color(0.45f, 0.43f, 0.4f), 1f, 0.35f, 0.6f);
