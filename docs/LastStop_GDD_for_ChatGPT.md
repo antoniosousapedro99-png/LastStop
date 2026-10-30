@@ -331,25 +331,20 @@ The first pull of the starter cord only coughs (Frankie may hear it). The second
 - on the lower level, a **locker bangs from inside** (it's empty);
 - a corridor's **bulbs go out one by one toward you**, the last right overhead.
 
-### 4.4 Station 3 – the sewers (Planned 28 October, not built)
+### 4.4 Station 3 – the sewers (planned 28 October; layout built 30 October, mechanics not yet)
 
 - **Fear: drowning / water.** Reached by climbing down Canal St's **emergency latch** into the overflow tunnels under Line 4.
-- **Size:** like Canal St, about 1-1.5 hours: a **pumping station hub** plus **three branches**.
-- **Goal: drain the flood.** The sewers are flooding. **Open three valves, one in each branch.** Each valve lowers the water a little, which opens the way into the next branch. Then **restart the main pump** in the hub.
-- **Water in play: it rises and falls.** Some areas are knee- or waist-deep: wading is slow and loud. Deep water can't be walked through, only crossed on ledges and gantries. Each valve, and finally the pump, lowers the water and opens new paths.
-- **The danger is the water itself (no creature for now):** deep water drowns you if you stay under too long, with the breath shown **by sound only** (no meter on screen). Strong currents in some channels push you, and falling in is the main threat. **Frankie does not follow** into the sewers. A **new, water-based monster** will be added later by the director.
-- **Exit: the river outfall.** Once the pump runs, the overflow tunnel drains and leads out to the river, as the latch notice says. Station 4 (losing your mind) starts back underground somewhere else.
-- **Voicemails (2):** an old wall phone in the **pump control room** (visible), and an emergency phone **deep in a flooded branch** (hidden, reachable only after draining it). Who speaks is still to decide (his father stays for the very end).
-- **Assets to use:** the Sewer pack's textures already in the project (brick, dirty concrete, rusty metal, mud), the industrial kit from the lower levels (pipes, pumps, control boxes, chain-link, caged bulbs), and the water and splash sounds.
-- **First draft built (2026-10-28):** climbing down Canal St's emergency latch now fades out and leads into the sewers (replacing the "End of Station 2" card; it autosaves "Autosave - The Sewers"; Frankie stays behind). A walkable greybox in sewer brick, about 20 m below and beyond z 600:
-  - **arrival chamber** with a ladder up to the shut hatch;
-  - **main tunnel**: a walkway beside a knee-deep channel;
-  - **pumping-station hub** (16 x 16 m, 6 m high): a central sump of water, the main pump (placeholder drum and motor), a control room in the north-west corner;
-  - **west branch** (knee-deep), **east branch** (a step down, waist-deep), **north branch** (deep, crossed on a narrow ledge along the west wall), each ending in a **valve room** with a red valve wheel (placeholder);
-  - beyond the north valve room, the **outfall tunnel**, barred by a grate with night and moonlight beyond;
-  - dim caged bulbs, a red emergency lamp at the arrival, the sound of running water.
-  - **Not working yet:** valves and pump do nothing, the water doesn't drop, wading isn't slowed, deep water can't drown you (the ledge isn't needed yet), no voicemails, no creature. Some walls overlap where rooms meet (identical brick, no visible flicker; to tidy later).
-- **Open questions:** the branches' themes and layout, how the water level is shown and animated, what a valve looks like and how it's turned, the drowning rules (how long you can hold your breath), and the new monster.
+- **Size:** like Canal St, about 1-1.5 hours. **Layout from the director's sewer map (2026-10-30)**, replacing the earlier hub-and-three-branches plan: a ring of tunnels round a **central cistern**, with **four valve rooms** at the corners and the **outfall to the river** at the far end.
+- **Goal: four valves, then the final valve.** Open the **four valves (any order)**; **each one lowers the water** (the director chose falling water over the map's "rising pressure"). Once all four are open, the cistern is low enough to reach the **final valve on the central platform**; turning it **purges the water** out through the main outfall to the river, and the way out opens.
+- **Valves are turned by holding Use (about 4 s)** while the wheel squeals round; let go and it stops (you're exposed while turning). Then a deep pressure groan and rushing water.
+- **Water in play:** knee- and waist-deep areas slow you and splash loudly. **Deep water: you swim slowly at the surface; in marked fast channels the current drags you along and under**, and you must fight your way out before your breath runs out. **Breath: 20 seconds**, heard only (calm hold, a strained heartbeat and muffled gasps from about 10 s, bubbling panic in the last 5 s).
+- **The danger is the water itself (no creature for now).** **Frankie does not follow** into the sewers. A **new, water-based monster** will be added later by the director.
+- **Exit: the river outfall,** through the overflow tunnel, once the final valve has purged the water.
+- **Voicemails (2):** one visible, one hidden in a flooded area (reachable only once drained). Who speaks is still to decide (his father stays for the very end).
+- **Assets:** the Sewer pack's **round tunnel pieces** (`Models/Environment/Sewer/Sewers.fbx`, the "Serwers" set: brick arches, a 2 m water channel between two walkways 0.77 m higher), its textures, and the industrial kit (pipes, caged bulbs).
+- **Layout built (2026-10-30), walkable, mechanics not yet:** the **arrival** (ladder up to the Canal St hatch, unchanged) -> a tunnel north and a bend -> **Valve 1** room -> a junction (a spoke into the cistern) -> **Valve 2** room -> a junction (a **side room**) -> a bend -> the cistern's east door. The **cistern**: a round brick chamber 40 m across and 9 m high, a 4 m walkway ring round a 6 m deep pool, a doorway on each side, **four railed catwalks** on the diagonals to the **central platform** with the **final valve**. West door -> the **west hall** -> a **north-west side room** / a bend -> **Valve 3** room. South door -> a junction (**Valve 4** room) -> the **outfall chamber** -> the **overflow tunnel** to a barred opening onto the river at night. Grated **footbridges** at every junction (over the side channel, and across the main channel). Water stands still in every channel and a metre down in the cistern; caged bulbs throughout; running water heard in the cistern and tunnels. A walk test went from the hatch to the central platform.
+  - **Not working yet:** turning valves, the water dropping, wading, swimming, currents, drowning, voicemails, the exit. Valve wheels and the platform are placeholders.
+- **Open questions:** the look of each area (themes, dressing), which areas start flooded and how far each valve lowers the water, the voicemails' speakers, and the new monster.
 
 ### 4.5 Station 4 – the unfinished station (Planned 28 October, not built)
 

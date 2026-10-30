@@ -1,21 +1,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Station 3, the sewers: a FIRST DRAFT (greybox in sewer brick) to build on piece by piece. Reached by
-// climbing down Canal St's emergency latch (SewerDescent). Built far from the stations, beyond z 600, 20 m
-// below them. Walkable and lit, with still water at its starting levels, but nothing works yet: the valves
-// and the pump are placeholders, the water doesn't drop, wading isn't slowed and deep water can't drown you.
-// Layout (x across, z forward, from the arrival shaft at the south):
-//   arrival chamber -> main tunnel (walkway beside a knee-deep channel) -> pumping-station hub (central sump,
-//   the pump, a control room) -> three branches, each ending in a valve room:
-//   west (knee-deep), east (waist-deep, a step down), north (deep: a narrow ledge along the wall) ->
-//   beyond the north valve room, the outfall tunnel to the river, barred by a grate.
+// Station 3, the sewers. Reached by climbing down Canal St's emergency latch (EmergencyLatch). Built far from
+// the stations, beyond z 600, 20 m below them. The tunnels are the Sewer pack's round brick-and-concrete
+// pieces (LookTestBuilder.SewerKit.cs): a water channel down the middle between two walkways. The layout
+// follows the director's map (turned round, so it runs north from the arrival); in metres from the arrival
+// (x across, z forward):
+//   arrival chamber (the ladder up to the hatch) -> north 12 m, a bend west ->
+//   VALVE 1 room -> a junction (a spoke south into the cistern) -> VALVE 2 room -> a junction (a side room
+//   to the west) -> a bend -> the cistern's east door.
+//   The CISTERN (centre x -55, z 57): a round chamber 40 m across, a walkway ring round a deep pool, four
+//   catwalks to the central platform with the FINAL VALVE. Doors on its four sides.
+//   West door -> the west hall -> (north) a side room / (south) a bend -> VALVE 3 room.
+//   South door -> a junction (west: VALVE 4 room) -> the outfall chamber -> the overflow tunnel to the river.
+// For now everything is walkable and the water stands still: the valves are placeholders (turning them,
+// the water dropping, swimming and drowning come next).
 public static partial class LookTestBuilder
 {
     static readonly Vector3 SewerOrigin = new Vector3(0f, -20f, 600f);
     public static Vector3 SewerSpawn => SewerOrigin + new Vector3(0f, 0.05f, 2.6f);
+    static readonly Vector3 CisternCentre = new Vector3(-55f, 0f, 57f);   // relative to the sewer origin
+    const float CisternRadius = 20f;
 
-    static Material sewerBrick, sewerFloor, sewerMud, sewerWater;
+    static Material sewerBrick, sewerFloor, sewerMud, sewerWater, sewerGrate;
 
     static void BuildSewers()
     {
@@ -24,10 +31,11 @@ public static partial class LookTestBuilder
         sewerFloor = Mat("SewerFloor", Tex2(SewerTex + "concrete_dirty_2.jpg"), new Color(0.7f, 0.7f, 0.66f), 3f, 0.2f);
         sewerMud = Mat("SewerMud", Tex2(SewerTex + "soil_mud.jpg"), new Color(0.5f, 0.46f, 0.38f), 2f, 0.3f);
         sewerWater = TransparentMat("SewerWater", new Color(0.04f, 0.06f, 0.045f, 0.82f), 0.95f);
+        sewerGrate = Mat("SewerGrate", Tex2(SewerTex + "Metal.jpg"), new Color(0.45f, 0.43f, 0.4f), 1f, 0.35f, 0.6f);
         Vector3 o = SewerOrigin;
 
         // ---- arrival: a brick chamber with a ladder up the south wall to the latch's hatch (shut overhead)
-        SewerRoom(g, "Arrival", -2f, 2f, 0f, 4f, 0f, 3f, (2, -1f, 1f, 2.3f));
+        SewerRoom(g, "Arrival", -2f, 2f, 0f, 4f, 0f, 3f, (2, -2f, 2f, 2.6f));   // open on to both walkways
         Span("ArrivalHatch", g, o + new Vector3(-0.6f, 2.9f, 0f), o + new Vector3(0.6f, 2.98f, 1.1f), Mat("LatchSteel", Tex2(SewerTex + "Metal.jpg"), new Color(0.55f, 0.53f, 0.5f), 1f, 0.35f, 0.6f));
         // A ladder leaning on the south wall up to the hatch: one side of the Soviet metro pack's stepladder
         // (Tools/Blender/ladder_half.py), dark steel. Turned so its top leans toward the wall (-Z).
@@ -50,92 +58,228 @@ public static partial class LookTestBuilder
         ladder.transform.position += Vector3.forward * (o.z + 0.03f - Bounds(ladder).min.z);   // its top against the wall
         EmergencyLight(g, o + new Vector3(1.6f, 2.5f, 3.6f), 1.6f, 6f);
 
-        // ---- main tunnel: a walkway on the west, a knee-deep channel on the east
-        SewerRoom(g, "MainTunnel", -2f, 2f, 4f, 30f, 0f, 3f, false, (0, -2f, 2f, 3f), (2, -2f, 2f, 3f));   // its floor is the walkway and the channel
-        Span("MainWalkway", g, o + new Vector3(-2f, -1.2f, 4f), o + new Vector3(-0.5f, 0f, 30f), sewerFloor);
-        Span("MainChannelBed", g, o + new Vector3(-0.5f, -1.2f, 4f), o + new Vector3(2f, -1f, 30f), sewerMud);
-        SewerWaterPlane(g, "MainChannelWater", -0.5f, 2f, 4f, 30f, -0.45f);
-        CagedBulb(g, "SewerBulb_Main", o + new Vector3(-1.2f, 2.75f, 16f), 1.4f, 6f, flicker: true);
+        // ---- the tunnels (positions relative to the sewer origin; a port's height is the channel's bottom)
+        var kit = new GameObject("Tunnels").transform;
+        kit.SetParent(g);
+        Vector3 P(float x, float z) => o + new Vector3(x, -SewerWalkwayRise, z);
+        Port Door(float x, float z, Vector3 way) => new Port(P(x, z), way);
 
-        // ---- the pumping-station hub: 16 x 16 m, 6 m high, a sump in the middle, the pump, a control room
-        SewerRoom(g, "Hub", -8f, 8f, 30f, 46f, 0f, 6f, false, (0, -2f, 2f, 3f), (3, 36f, 38f, 2.4f), (1, 36f, 38f, 2.4f), (2, -1f, 1f, 2.4f));
-        Span("HubFloorS", g, o + new Vector3(-8f, -0.2f, 30f), o + new Vector3(8f, 0f, 35f), sewerFloor);
-        Span("HubFloorN", g, o + new Vector3(-8f, -0.2f, 41f), o + new Vector3(8f, 0f, 46f), sewerFloor);
-        Span("HubFloorW", g, o + new Vector3(-8f, -0.2f, 35f), o + new Vector3(-3f, 0f, 41f), sewerFloor);
-        Span("HubFloorE", g, o + new Vector3(3f, -0.2f, 35f), o + new Vector3(8f, 0f, 41f), sewerFloor);
-        Span("SumpBed", g, o + new Vector3(-3f, -2.2f, 35f), o + new Vector3(3f, -2f, 41f), sewerMud);
-        Span("SumpWallS", g, o + new Vector3(-3f, -2f, 35f), o + new Vector3(3f, -0.2f, 35.2f), sewerBrick);
-        Span("SumpWallN", g, o + new Vector3(-3f, -2f, 40.8f), o + new Vector3(3f, -0.2f, 41f), sewerBrick);
-        Span("SumpWallW", g, o + new Vector3(-3f, -2f, 35.2f), o + new Vector3(-2.8f, -0.2f, 40.8f), sewerBrick);
-        Span("SumpWallE", g, o + new Vector3(2.8f, -2f, 35.2f), o + new Vector3(3f, -0.2f, 40.8f), sewerBrick);
-        SewerWaterPlane(g, "SumpWater", -2.8f, 2.8f, 35.2f, 40.8f, -0.7f);
-        // The main pump (a placeholder: a big drum with a motor block), its pipe down into the sump.
-        var steel = Mat("PumpSteel", Tex2(SewerTex + "Metal.jpg"), new Color(0.5f, 0.52f, 0.5f), 1.5f, 0.35f, 0.6f);
-        var drum = Prim(PrimitiveType.Cylinder, "MainPump", g, o + new Vector3(5.2f, 1.25f, 43.2f), new Vector3(2f, 1.25f, 2f), steel);
-        Span("PumpMotor", g, o + new Vector3(4.2f, 0f, 40.6f), o + new Vector3(6.2f, 1.4f, 42f), steel);
-        PipeRun(g, "PumpSuction", 0.25f, pipeRust, o + new Vector3(4.2f, 1.8f, 43.2f), o + new Vector3(2f, 1.8f, 43.2f), o + new Vector3(2f, 1.8f, 39f), o + new Vector3(2f, -1.5f, 39f));
-        PipeRun(g, "PumpRiser", 0.25f, pipeRust, o + new Vector3(5.2f, 2.5f, 43.2f), o + new Vector3(5.2f, 5.9f, 43.2f));
-        // The control room in the north-west corner (a wall phone goes here later).
-        Span("ControlWallS_W", g, o + new Vector3(-8f, 0f, 41.7f), o + new Vector3(-6.5f, 3f, 42f), sewerBrick);
-        Span("ControlWallS_E", g, o + new Vector3(-5.5f, 0f, 41.7f), o + new Vector3(-4f, 3f, 42f), sewerBrick);
-        Span("ControlWallS_Lintel", g, o + new Vector3(-6.5f, 2.2f, 41.7f), o + new Vector3(-5.5f, 3f, 42f), sewerBrick);
-        Span("ControlWallE", g, o + new Vector3(-4f, 0f, 41.7f), o + new Vector3(-3.7f, 3f, 46f), sewerBrick);
-        Span("ControlRoof", g, o + new Vector3(-8f, 3f, 41.7f), o + new Vector3(-3.7f, 3.2f, 46f), sewerBrick);
-        Span("ControlDesk", g, o + new Vector3(-7.9f, 0f, 44.6f), o + new Vector3(-5.6f, 0.9f, 45.9f), Mat("ConsoleGrey", null, new Color(0.3f, 0.32f, 0.35f), 1f, 0.35f, 0.3f));
-        CagedBulb(g, "SewerBulb_Control", o + new Vector3(-6f, 2.75f, 44f), 1.2f, 5f);
-        CagedBulb(g, "SewerBulb_HubW", o + new Vector3(-4f, 3.8f, 34f), 2.2f, 8f, cable: 2f);
-        CagedBulb(g, "SewerBulb_HubE", o + new Vector3(5f, 3.8f, 36f), 2f, 7f, flicker: true, cable: 2f);
-        Pipe(g, "HubMainW", o + new Vector3(-8f, 5.3f, 44.5f), o + new Vector3(8f, 5.3f, 44.5f), 0.2f, pipeSteel);
+        // The arrival tunnel: north from the arrival, a bend west, on to valve 1.
+        var k1 = KitNode(kit, "Serwers", P(0f, 16f), Vector3.back, Vector3.left);
+        KitLink(kit, Door(0f, 4f, Vector3.forward), k1[Vector3.back]);
+        KitTunnel(kit, k1[Vector3.left], P(-30f, 16f));
+        // Valve 1 -> a junction (a spoke south to the cistern) -> valve 2.
+        var t1 = KitNode(kit, "Serwers_001", P(-55f, 16f), Vector3.right, Vector3.left, Vector3.forward);
+        KitLink(kit, Door(-40f, 16f, Vector3.left), t1[Vector3.right]);
+        KitTunnel(kit, t1[Vector3.left], P(-81f, 16f));
+        KitTunnel(kit, t1[Vector3.forward], P(-55f, CisternCentre.z - CisternRadius));
+        // Valve 2 -> a junction (a side room west) -> a bend -> the cistern's east door.
+        var t2 = KitNode(kit, "Serwers_001", P(-86f, 45f), Vector3.back, Vector3.forward, Vector3.left);
+        KitLink(kit, Door(-86f, 21f, Vector3.forward), t2[Vector3.back]);
+        KitTunnel(kit, t2[Vector3.left], P(-95f, 45f));
+        var k2 = KitNode(kit, "Serwers", P(-86f, 57f), Vector3.back, Vector3.right);
+        KitLink(kit, t2[Vector3.forward], k2[Vector3.back]);
+        KitTunnel(kit, k2[Vector3.right], P(CisternCentre.x - CisternRadius, 57f));
+        // The cistern's west door -> the west hall -> (north) a side room / (south) a bend -> valve 3.
+        KitTunnel(kit, Door(CisternCentre.x + CisternRadius, 57f, Vector3.right), P(-19f, 57f));
+        KitTunnel(kit, Door(-12f, 50f, Vector3.back), P(-12f, 35f));
+        var k3 = KitNode(kit, "Serwers", P(-12f, 81f), Vector3.back, Vector3.left);
+        KitLink(kit, Door(-12f, 64f, Vector3.forward), k3[Vector3.back]);
+        KitTunnel(kit, k3[Vector3.left], P(-23f, 81f));
+        // The cistern's south door -> a junction (valve 4 to the west) -> the outfall chamber.
+        var t3 = KitNode(kit, "Serwers_001", P(-55f, 88f), Vector3.back, Vector3.forward, Vector3.left);
+        KitLink(kit, Door(-55f, CisternCentre.z + CisternRadius, Vector3.forward), t3[Vector3.back]);
+        KitTunnel(kit, t3[Vector3.left], P(-77f, 88f));
+        KitTunnel(kit, t3[Vector3.forward], P(-55f, 101f));
+        // The overflow tunnel from the outfall chamber west to the river.
+        KitTunnel(kit, Door(-63f, 109f, Vector3.left), P(-95f, 109f));
+        TunnelExtras(g, kit);
+        // Grated footbridges at each junction: one over the side branch's channel where it meets the main
+        // tunnel (so the walkway past a junction doesn't drop into the water), and one across the main
+        // channel (to cross to the other walkway).
+        foreach (var (at, way) in new[] { (new Vector3(-55f, 0f, 16f), Vector3.forward), (new Vector3(-86f, 0f, 45f), Vector3.left), (new Vector3(-55f, 0f, 88f), Vector3.left) })
+        {
+            var across = Vector3.Cross(Vector3.up, way);
+            ChannelBridge(kit.parent, o + at + way * 2.15f, way * 1.2f + across * 1.3f);   // the walkway is 1.0..3.3 m out from the main channel
+            ChannelBridge(kit.parent, o + at - way * 0.15f, way * 1.3f + across * 0.7f);
+        }
 
-        // ---- west branch: knee-deep all the way to the first valve room
-        SewerRoom(g, "BranchWest", -28f, -8f, 35.5f, 38.5f, 0f, 3f, (1, 35.5f, 38.5f, 3f), (3, 35.5f, 38.5f, 3f));
-        SewerWaterPlane(g, "BranchWestWater", -28f, -8f, 35.5f, 38.5f, 0.4f);
-        SewerValveRoom(g, "ValveRoomWest", -32f, -28f, 35f, 39f, 0f, 1, 0.4f);
-        CagedBulb(g, "SewerBulb_West", o + new Vector3(-18f, 2.75f, 37f), 1.2f, 5f);
+        // ---- the rooms (floors at the walkways' height)
+        KitRoom(g, "ValveRoom1", -40f, -30f, 11f, 21f, 4.5f, (1, 16f), (3, 16f));
+        Valve(g, "Valve1", o + new Vector3(-35f, 0f, 21f), Vector3.back);
+        KitRoom(g, "ValveRoom2", -91f, -81f, 11f, 21f, 4.5f, (1, 16f), (2, -86f));
+        Valve(g, "Valve2", o + new Vector3(-91f, 0f, 16f), Vector3.right);
+        KitRoom(g, "SideRoomEast", -105f, -95f, 40f, 50f, 4f, (1, 45f));
+        KitRoom(g, "WestHall", -19f, -5f, 50f, 64f, 5.5f, (3, 57f), (0, -12f), (2, -12f));
+        KitRoom(g, "SideRoomNorthWest", -17f, -7f, 25f, 35f, 4f, (2, -12f));
+        KitRoom(g, "ValveRoom3", -33f, -23f, 76f, 86f, 4.5f, (1, 81f));
+        Valve(g, "Valve3", o + new Vector3(-33f, 0f, 81f), Vector3.right);
+        KitRoom(g, "ValveRoom4", -87f, -77f, 83f, 93f, 4.5f, (1, 88f));
+        Valve(g, "Valve4", o + new Vector3(-87f, 0f, 88f), Vector3.right);
+        KitRoom(g, "OutfallChamber", -63f, -47f, 101f, 117f, 6f, (0, -55f), (3, 109f));
+        Cistern(g);
+        RiverOutlet(g, o + new Vector3(-95f, 0f, 109f), ladderSteel);
 
-        // ---- east branch: a step down, waist-deep water
-        SewerRoom(g, "BranchEast", 8f, 28f, 35.5f, 38.5f, -0.5f, 2.8f, (1, 35.5f, 38.5f, 3.3f), (3, 35.5f, 38.5f, 3.3f));
-        Span("BranchEastStep", g, o + new Vector3(8f, -0.5f, 35.5f), o + new Vector3(8.6f, -0.25f, 38.5f), sewerFloor);
-        SewerWaterPlane(g, "BranchEastWater", 8f, 28f, 35.5f, 38.5f, 0.4f);
-        SewerValveRoom(g, "ValveRoomEast", 28f, 32f, 35f, 39f, -0.5f, 3, 0.4f);
-        CagedBulb(g, "SewerBulb_East", o + new Vector3(18f, 2.25f, 37f), 1.2f, 5f, flicker: true);
-
-        // ---- north branch: deep water; only a narrow ledge along the west wall
-        SewerRoom(g, "BranchNorth", -1.5f, 1.5f, 46f, 70f, 0f, 3f, false, (0, -1.5f, 1.5f, 3f), (2, -1.5f, 1.5f, 3f));
-        Span("NorthLedge", g, o + new Vector3(-1.5f, -1.8f, 46f), o + new Vector3(-0.7f, 0f, 70f), sewerFloor);
-        Span("NorthChannelBed", g, o + new Vector3(-0.7f, -2f, 46f), o + new Vector3(1.5f, -1.8f, 70f), sewerMud);
-        SewerWaterPlane(g, "BranchNorthWater", -0.7f, 1.5f, 46f, 70f, -0.2f);
-        SewerValveRoom(g, "ValveRoomNorth", -2f, 2f, 70f, 74f, 0f, 0, 0f, northDoor: true);
-        CagedBulb(g, "SewerBulb_North", o + new Vector3(-1.1f, 2.75f, 58f), 1f, 5f);
-
-        // ---- the outfall tunnel to the river, barred by a grate (the way out once the pump runs)
-        SewerRoom(g, "Outfall", -1.5f, 1.5f, 74f, 90f, 0f, 3f, (0, -1.5f, 1.5f, 3f), (2, -1.5f, 1.5f, 3f));
-        SewerWaterPlane(g, "OutfallWater", -1.5f, 1.5f, 74f, 90f, 0.15f);
-        for (float x = -1.35f; x <= 1.36f; x += 0.3f)
-            Prim(PrimitiveType.Cylinder, "GrateBar", g, o + new Vector3(x, 1.5f, 88.5f), new Vector3(0.06f, 1.5f, 0.06f), ladderSteel);
-        Span("GrateRail", g, o + new Vector3(-1.5f, 2.8f, 88.45f), o + new Vector3(1.5f, 2.95f, 88.55f), ladderSteel);
-        var night = Prim(PrimitiveType.Quad, "RiverNight", g, o + new Vector3(0f, 1.5f, 89.98f), new Vector3(3f, 3f, 1f), EmissiveMat("RiverNight", new Color(0.12f, 0.16f, 0.24f)));
-        night.transform.rotation = Quaternion.LookRotation(Vector3.forward);
-        Object.DestroyImmediate(night.GetComponent<Collider>());
-        var moon = new GameObject("RiverMoonlight").AddComponent<Light>();
-        moon.transform.SetParent(g);
-        moon.transform.position = o + new Vector3(0f, 2f, 88f);
-        moon.type = LightType.Point; moon.color = new Color(0.55f, 0.65f, 0.9f); moon.intensity = 1.2f; moon.range = 9f;
-
-        // ---- sound: running water in the channels
-        var flow = new GameObject("SewerFlow").AddComponent<AudioSource>();
-        flow.transform.SetParent(g);
-        flow.transform.position = o + new Vector3(0f, 0f, 38f);
-        flow.clip = Load<AudioClip>(SfxDir + "/OverflowingWaterPipeLoop.wav");
-        flow.loop = true; flow.playOnAwake = true; flow.volume = 0.5f; flow.spatialBlend = 1f;
-        flow.rolloffMode = AudioRolloffMode.Linear; flow.minDistance = 4f; flow.maxDistance = 40f;
+        // ---- sound: running water in the cistern and down the tunnels
+        foreach (var (name, at, range) in new[] { ("CisternFlow", CisternCentre, 45f), ("TunnelFlowNorth", new Vector3(-55f, 0f, 16f), 30f), ("OutfallFlow", new Vector3(-55f, 0f, 109f), 35f) })
+        {
+            var flow = new GameObject(name).AddComponent<AudioSource>();
+            flow.transform.SetParent(g);
+            flow.transform.position = o + at;
+            flow.clip = Load<AudioClip>(SfxDir + "/OverflowingWaterPipeLoop.wav");
+            flow.loop = true; flow.playOnAwake = true; flow.volume = 0.5f; flow.spatialBlend = 1f;
+            flow.rolloffMode = AudioRolloffMode.Linear; flow.minDistance = 4f; flow.maxDistance = range;
+        }
 
         // ---- where Sousa lands after climbing down Canal St's latch
         var arrival = new GameObject("SewerArrival").transform;
         arrival.SetParent(g);
-        arrival.SetPositionAndRotation(SewerSpawn, Quaternion.identity);   // facing north, up the main tunnel
+        arrival.SetPositionAndRotation(SewerSpawn, Quaternion.identity);   // facing north, up the arrival tunnel
         var latch = Object.FindAnyObjectByType<EmergencyLatch>();
         if (latch) { latch.sewerArrival = arrival; latch.climb = Load<AudioClip>(SfxDir + "/FootstepsConcrete2.wav"); }
+    }
+
+    // Water in every tunnel's channel (it stands below the walkways, so only the channel shows it) and a
+    // caged bulb hanging from the ceiling every 12 m or so.
+    static void TunnelExtras(Transform g, Transform kit)
+    {
+        float waterY = SewerOrigin.y - 0.45f;
+        var channels = new GameObject("ChannelWater").transform;
+        channels.SetParent(g);
+        int n = 0;
+        foreach (Transform piece in kit)
+        {
+            var b = Bounds(piece.gameObject);
+            var water = Prim(PrimitiveType.Quad, "ChannelWater", channels, new Vector3(b.center.x, waterY, b.center.z), new Vector3(b.size.x - 0.1f, b.size.z - 0.1f, 1f), sewerWater);
+            water.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            Object.DestroyImmediate(water.GetComponent<Collider>());
+            water.AddComponent<WaterSurface>().size = new Vector2(b.size.x, b.size.z);
+            if (n++ % 2 == 0)
+                CagedBulb(g, "SewerBulb_" + n, new Vector3(b.center.x, SewerOrigin.y + 4.3f, b.center.z), 1.4f, 7f, flicker: n % 5 == 0, cable: 0.9f);
+        }
+    }
+
+    // A brick room x0..x1, z0..z1 (relative to the sewer origin), its floor at the walkways' height,
+    // 'height' tall, with a 4.4 m wide, 3.6 m tall doorway for each tunnel that meets it: (side: 0 south,
+    // 1 east, 2 north, 3 west; the door's middle, along x for south/north and along z for east/west).
+    static void KitRoom(Transform g, string name, float x0, float x1, float z0, float z1, float height, params (int side, float at)[] doors)
+    {
+        var gaps = new List<(int, float, float, float)>();
+        foreach (var d in doors) gaps.Add((d.side, d.at - 2.2f, d.at + 2.2f, 3.6f));
+        SewerRoom(g, name, x0, x1, z0, z1, 0f, height, gaps.ToArray());
+        CagedBulb(g, name + "_Bulb", SewerOrigin + new Vector3((x0 + x1) * 0.5f, height - 0.3f, (z0 + z1) * 0.5f), 1.3f, 6f, cable: 0.4f);
+    }
+
+    // A valve on a wall: a rusty pipe up the wall with a big red wheel (a placeholder; turning it comes
+    // next). 'wallFloor' is on the floor at the wall, 'inward' points into the room.
+    static GameObject Valve(Transform g, string name, Vector3 wallFloor, Vector3 inward)
+    {
+        Vector3 pipeAt = wallFloor + inward * 0.35f;
+        Pipe(g, name + "_Pipe", pipeAt, pipeAt + Vector3.up * 3.5f, 0.2f, pipeRust);
+        var wheel = Prim(PrimitiveType.Cylinder, name + "_Wheel", g, pipeAt + Vector3.up * 1.3f + inward * 0.3f, new Vector3(0.7f, 0.03f, 0.7f),
+                         Mat("ValveRed", null, new Color(0.5f, 0.12f, 0.08f), 1f, 0.4f, 0.4f));
+        wheel.transform.rotation = Quaternion.FromToRotation(Vector3.up, inward);
+        var stem = Prim(PrimitiveType.Cylinder, name + "_Stem", g, pipeAt + Vector3.up * 1.3f + inward * 0.15f, new Vector3(0.08f, 0.15f, 0.08f), pipeSteel);
+        stem.transform.rotation = wheel.transform.rotation;
+        Object.DestroyImmediate(stem.GetComponent<Collider>());
+        return wheel;
+    }
+
+    // The cistern: a round brick chamber (24 flat wall sections, 40 m across, 9 m high) with a 4 m walkway
+    // round a 6 m deep pool, a doorway on each side where the tunnels arrive, four grated catwalks from the
+    // walkway to the round central platform, and the final valve standing on it.
+    static void Cistern(Transform parent)
+    {
+        var g = new GameObject("Cistern").transform;
+        g.SetParent(parent);
+        Vector3 c = SewerOrigin + CisternCentre;
+        const float R = CisternRadius, inner = 16f, top = 9f, deep = -6f;
+        float side = 2f * (R + 0.4f) * Mathf.Tan(7.5f * Mathf.Deg2Rad) + 0.05f;   // one wall section's width
+        for (int i = 0; i < 24; i++)
+        {
+            float a = i * 15f;
+            var rot = Quaternion.Euler(0f, a, 0f);
+            Vector3 d = rot * Vector3.forward, across = rot * Vector3.right;
+            // Outer wall (a doorway in the sections facing the four tunnels).
+            Vector3 wallMid = c + d * (R + 0.2f);
+            if (i % 6 == 0)
+            {
+                float post = (side - 4.4f) * 0.5f;
+                foreach (float s in new[] { -1f, 1f })
+                    Turned(Box("CisternWall_" + i, g, wallMid + across * s * (2.2f + post * 0.5f) + Vector3.up * (top - 0.5f) * 0.5f, new Vector3(post, top + 0.5f, 0.4f), sewerBrick), rot);
+                Turned(Box("CisternLintel_" + i, g, wallMid + Vector3.up * (3.6f + (top - 3.6f) * 0.5f), new Vector3(4.4f, top - 3.6f, 0.4f), sewerBrick), rot);
+                Turned(Box("CisternSill_" + i, g, wallMid + Vector3.down * 1.1f, new Vector3(4.4f, 2.2f, 0.4f), sewerFloor), rot);   // closes the tunnel's channel
+            }
+            else Turned(Box("CisternWall_" + i, g, wallMid + Vector3.up * (top - 0.5f) * 0.5f, new Vector3(side, top + 0.5f, 0.4f), sewerBrick), rot);
+            // The walkway ring and the pool's wall below its edge.
+            Turned(Box("CisternWalkway_" + i, g, c + d * ((R + inner) * 0.5f) + Vector3.down * 0.15f, new Vector3(side, 0.3f, R - inner + 0.1f), sewerFloor), rot);
+            float poolSide = 2f * inner * Mathf.Tan(7.5f * Mathf.Deg2Rad) + 0.05f;
+            Turned(Box("CisternPoolWall_" + i, g, c + d * (inner - 0.15f) + Vector3.up * deep * 0.5f, new Vector3(poolSide, -deep, 0.3f), sewerBrick), rot);
+        }
+        Span("CisternPoolBed", g, c + new Vector3(-inner, deep - 0.2f, -inner), c + new Vector3(inner, deep, inner), sewerMud);
+        Span("CisternCeiling", g, c + new Vector3(-R - 1f, top, -R - 1f), c + new Vector3(R + 1f, top + 0.3f, R + 1f), sewerBrick);
+
+        // The central platform: a round concrete pier up from the pool's bed, its top level with the walkway.
+        var pier = Prim(PrimitiveType.Cylinder, "CentralPlatform", g, c + Vector3.up * deep * 0.5f, new Vector3(9f, -deep * 0.5f, 9f), sewerFloor);
+        Object.DestroyImmediate(pier.GetComponent<Collider>());
+        pier.AddComponent<MeshCollider>();
+        // Four catwalks, on the diagonals, from the walkway to the platform, with a rail along each side.
+        for (int i = 0; i < 4; i++)
+        {
+            var rot = Quaternion.Euler(0f, 45f + i * 90f, 0f);
+            Vector3 d = rot * Vector3.forward, across = rot * Vector3.right;
+            float from = 4.3f, to = inner + 0.3f, mid = (from + to) * 0.5f, length = to - from;
+            Turned(Box("Catwalk_" + i, g, c + d * mid + Vector3.down * 0.06f, new Vector3(1.8f, 0.12f, length), sewerGrate), rot);
+            foreach (float s in new[] { -0.9f, 0.9f })
+            {
+                var rail = Box("CatwalkRail_" + i, g, c + d * mid + across * s + Vector3.up * 1f, new Vector3(0.05f, 0.05f, length), pipeSteel);
+                Turned(rail, rot);
+                for (float p = -length * 0.5f; p <= length * 0.5f + 0.01f; p += length / 4f)
+                {
+                    var post = Box("CatwalkPost_" + i, g, c + d * (mid + p) + across * s + Vector3.up * 0.5f, new Vector3(0.05f, 1f, 0.05f), pipeSteel);
+                    Turned(post, rot);
+                    Object.DestroyImmediate(post.GetComponent<Collider>());
+                }
+            }
+        }
+        // The final valve on the platform: a thick riser out of the pier with a big wheel on top.
+        Pipe(g, "FinalValve_Riser", c + Vector3.down * 0.5f, c + Vector3.up * 1.1f, 0.3f, pipeRust);
+        var wheel = Prim(PrimitiveType.Cylinder, "FinalValve_Wheel", g, c + Vector3.up * 1.15f, new Vector3(1.4f, 0.04f, 1.4f), Mat("ValveRed", null, new Color(0.5f, 0.12f, 0.08f), 1f, 0.4f, 0.4f));
+        // The pool: still black water a metre below the walkway (it starts high and drops as valves open, next).
+        SewerWaterPlane(g, "CisternWater", CisternCentre.x - inner, CisternCentre.x + inner, CisternCentre.z - inner, CisternCentre.z + inner, -1f);
+        // Light: bulbs on the wall between the doors, one over the platform.
+        for (int i = 0; i < 4; i++)
+        {
+            var d = Quaternion.Euler(0f, 45f + i * 90f, 0f) * Vector3.forward;
+            CagedBulb(g, "CisternBulb_" + i, c + d * (R - 0.6f) + Vector3.up * 6f, 2.2f, 14f, flicker: i == 2);
+        }
+        CagedBulb(g, "CisternBulb_Centre", c + Vector3.up * 6.5f, 2.5f, 12f, cable: 2.5f);
+    }
+
+    static GameObject Turned(GameObject go, Quaternion rot) { go.transform.rotation = rot; return go; }
+
+    // A grated steel plate 10 cm thick, its top level with the walkways, 'half' metres out from 'mid' each way.
+    static void ChannelBridge(Transform g, Vector3 mid, Vector3 half)
+    {
+        half = new Vector3(Mathf.Abs(half.x), 0f, Mathf.Abs(half.z));
+        Span("ChannelBridge", g, mid - half - new Vector3(0f, 0.1f, 0f), mid + half, sewerGrate);
+    }
+
+    // The end of the overflow tunnel: a wall with a barred opening onto the night and the river (the way
+    // out once the water is purged).
+    static void RiverOutlet(Transform g, Vector3 at, Material bars)
+    {
+        Span("RiverOutletWall", g, at + new Vector3(-0.3f, -1.5f, -4f), at + new Vector3(0f, 5.8f, 4f), sewerBrick);
+        var night = Prim(PrimitiveType.Quad, "RiverNight", g, at + new Vector3(0.02f, 1.6f, 0f), new Vector3(3.6f, 3.2f, 1f), EmissiveMat("RiverNight", new Color(0.12f, 0.16f, 0.24f)));
+        night.transform.rotation = Quaternion.LookRotation(Vector3.left);
+        Object.DestroyImmediate(night.GetComponent<Collider>());
+        for (float z = -1.7f; z <= 1.71f; z += 0.3f)
+            Prim(PrimitiveType.Cylinder, "GrateBar", g, at + new Vector3(0.4f, 1.6f, z), new Vector3(0.06f, 1.6f, 0.06f), bars);
+        Span("GrateRail", g, at + new Vector3(0.35f, 3.1f, -1.8f), at + new Vector3(0.45f, 3.25f, 1.8f), bars);
+        var moon = new GameObject("RiverMoonlight").AddComponent<Light>();
+        moon.transform.SetParent(g);
+        moon.transform.position = at + new Vector3(1.5f, 2f, 0f);
+        moon.type = LightType.Point; moon.color = new Color(0.55f, 0.65f, 0.9f); moon.intensity = 1.2f; moon.range = 9f;
     }
 
     // A brick room x0..x1, z0..z1 (relative to the sewer origin), floor at 'y0' and ceiling at 'y1', with 0.3 m
@@ -164,6 +308,8 @@ public static partial class LookTestBuilder
             {
                 if (c.from > at) WallPiece(g, name + "_Wall" + side + "_" + n++, side, at, c.from, x0, x1, z0, z1, y0 - 2.2f, y1 + 0.2f);
                 if (c.top < y1 - y0) WallPiece(g, name + "_Lintel" + side + "_" + n++, side, c.from, c.to, x0, x1, z0, z1, y0 + c.top, y1 + 0.2f);
+                // A sill level with the floor: closes the end of a tunnel's channel below the doorway.
+                WallPiece(g, name + "_Sill" + side + "_" + n++, side, c.from, c.to, x0, x1, z0, z1, y0 - 2.2f, y0);
                 at = c.to;
             }
             if (at < a1) WallPiece(g, name + "_Wall" + side + "_" + n, side, at, a1, x0, x1, z0, z1, y0 - 2.2f, y1 + 0.2f);
@@ -184,38 +330,6 @@ public static partial class LookTestBuilder
             default: min = new Vector3(x0 - t, lo, a); max = new Vector3(x0, hi, b); break;
         }
         Span(name, g, o + min, o + max, sewerBrick);
-    }
-
-    // A small valve room at the end of a branch: a pipe up the far wall with a big valve wheel (a placeholder;
-    // turning it comes later). 'doorSide' is the side it's entered from; its water stands at 'waterY'.
-    static void SewerValveRoom(Transform g, string name, float x0, float x1, float z0, float z1, float y0, int doorSide, float waterY, bool northDoor = false)
-    {
-        var gaps = new List<(int, float, float, float)>();
-        bool alongX = doorSide == 0 || doorSide == 2;
-        float mid = alongX ? (x0 + x1) * 0.5f : (z0 + z1) * 0.5f;
-        gaps.Add((doorSide, mid - 1.5f, mid + 1.5f, 3f));
-        if (northDoor) gaps.Add((2, -1.5f, 1.5f, 3f));
-        SewerRoom(g, name, x0, x1, z0, z1, y0, y0 + 3f, gaps.ToArray());
-        if (waterY > y0) SewerWaterPlane(g, name + "_Water", x0, x1, z0, z1, waterY);
-        Vector3 o = SewerOrigin;
-        int far = northDoor ? 1 : (doorSide + 2) % 4;   // the far wall, or the east wall when the room leads on north
-        Vector3 wallPoint = far switch
-        {
-            0 => new Vector3((x0 + x1) * 0.5f + 1f, y0, z0),
-            1 => new Vector3(x1, y0, (z0 + z1) * 0.5f),
-            2 => new Vector3((x0 + x1) * 0.5f + 1f, y0, z1),
-            _ => new Vector3(x0, y0, (z0 + z1) * 0.5f),
-        };
-        Vector3 inward = far switch { 0 => Vector3.forward, 1 => Vector3.left, 2 => Vector3.back, _ => Vector3.right };
-        Vector3 pipeAt = o + wallPoint + inward * 0.35f;
-        Pipe(g, name + "_Pipe", pipeAt, pipeAt + Vector3.up * 3f, 0.2f, pipeRust);
-        var wheel = Prim(PrimitiveType.Cylinder, name + "_Wheel", g, pipeAt + Vector3.up * 1.3f + inward * 0.3f, new Vector3(0.7f, 0.03f, 0.7f),
-                         Mat("ValveRed", null, new Color(0.5f, 0.12f, 0.08f), 1f, 0.4f, 0.4f));
-        wheel.transform.rotation = Quaternion.FromToRotation(Vector3.up, inward);
-        var stem = Prim(PrimitiveType.Cylinder, name + "_Stem", g, pipeAt + Vector3.up * 1.3f + inward * 0.15f, new Vector3(0.08f, 0.15f, 0.08f), pipeSteel);
-        stem.transform.rotation = wheel.transform.rotation;
-        Object.DestroyImmediate(stem.GetComponent<Collider>());
-        CagedBulb(g, name + "_Bulb", o + new Vector3((x0 + x1) * 0.5f, y0 + 2.75f, (z0 + z1) * 0.5f), 1.3f, 5f);
     }
 
     // A still, murky water surface over x0..x1, z0..z1 at height 'y' (relative to the sewer origin).
