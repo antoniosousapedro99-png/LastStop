@@ -101,7 +101,7 @@ public static partial class LookTestBuilder
         {
             var across = Vector3.Cross(Vector3.up, way);
             ChannelBridge(kit.parent, o + at + way * 2.15f, way * 1.2f + across * 1.3f);   // the walkway is 1.0..3.3 m out from the main channel
-            ChannelBridge(kit.parent, o + at - way * 0.15f, way * 1.3f + across * 0.7f);
+            ChannelBridge(kit.parent, o + at - way * 0.25f, way * 1.2f + across * 0.7f);   // meets the first one edge to edge
         }
 
         // ---- the rooms (floors at the walkways' height)
@@ -208,13 +208,13 @@ public static partial class LookTestBuilder
                 foreach (float s in new[] { -1f, 1f })
                     Turned(Box("CisternWall_" + i, g, wallMid + across * s * (2.2f + post * 0.5f) + Vector3.up * (top - 0.5f) * 0.5f, new Vector3(post, top + 0.5f, 0.4f), sewerBrick), rot);
                 Turned(Box("CisternLintel_" + i, g, wallMid + Vector3.up * (3.6f + (top - 3.6f) * 0.5f), new Vector3(4.4f, top - 3.6f, 0.4f), sewerBrick), rot);
-                Turned(Box("CisternSill_" + i, g, wallMid + Vector3.down * 1.1f, new Vector3(4.4f, 2.2f, 0.4f), sewerFloor), rot);   // closes the tunnel's channel
+                Turned(Box("CisternSill_" + i, g, wallMid + Vector3.down * 1.105f, new Vector3(4.4f, 2.19f, 0.4f), sewerFloor), rot);   // closes the tunnel's channel (its top 1 cm under the walkway)
             }
             else Turned(Box("CisternWall_" + i, g, wallMid + Vector3.up * (top - 0.5f) * 0.5f, new Vector3(side, top + 0.5f, 0.4f), sewerBrick), rot);
             // The walkway ring and the pool's wall below its edge.
-            Turned(Box("CisternWalkway_" + i, g, c + d * ((R + inner) * 0.5f) + Vector3.down * 0.15f, new Vector3(side, 0.3f, R - inner + 0.1f), sewerFloor), rot);
+            Turned(Box("CisternWalkway_" + i, g, c + d * ((R + inner) * 0.5f) + Vector3.down * (0.15f + (i % 2) * 0.004f), new Vector3(side, 0.3f, R - inner), sewerFloor), rot);
             float poolSide = 2f * inner * Mathf.Tan(7.5f * Mathf.Deg2Rad) + 0.05f;
-            Turned(Box("CisternPoolWall_" + i, g, c + d * (inner - 0.15f) + Vector3.up * deep * 0.5f, new Vector3(poolSide, -deep, 0.3f), sewerBrick), rot);
+            Turned(Box("CisternPoolWall_" + i, g, c + d * (inner - 0.15f) + Vector3.up * (deep - 0.3f) * 0.5f, new Vector3(poolSide, 0.3f - deep, 0.3f), sewerBrick), rot);
         }
         Span("CisternPoolBed", g, c + new Vector3(-inner, deep - 0.2f, -inner), c + new Vector3(inner, deep, inner), sewerMud);
         Span("CisternCeiling", g, c + new Vector3(-R - 1f, top, -R - 1f), c + new Vector3(R + 1f, top + 0.3f, R + 1f), sewerBrick);
@@ -229,7 +229,7 @@ public static partial class LookTestBuilder
             var rot = Quaternion.Euler(0f, 45f + i * 90f, 0f);
             Vector3 d = rot * Vector3.forward, across = rot * Vector3.right;
             float from = 4.3f, to = inner + 0.3f, mid = (from + to) * 0.5f, length = to - from;
-            Turned(Box("Catwalk_" + i, g, c + d * mid + Vector3.down * 0.06f, new Vector3(1.8f, 0.12f, length), sewerGrate), rot);
+            Turned(Box("Catwalk_" + i, g, c + d * mid + Vector3.down * 0.05f, new Vector3(1.8f, 0.12f, length), sewerGrate), rot);   // 1 cm proud, never level with what it rests on
             foreach (float s in new[] { -0.9f, 0.9f })
             {
                 var rail = Box("CatwalkRail_" + i, g, c + d * mid + across * s + Vector3.up * 1f, new Vector3(0.05f, 0.05f, length), pipeSteel);
@@ -310,9 +310,32 @@ public static partial class LookTestBuilder
                 if (c.top < y1 - y0) WallPiece(g, name + "_Lintel" + side + "_" + n++, side, c.from, c.to, x0, x1, z0, z1, y0 + c.top, y1 + 0.2f);
                 // A sill level with the floor: closes the end of a tunnel's channel below the doorway.
                 WallPiece(g, name + "_Sill" + side + "_" + n++, side, c.from, c.to, x0, x1, z0, z1, y0 - 2.2f, y0);
+                Headwall(g, name + "_Headwall" + side + "_" + n++, side, c.from, c.to, c.top, x0, x1, z0, z1, y0);
                 at = c.to;
             }
             if (at < a1) WallPiece(g, name + "_Wall" + side + "_" + n, side, at, a1, x0, x1, z0, z1, y0 - 2.2f, y1 + 0.2f);
+        }
+    }
+
+    // A brick end-wall just outside a doorway, across the whole round tunnel that meets it (8 m wide, up to
+    // 6.5 m above the floor), with the doorway left open: it closes the tunnel's end where the room is lower
+    // or narrower than the tunnel.
+    static void Headwall(Transform g, string name, int side, float from, float to, float top, float x0, float x1, float z0, float z1, float y0)
+    {
+        Vector3 o = SewerOrigin;
+        const float inner = 0.3f, outer = 0.55f, reach = 2f;   // 25 cm thick, just beyond the room's own wall
+        float lo = y0 - 2.2f, hi = y0 + 6.5f;
+        foreach (var (a, b, y1, y2) in new[] { (from - reach, from, lo, hi), (to, to + reach, lo, hi), (from, to, y0 + top, hi) })
+        {
+            Vector3 min, max;
+            switch (side)
+            {
+                case 0: min = new Vector3(a, y1, z0 - outer); max = new Vector3(b, y2, z0 - inner); break;
+                case 2: min = new Vector3(a, y1, z1 + inner); max = new Vector3(b, y2, z1 + outer); break;
+                case 1: min = new Vector3(x1 + inner, y1, a); max = new Vector3(x1 + outer, y2, b); break;
+                default: min = new Vector3(x0 - outer, y1, a); max = new Vector3(x0 - inner, y2, b); break;
+            }
+            Span(name, g, o + min, o + max, sewerBrick);
         }
     }
 
