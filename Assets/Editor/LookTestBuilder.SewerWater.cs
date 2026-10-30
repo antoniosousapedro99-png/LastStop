@@ -1,62 +1,50 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// The sewers' water (the mechanics: FloodZone, WaterCurrent, SewerValve, RiverExit, PlayerSwim, BreathHold).
-// Five flood zones, kept apart by rusty steel flood barriers across the tunnels (1.35 m high: vaultable,
-// and holding back water up to 1.3 m over the walkways):
-//   arrival line + valve 1 room: knee-deep          -> drained by valve 1
-//   valve 2 line + the side room: waist-deep        -> drained by valve 2
-//   west hall, NW room, valve 3's sunken sump: deep (the sump is under water to its ceiling) -> valve 3
-//   south junction, valve 4, outfall: deep, fast currents in the channels toward the river -> valve 4
-//   the cistern: deep, a whirlpool round the central platform; a step lower with each valve, dry after
-//   four; the final valve purges it and opens the river grate.
-// Heights are relative to the walkways (the tunnels' channels rest 0.45 m below them).
+// The sewers' water, and what the valves do (the mechanics: FloodZone, SluiceGate, SewerValve, WaterCurrent,
+// RiverExit, PlayerSwim, BreathHold).
+// Why it's flooded: the main outfall gate to the river is shut, so the cistern (a storm tank) and every low
+// place have backed up. The water stands only where the floor is lowest, so nothing has to hold it back:
+//   the cistern's tank: up to just below its doors (deep: the walkway ring and catwalks are under it), with
+//     a whirlpool round the central platform while it's deep;
+//   each valve room's sunken pit: valve 1 knee-deep, valves 2 and 4 deep, valve 3's inner chamber full;
+//   the outfall chamber's spillway: deep and fast, always.
+// Each valve room's valve lifts its relief sluice gate: the cistern's water roars out of the relief pipe
+// and down the drain shaft beside it, the tank drops a step, and the pit drains with it. After four, the
+// tank's walkway and catwalks are clear; the final valve on the platform opens the main outfall gate,
+// purging the rest to the river, and the river grate lifts. Heights are relative to the tunnels' walkways.
 public static partial class LookTestBuilder
 {
     static readonly Dictionary<string, GameObject> valveWheels = new Dictionary<string, GameObject>();
-    const float CisternStart = 1.3f, CisternStep = 0.575f, CisternPurged = -5.5f;   // four steps: 1.3 -> -1.0
+    static readonly Dictionary<string, SluiceGate> reliefGates = new Dictionary<string, SluiceGate>();
+    const float CisternStart = -0.5f, CisternStep = 0.75f, CisternPurged = -8.6f;   // four steps: -0.5 -> -3.5 (the walkway, at -3, is clear)
 
     static void Flooding(Transform parent, Transform grate)
     {
         var g = new GameObject("Flooding").transform;
         g.SetParent(parent);
         Vector3 o = SewerOrigin;
-        // (x0, x1, z0, z1, rest): boxes that tile each zone without overlapping (so their see-through water
-        // never doubles up); 'rest' is where each box's water settles once drained (channels -0.45; under a
-        // room's floor; the cistern's pool -1).
-        const float ch = -0.45f;
-        var n1 = Zone(g, "Arrival", 0.45f, new[] { (-3.6f, 3.6f, 0f, 12.5f, ch), (-30f, 3.6f, 12.5f, 20.4f, ch), (-40.9f, -30f, 11f, 21f, ch) });
-        var n2 = Zone(g, "ValveTwo", 1.0f, new[] { (-81f, -41.15f, 12.6f, 19.4f, ch), (-59.4f, -50.6f, 19.4f, 20.9f, ch), (-91f, -81f, 11f, 21f, ch),
-                                                    (-89.6f, -82.4f, 21f, 61.4f, ch), (-105f, -89.6f, 40f, 50f, ch), (-82.4f, -77.15f, 53.7f, 60.3f, ch) });
-        var cistern = Zone(g, "Cistern", CisternStart, new[] { (-58.6f, -51.4f, 21.15f, 36.8f, ch), (-75.4f, -34.6f, 36.8f, 77.2f, -1f), (-76.9f, -75.4f, 53.7f, 60.3f, ch),
-                                                                (-34.6f, -21.15f, 53.7f, 60.3f, ch), (-58.6f, -51.4f, 77.2f, 82.4f, ch) });
-        var west = Zone(g, "West", 1.3f, new[] { (-20.9f, -19f, 53.7f, 60.3f, ch), (-19f, -5f, 50f, 64f, ch), (-15.6f, -8.4f, 35f, 50f, ch), (-17f, -7f, 25f, 35f, ch),
-                                                 (-15.6f, -8.4f, 64f, 77f, ch), (-16.4f, -7.6f, 77f, 85.4f, ch), (-23f, -16.4f, 77.7f, 84.3f, ch), (-33f, -23f, 76f, 86f, -2.6f) });
-        var south = Zone(g, "South", 1.3f, new[] { (-59.4f, -50.6f, 82.65f, 92.4f, ch), (-77f, -59.4f, 84.6f, 91.4f, ch), (-87f, -77f, 83f, 93f, ch),
-                                                   (-58.6f, -51.4f, 92.4f, 101f, ch), (-63f, -47f, 101f, 117f, ch), (-95f, -63f, 105.6f, 112.4f, ch) });
+        // (x0, x1, z0, z1): the box each body of water fills; 'rest' is where it settles once drained (under
+        // the room's floor, so it's gone).
+        var cistern = Zone(g, "Cistern", CisternStart, -75.4f, -34.6f, 36.6f, 77.4f, CisternWalk - 5.6f, true);
+        var pit1 = Zone(g, "Pit1", -0.3f, -40f, -30f, 11f, 25f, -1.2f);
+        var pit2 = Zone(g, "Pit2", -0.4f, -99f, -81f, 11f, 21f, -2.4f);
+        var pit3 = Zone(g, "Pit3", -0.4f, -33f, -23f, 76f, 86f, -3.2f);
+        var pit4 = Zone(g, "Pit4", -0.4f, -44f, -34f, 110f, 120f, -2.2f);
+        var spillway = Zone(g, "Spillway", -0.6f, -63f, -47f, 107f, 110f, -0.6f);
 
-        // Flood barriers where the zones meet (x0, x1, z0, z1): rusty steel plates, the channel's bottom to 1.35 m.
-        var barrierSteel = Mat("FloodBarrier", Tex2(SewerTex + "Metal.jpg"), new Color(0.5f, 0.38f, 0.3f), 1f, 0.3f, 0.6f);
-        foreach (var (x0, x1, z0, z1) in new[] { (-41.15f, -40.9f, 12.4f, 19.6f), (-58.8f, -51.2f, 20.9f, 21.15f), (-77.15f, -76.9f, 53.4f, 60.6f),
-                                                 (-21.15f, -20.9f, 53.4f, 60.6f), (-58.8f, -51.2f, 82.4f, 82.65f) })
-            Span("FloodBarrier", g, o + new Vector3(x0, -SewerWalkwayRise - 0.05f, z0), o + new Vector3(x1, 1.35f, z1), barrierSteel);
-
-        // Currents toward the river in the south: down the outfall tunnel's channel, across the outfall chamber,
-        // and fastest in the overflow tunnel to the grate. A whirlpool round the cistern's platform while it's deep.
-        foreach (var (x0, x1, z0, z1, flow, down) in new[] { (-56.3f, -53.7f, 92.4f, 101f, new Vector3(0f, 0f, 1.5f), 0.6f), (-63f, -53f, 107f, 111.5f, new Vector3(-1.3f, 0f, 0f), 0.5f),
-                                                             (-95f, -63f, 107.8f, 110.2f, new Vector3(-1.7f, 0f, 0f), 0.7f) })
-        {
-            var current = new GameObject("Current").AddComponent<WaterCurrent>();
-            current.transform.SetParent(g);
-            current.area = new Bounds(o + new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f), new Vector3(x1 - x0, 20f, z1 - z0));
-            current.flow = flow; current.down = down;
-            current.zone = south; current.activeAbove = o.y;   // only while the water is over the walkways
-        }
+        // The spillway's current drags a swimmer west and under, against the culvert grate; the cistern's
+        // whirlpool sucks in round the central platform while the tank is deep.
+        var current = new GameObject("SpillwayCurrent").AddComponent<WaterCurrent>();
+        current.transform.SetParent(g);
+        current.area = new Bounds(o + new Vector3(-55f, 0f, 108.5f), new Vector3(16f, 20f, 3f));
+        current.flow = new Vector3(-1.8f, 0f, 0f); current.down = 0.8f;
+        current.zone = spillway;
         var whirl = new GameObject("CisternWhirlpool").AddComponent<WaterCurrent>();
         whirl.transform.SetParent(g);
         whirl.transform.position = o + CisternCentre;
         whirl.radius = 9f; whirl.pull = 1.3f; whirl.down = 0.9f;
-        whirl.zone = cistern; whirl.activeAbove = o.y - 0.3f;
+        whirl.zone = cistern; whirl.activeAbove = o.y + CisternWalk - 0.3f;
 
         // The valves.
         var squealClip = Load<AudioClip>(SfxDir + "/OldDoorCreak.wav");
@@ -64,15 +52,17 @@ public static partial class LookTestBuilder
         var groan = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
         var exit = grate.gameObject.AddComponent<RiverExit>();
         exit.grate = grate;
-        exit.exitArea = new Bounds(o + new Vector3(-93.5f, 1f, 109f), new Vector3(3f, 4f, 4.4f));
+        exit.exitArea = new Bounds(o + new Vector3(-93.5f, 1f, 115f), new Vector3(3f, 4f, 4.4f));
         exit.grind = squealClip;
         exit.endCard = Object.FindAnyObjectByType<EndCard>(FindObjectsInactive.Include);
-        foreach (var (name, zone, drainTo) in new[] { ("Valve1", n1, ch), ("Valve2", n2, ch), ("Valve3", west, -2.6f), ("Valve4", south, ch), ("FinalValve", (FloodZone)null, 0f) })
+        foreach (var (name, gate, zone, drainTo) in new[] { ("Valve1", "Gate1", pit1, -1.2f), ("Valve2", "Gate2", pit2, -2.4f), ("Valve3", "Gate3", pit3, -3.2f),
+                                                            ("Valve4", "Gate4", pit4, -2.2f), ("FinalValve", null, (FloodZone)null, 0f) })
         {
             var wheel = valveWheels[name];
             var valve = wheel.AddComponent<SewerValve>();
             valve.id = name; valve.wheel = wheel.transform;
             valve.zone = zone; valve.drainTo = o.y + drainTo;
+            valve.gate = gate != null ? reliefGates[gate] : null;
             valve.cistern = cistern; valve.cisternStart = o.y + CisternStart; valve.cisternStep = CisternStep; valve.cisternPurged = o.y + CisternPurged;
             valve.final = name == "FinalValve";
             if (valve.final) valve.exit = exit;
@@ -100,32 +90,60 @@ public static partial class LookTestBuilder
         breath.cough = Load<AudioClip>(SfxDir + "/HumanCough1.wav");
     }
 
-    // A flood zone at 'start' over its boxes, each with its own water surface.
-    static FloodZone Zone(Transform g, string id, float start, (float x0, float x1, float z0, float z1, float rest)[] boxes)
+    // A body of water at 'start' over x0..x1, z0..z1, settling at 'rest' once drained; with 'roars', a deep
+    // draining roar from its middle while its level drops (the cistern).
+    static FloodZone Zone(Transform g, string id, float start, float x0, float x1, float z0, float z1, float rest, bool roars = false)
     {
-        Vector3 o = SewerOrigin;
+        Vector3 o = SewerOrigin, mid = o + new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f);
         var zone = new GameObject("Flood_" + id).AddComponent<FloodZone>();
         zone.transform.SetParent(g);
+        zone.transform.position = mid;
         zone.id = id;
         zone.level = o.y + start;
-        zone.areas = new Bounds[boxes.Length];
-        zone.surfaces = new Transform[boxes.Length];
-        zone.surfaceRest = new float[boxes.Length];
-        for (int i = 0; i < boxes.Length; i++)
+        zone.areas = new[] { new Bounds(mid, new Vector3(x1 - x0, 24f, z1 - z0)) };   // 12 m down to 12 m up
+        var water = Prim(PrimitiveType.Quad, "Water", zone.transform, mid + Vector3.up * start, new Vector3(x1 - x0, z1 - z0, 1f), sewerWater);
+        water.transform.rotation = Quaternion.Euler(90f, 0f, 0f);   // facing up
+        Object.DestroyImmediate(water.GetComponent<Collider>());
+        water.AddComponent<WaterSurface>().size = new Vector2(x1 - x0, z1 - z0);   // deep enough, it breaks a fall
+        zone.surfaces = new[] { water.transform };
+        zone.surfaceRest = new[] { o.y + rest };
+        if (roars)
         {
-            var (x0, x1, z0, z1, rest) = boxes[i];
-            zone.areas[i] = new Bounds(o + new Vector3((x0 + x1) * 0.5f, -1f, (z0 + z1) * 0.5f), new Vector3(x1 - x0, 12f, z1 - z0));
-            var water = Prim(PrimitiveType.Quad, "Water", zone.transform, o + new Vector3((x0 + x1) * 0.5f, start, (z0 + z1) * 0.5f), new Vector3(x1 - x0, z1 - z0, 1f), sewerWater);
-            water.transform.rotation = Quaternion.Euler(90f, 0f, 0f);   // facing up
-            Object.DestroyImmediate(water.GetComponent<Collider>());
-            water.AddComponent<WaterSurface>().size = new Vector2(x1 - x0, z1 - z0);   // deep enough, it breaks a fall
-            zone.surfaces[i] = water.transform;
-            zone.surfaceRest[i] = o.y + rest;
+            zone.roar = zone.gameObject.AddComponent<AudioSource>();
+            zone.roar.clip = Load<AudioClip>(SfxDir + "/FastWaterfallStreamLoop.wav");
+            zone.roar.loop = true; zone.roar.playOnAwake = false; zone.roar.pitch = 0.5f; zone.roar.volume = 0f;
+            zone.roar.spatialBlend = 1f; zone.roar.rolloffMode = AudioRolloffMode.Linear; zone.roar.minDistance = 10f; zone.roar.maxDistance = 60f;
         }
-        // The draining roar: the waterfall loop slowed right down, heard everywhere (it's the whole sewer).
-        zone.roar = zone.gameObject.AddComponent<AudioSource>();
-        zone.roar.clip = Load<AudioClip>(SfxDir + "/FastWaterfallStreamLoop.wav");
-        zone.roar.loop = true; zone.roar.playOnAwake = false; zone.roar.pitch = 0.5f; zone.roar.spatialBlend = 0f; zone.roar.volume = 0f;
         return zone;
+    }
+
+    // A relief gate on a valve room's wall: a big rusty pipe mouth (the relief line from the cistern) behind
+    // a steel gate in guide rails, a grated drain shaft in the floor below it, and the falling water shown
+    // while it pours. 'wallFloor' is on the floor at the wall, 'inward' points into the room.
+    static void ReliefGate(Transform g, string name, Vector3 wallFloor, Vector3 inward)
+    {
+        var root = new GameObject(name).transform;
+        root.SetParent(g);
+        Vector3 across = Vector3.Cross(Vector3.up, inward);
+        Vector3 mouth = wallFloor + Vector3.up * 2f;
+        root.position = mouth;   // the roar comes from the pipe (the parts below are placed in world space)
+        Pipe(root, name + "_PipeMouth", mouth, mouth + inward * 0.5f, 0.55f, pipeRust);
+        foreach (float s in new[] { -0.75f, 0.75f })   // guide rails up the wall
+            Turned(Box(name + "_Guide", root, wallFloor + inward * 0.6f + across * s + Vector3.up * 2.6f, new Vector3(0.12f, 2.6f, 0.12f), pipeSteel), Quaternion.LookRotation(inward));
+        var plate = Turned(Box(name + "_Gate", root, mouth + inward * 0.6f, new Vector3(1.4f, 1.4f, 0.08f), Mat("FloodBarrier", Tex2(SewerTex + "Metal.jpg"), new Color(0.5f, 0.38f, 0.3f), 1f, 0.3f, 0.6f)), Quaternion.LookRotation(inward));
+        Turned(Box(name + "_Shaft", root, wallFloor + inward * 1.4f + Vector3.up * 0.03f, new Vector3(1.8f, 0.06f, 1.6f), sewerGrate), Quaternion.LookRotation(inward));   // the drain shaft's grating
+        var torrent = Prim(PrimitiveType.Quad, name + "_Torrent", root, mouth + inward * 0.75f + Vector3.down * 0.95f, new Vector3(0.9f, 2f, 1f),
+                           TransparentMat("Torrent", new Color(0.45f, 0.5f, 0.45f, 0.55f), 0.9f));
+        torrent.transform.rotation = Quaternion.LookRotation(-inward);   // a quad shows on the side facing its -Z: into the room
+        Object.DestroyImmediate(torrent.GetComponent<Collider>());
+        torrent.SetActive(false);
+        var gate = root.gameObject.AddComponent<SluiceGate>();
+        gate.gate = plate.transform;
+        gate.torrent = torrent;
+        gate.roar = root.gameObject.AddComponent<AudioSource>();
+        gate.roar.clip = Load<AudioClip>(SfxDir + "/FastWaterfallStreamLoop.wav");
+        gate.roar.loop = true; gate.roar.playOnAwake = false; gate.roar.pitch = 0.8f;
+        gate.roar.spatialBlend = 1f; gate.roar.rolloffMode = AudioRolloffMode.Linear; gate.roar.minDistance = 3f; gate.roar.maxDistance = 35f;
+        reliefGates[name] = gate;
     }
 }

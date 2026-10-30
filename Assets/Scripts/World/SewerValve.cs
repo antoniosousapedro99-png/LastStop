@@ -2,15 +2,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // A big valve wheel in the sewers, turned by holding Use (about 4 s) while looking at it: the wheel squeals
-// round; let go and it stops where it is (turning is slow and loud). Once fully open: a clunk, a deep
-// groan in the pipes, and its flood zone drains (FloodZone, over 10 s with a roar). Every valve also lowers
-// the cistern a step. The final valve (in the middle of the cistern) is seized until the four others are
-// open; turning it purges the water out to the river and opens the way out (RiverExit).
+// round; let go and it stops where it is (turning is slow and loud). Each of the four valve rooms' valves
+// works that room's relief sluice gate (SluiceGate): once fully open, a clunk, the gate grinds up and the
+// cistern's water roars out of the relief pipe and down the drain shaft, so the cistern drops a step and
+// the room's own flooded pit drains (FloodZone). The final valve, on the cistern's central platform (only
+// reachable once the four have drained the tank), opens the main outfall gate: the rest of the water purges
+// out to the river and the way out opens (RiverExit).
 public class SewerValve : MonoBehaviour, IInteractable
 {
     public string id;
     public Transform wheel;
-    public FloodZone zone;                 // the area this valve drains (none for the final valve)
+    public FloodZone zone;                 // the room's flooded pit (none for the final valve)
+    public SluiceGate gate;                // the relief gate it lifts (none for the final valve)
     public float drainTo;
     public FloodZone cistern;
     public float cisternStart, cisternStep, cisternPurged;
@@ -68,7 +71,8 @@ public class SewerValve : MonoBehaviour, IInteractable
             if (clunk) AudioSource.PlayClipAtPoint(clunk, transform.position, 1f);
             if (groan) AudioSource.PlayClipAtPoint(groan, transform.position, 1f);
         }
-        if (zone) { if (loud) zone.DrainTo(drainTo); else zone.SetLevel(drainTo); }
+        if (gate) gate.Open(loud);
+        if (zone) { if (loud) zone.DrainTo(drainTo, 12f); else zone.SetLevel(drainTo); }
         if (cistern)
         {
             float to = final ? cisternPurged : cisternStart - cisternStep * Opened();
