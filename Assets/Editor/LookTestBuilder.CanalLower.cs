@@ -244,6 +244,9 @@ public static partial class LookTestBuilder
         CagedBulb(g, "HallBulb_N", new Vector3(-46f, ceil - 2.2f, 358f), 2f, 7f, cable: 2.1f);
         CagedBulb(g, "HallBulb_E", new Vector3(-33f, ceil - 2.2f, 348.5f), 2f, 7f, flicker: true, cable: 2.1f);
         HidingLockerAt(g, "HidingLocker_CanalLowerHall", new Vector3(-30.32f, f, 356.5f), -90f);
+        // A pair on the west wall, between the doorway and the cabinets.
+        HidingLockerAt(g, "HidingLocker_CanalLowerHallW_A", new Vector3(-61.68f, f, 347.2f), 90f);
+        HidingLockerAt(g, "HidingLocker_CanalLowerHallW_B", new Vector3(-61.68f, f, 347.9f), 90f);
     }
 
     // ---------------------------------------------------------------- the latch room (x -28..-14, z 348..356)
