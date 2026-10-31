@@ -47,6 +47,10 @@ public static partial class LookTestBuilder
         current.zone = spillway;
 
         Canals(g, cistern);
+        // FusionWater everywhere there's water: each zone a fluid whose boxes follow its level as it drains
+        // (the canals' own fluid is made in Canals), and a few loose things afloat in the still water.
+        foreach (var zone in new[] { cistern, siphon, pit2, spillway }) ZoneFluid(g, zone);
+        StillFloaters(g);
 
         // Each valve room's relief gate, on a wall clear of its doorways and its valve.
         foreach (var (name, wallFloor, inward) in new[] { ("Gate1", new Vector3(-7f, 0f, 25f), Vector3.right), ("Gate2", new Vector3(89f, -2.2f, 24.5f), Vector3.left),
@@ -185,39 +189,126 @@ public static partial class LookTestBuilder
             splash.position = new Vector3(splash.position.x, cistern.level + 0.05f, splash.position.z);
         }
 
-        // Rubbish afloat in the canals, carried toward the falls (it turns up again upstream once gone over).
+        // Things afloat in the canals, carried toward the falls (each turns up again upstream once gone over):
+        // bin bags, cans, planks, crates and barrels.
         var floating = new GameObject("FloatingRubbish").transform;
         floating.SetParent(g);
         var rng = new System.Random(77);
-        string[] brands = { "generic_cola", "pepso", "sprit", "fantom_orange", "dr_piper", "red_bullet" };
-        for (int i = 0; i < 16 && kitChannels.Count > 0; i++)
+        for (int i = 0; i < 26 && kitChannels.Count > 0; i++)
         {
             var (a, b) = kitChannels[rng.Next(kitChannels.Count)];
             if ((b - a).magnitude < 4f) { i--; continue; }
             Vector3 at = Vector3.Lerp(a, b, 0.2f + 0.6f * (float)rng.NextDouble());
-            at.y = surface + 0.1f;
-            GameObject item;
-            if (i % 4 == 0)
-            {
-                item = Model(SewerKitFbx, "Garbage_bag", floating, null, 1f, (float)rng.NextDouble() * 360f, sewerKitTextures);
+            at.y = surface;
+            Vector3 along = b - a; along.y = 0f;
+            Floater(floating, CanalKinds[i % CanalKinds.Length], at, Quaternion.LookRotation(along.normalized), rng, true);
+        }
+    }
+
+    enum Afloat { Bag, Can, Plank, Crate, Barrel }
+    static readonly Afloat[] CanalKinds = { Afloat.Bag, Afloat.Can, Afloat.Can, Afloat.Plank, Afloat.Bag, Afloat.Can, Afloat.Crate,
+                                            Afloat.Plank, Afloat.Can, Afloat.Barrel, Afloat.Can, Afloat.Plank, Afloat.Can };
+
+    // A FusionWater fluid for one flood zone: a trigger box over each of its areas (on the Ignore Raycast layer,
+    // so the crosshair looks through), kept filled to the zone's level by FluidLevel.
+    static void ZoneFluid(Transform g, FloodZone zone)
+    {
+        var go = new GameObject(zone.id + "Fluid");
+        go.transform.SetParent(g);
+        go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+        go.layer = 2;
+        foreach (var area in zone.areas)
+        {
+            float bottom = area.min.y, top = Mathf.Max(bottom + 0.02f, zone.level);
+            var box = go.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.center = new Vector3(area.center.x, (bottom + top) * 0.5f, area.center.z);
+            box.size = new Vector3(area.size.x, top - bottom, area.size.z);
+        }
+        go.AddComponent<Fluid>();
+        go.AddComponent<FluidLevel>().zone = zone;
+    }
+
+    // Loose things floating in the still water: the cistern (they settle on its floor once it's drained),
+    // Valve 2's pit and the siphon's first shaft. No current carries them.
+    static void StillFloaters(Transform g)
+    {
+        Vector3 o = SewerOrigin;
+        var floating = new GameObject("StillFloaters").transform;
+        floating.SetParent(g);
+        var rng = new System.Random(31);
+        Afloat[] cisternKinds = { Afloat.Plank, Afloat.Crate, Afloat.Bag, Afloat.Can, Afloat.Barrel, Afloat.Plank, Afloat.Can, Afloat.Bag, Afloat.Crate, Afloat.Can, Afloat.Plank, Afloat.Can };
+        for (int i = 0; i < cisternKinds.Length; i++)
+        {
+            // Scattered over the middle of the tank, clear of the stairs round its wall.
+            float angle = (float)rng.NextDouble() * 360f, radius = 2.5f + (float)rng.NextDouble() * 5.5f;
+            Vector3 at = o + CisternCentre + Quaternion.Euler(0f, angle, 0f) * Vector3.forward * radius + Vector3.up * CisternStart;
+            Floater(floating, cisternKinds[i], at, Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f), rng, false);
+        }
+        foreach (var (kind, x, y, z) in new[] { (Afloat.Crate, 86f, -0.4f, 24f), (Afloat.Plank, 78f, -0.4f, 23.5f), (Afloat.Bag, 86.5f, -0.4f, 33f), (Afloat.Plank, 0f, -0.4f, 84.5f) })
+            Floater(floating, kind, o + new Vector3(x, y, z), Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f), rng, false);
+    }
+
+    // One floating thing with its middle on the surface at 'at': its model, a box to collide with, a body and
+    // FusionWater's buoyancy, set so it rides at a believable depth (its middle settles mass / (2 x volume)
+    // below the surface, 2 being the float strength). 'drift': carried by the canal current and sent back
+    // upstream once lost (RubbishDrift).
+    static GameObject Floater(Transform parent, Afloat kind, Vector3 at, Quaternion turn, System.Random rng, bool drift)
+    {
+        string[] brands = { "generic_cola", "pepso", "sprit", "fantom_orange", "dr_piper", "red_bullet" };
+        float yaw = (float)rng.NextDouble() * 360f;
+        GameObject item;
+        float mass, depth;
+        Quaternion frame = Quaternion.identity;   // how the holder is turned, so its collision box hugs the model
+        switch (kind)
+        {
+            case Afloat.Bag:
+                item = Model(SewerKitFbx, "Garbage_bag", parent, null, 1f, yaw, sewerKitTextures);
                 item.transform.localScale *= 0.55f / Mathf.Max(0.001f, Bounds(item).size.y);
-            }
-            else
-            {
-                item = Model(ArtDir + "/Props/SodaCans/Can_Standard330.fbx", null, floating, Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, (float)rng.NextDouble() * 360f);
+                mass = 0.3f; depth = 0.05f;
+                break;
+            case Afloat.Can:
+                item = Model(ArtDir + "/Props/SodaCans/Can_Standard330.fbx", null, parent, Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, yaw);
                 item.transform.localScale *= 0.12f / Mathf.Max(0.001f, Bounds(item).size.y);
                 item.transform.rotation = Quaternion.Euler(90f, 0f, 0f) * item.transform.rotation;   // floating on its side
-            }
-            item.name = "FloatingRubbish";
-            item.transform.position += at - Bounds(item).center;
-            var shapeBox = item.AddComponent<BoxCollider>();
-            var body = item.AddComponent<Rigidbody>();
-            body.mass = 0.3f;
-            var floater = item.AddComponent<BasicFluidInteractor>();
-            floater.customVolume = 3f;            // with its float strength: it rides about 5 cm deep
-            floater.simulateWaterTurbulence = true; floater.turbulenceStrength = 0.3f;
-            item.AddComponent<RubbishDrift>();
+                mass = 0.3f; depth = 0.02f;   // half its 9 cm width under
+                break;
+            case Afloat.Plank:
+                item = Prim(PrimitiveType.Cube, "Plank", parent, at, new Vector3(0.22f, 0.04f, 1.6f + (float)rng.NextDouble() * 0.6f),
+                            Mat("FloatingPlank", Tex2("Environment/Street/Laundry/Wood.jpg"), new Color(0.45f, 0.38f, 0.3f), 1f, 0.2f));
+                item.transform.rotation = turn * Quaternion.Euler(0f, ((float)rng.NextDouble() - 0.5f) * 40f, 0f);   // roughly along the canal
+                mass = 2f; depth = 0.01f; frame = turn;
+                break;
+            case Afloat.Crate:
+                item = IndustrialPiece(parent, "CrateWood", new Vector3(0.6f, 0.5f, 0.6f));
+                item.transform.rotation = Quaternion.Euler(0f, yaw, 0f) * item.transform.rotation;
+                mass = 4f; depth = 0.1f; frame = Quaternion.Euler(0f, yaw, 0f);
+                break;
+            default:   // a barrel, lying on its side along the canal
+                item = Model(ArtDir + "/Props/OldStuff/Barrel.fbx", null, parent, Tex2("Props/OldStuff/Barrel.png"), 1f, 0f);
+                item.transform.localScale *= 0.9f / Mathf.Max(0.001f, Bounds(item).size.y);
+                item.transform.rotation = turn * Quaternion.Euler(0f, 0f, 90f) * item.transform.rotation;
+                mass = 6f; depth = 0.08f; frame = turn;
+                break;
         }
+        // FusionWater pushes on the object's own origin, so it gets a holder at the model's middle (a crate's
+        // origin is at its base, a can's on its rim).
+        item.name = "Model";
+        item.transform.position += at - Bounds(item).center;
+        foreach (var col in item.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(col);
+        var holder = new GameObject("FloatingRubbish");
+        holder.transform.SetParent(parent);
+        holder.transform.SetPositionAndRotation(at, frame);
+        item.transform.SetParent(holder.transform, true);
+        item = holder;
+        FitBoxCollider(item);
+        var body = item.AddComponent<Rigidbody>();
+        body.mass = mass;
+        var floater = item.AddComponent<BasicFluidInteractor>();
+        floater.customVolume = mass / (2f * depth);
+        floater.simulateWaterTurbulence = true; floater.turbulenceStrength = 0.3f;
+        if (drift) item.AddComponent<RubbishDrift>();
+        return item;
     }
 
     // The falling water: unlit and see-through (pale, so it reads in the dark shaft), the rippling water picture
