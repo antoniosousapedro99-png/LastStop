@@ -26,6 +26,7 @@ public static partial class LookTestBuilder
         Scatter(g, new Vector3(56.5f, mezz, z + 10.5f), new Vector2(6.5f, 9f), 15, 14);  // mezzanine, platform side
         Scatter(g, new Vector3(64f, mezz, z + 10.5f), new Vector2(1.2f, 1.6f), 5, 15);   // a few in the gate aisle
         Scatter(g, new Vector3(72f, mezz, z + 10.5f), new Vector2(6.5f, 9f), 15, 16);    // street side
+        PlatformClutter(g, z);   // a dozen cans, bottles and boxes to kick about on the platform (LookTestBuilder.CanalSupplies.cs)
 
         // ---- snacks and drinks left behind on the benches (a chip bag on just two of them)
         int bench = 0;

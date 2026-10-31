@@ -5,7 +5,7 @@ using UnityEngine;
 // Kickable clutter (the director's choices, 2026-10-31): once the whole level is built and the litter has
 // settled, the loose small and medium props get a physics body and a Kickable (see Kickable.cs), and Sousa
 // and every Frankie get a ClutterKicker, so walking into a can sends it skittering and a crate is shoved along.
-// Small: cans, cups, food boxes, chip bags, bin bags, single bricks, traffic cones. Medium: crates, barrels,
+// Small: cans, cups, food boxes, chip bags, bin bags, glass bottles, cardboard boxes, single bricks, traffic cones. Medium: crates, barrels,
 // bins, tyres, office chairs, brick piles, the shopping trolley. Left alone: anything you pick up or use,
 // the climbing crates (into both trains) and their bricks, the train wreck's rubble, the scare that drops rubble, and anything
 // with something standing on it (a crate with candles on top), so nothing is left floating.
@@ -23,6 +23,8 @@ public static partial class LookTestBuilder
         if (name.Contains("chair")) return (Kickable.Sound.Plastic, false, 10f, 1f);
         if (name.Contains("tire")) return (Kickable.Sound.Rubber, false, 9f, 0.8f);
         if (name == "bricks") return (Kickable.Sound.Stone, false, 20f, 0.5f);
+        if (name.Contains("glassbottle")) return (Kickable.Sound.Glass, true, 0.35f, 1.2f);
+        if (name.Contains("cardboardbox")) return (Kickable.Sound.Soft, true, 0.5f, 0.9f);
         if (name.Contains("cone")) return (Kickable.Sound.Plastic, true, 2.5f, 1f);
         if (name.Contains("chip_bag")) return (Kickable.Sound.Plastic, true, 0.05f, 1.2f);
         if (name.Contains("bag")) return (Kickable.Sound.Soft, true, 2.5f, 0.45f);
@@ -116,6 +118,7 @@ public static partial class LookTestBuilder
             Kickable.Sound.Stone => (Clips("Hammer1", "Hammer2"), 0.5f, 0.6f),
             Kickable.Sound.Wood => (Clips("DesignedPunch1", "DesignedPunch2"), 0.65f, 0.8f),
             Kickable.Sound.Metal => (Clips("MetalCabinet1", "Hammer2"), 0.7f, 0.7f),
+            Kickable.Sound.Glass => (Clips("SmallGlassBottles1"), 1f, 0.45f),
             _ => (Clips("DesignedPunch1", "DesignedPunch2"), 0.45f, 0.6f),
         };
 

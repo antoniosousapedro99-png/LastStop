@@ -12,7 +12,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Kickable : MonoBehaviour
 {
-    public enum Sound { Tin, Plastic, Soft, Stone, Wood, Metal, Rubber }
+    public enum Sound { Tin, Plastic, Soft, Stone, Wood, Metal, Rubber, Glass }   // new sounds go at the end
 
     public Sound sound = Sound.Tin;
     public bool small = true;          // walked through and kicked aside (true) or solid and shoved (false)
@@ -29,7 +29,7 @@ public class Kickable : MonoBehaviour
     static float Carries(Sound s) => s switch
     {
         Sound.Tin => 10f, Sound.Plastic => 6f, Sound.Soft => 2f, Sound.Stone => 8f,
-        Sound.Wood => 10f, Sound.Metal => 14f, _ => 4f,
+        Sound.Wood => 10f, Sound.Metal => 14f, Sound.Glass => 10f, _ => 4f,
     };
 
     static PhysicsMaterial skittery;   // shared by all small things: they slide and bounce a little
