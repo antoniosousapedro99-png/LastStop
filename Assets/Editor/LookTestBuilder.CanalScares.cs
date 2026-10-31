@@ -5,7 +5,7 @@ using UnityEngine.AI;
 // Canal St's one-time scares (ScareTrigger spots on Canal St's own power grid):
 // - the ticket booth phone rings as you first reach the mezzanine (RingingPhone): it stops dead when you get
 //   right up to it; answer it in time and there's only breathing on the line;
-// - after the power, lamps pop and die behind you: escalator 1, the ticket gates, escalator 2;
+// - after the power, lamps pop and die behind you: stairs 1, the ticket gates, stairs 2;
 // - part of the north-east tunnel's ceiling caves in a few metres ahead (CeilingCollapse); the rubble stays;
 // - lower level: the storeroom locker bangs twice from inside as you come near (LockerKnock);
 // - lower level: corridor A's bulbs go out one by one toward you as you come up from the stairs
@@ -25,9 +25,9 @@ public static partial class LookTestBuilder
         ring.AddComponent<ScareRelay>().target = phone;
 
         // ---- lamps dying behind you, after the power (each trigger just past its lamp)
-        CanalLampDies(g, "Scare_CanalLampEscalator1", new Vector3(50.5f, mezz + 1f, z + 10f), new Vector3(1f, 2f, 4f), new Vector3(45f, 9.18f, z + 10f), pop);
+        CanalLampDies(g, "Scare_CanalLampStairs1", new Vector3(50.5f, mezz + 1f, z + 10f), new Vector3(1f, 2f, 4f), new Vector3(45f, 9.18f, z + 10f), pop);
         CanalLampDies(g, "Scare_CanalLampGates", new Vector3(66.5f, mezz + 1f, z + 10.5f), new Vector3(1f, 2f, 21f), new Vector3(65f, 10.48f, z + 5f), pop);
-        CanalLampDies(g, "Scare_CanalLampEscalator2", new Vector3(90.5f, 13f, z + 10f), new Vector3(1f, 2f, 4f), new Vector3(85f, 14.98f, z + 10f), pop);
+        CanalLampDies(g, "Scare_CanalLampStairs2", new Vector3(90.5f, 13f, z + 10f), new Vector3(1f, 2f, 4f), new Vector3(85f, 14.98f, z + 10f), pop);
 
         // ---- the tunnel ceiling gives way (north-east tunnel, x 40.3..95, z 300..305.5)
         BuildCeilingCollapse(g, CanalScareSpot(g, "Scare_CanalCeiling", new Vector3(62f, 0.75f, z + 2.75f), new Vector3(1f, 4.5f, 5.5f), ScareTrigger.PowerRule.Any), 67f, z + 2.6f);

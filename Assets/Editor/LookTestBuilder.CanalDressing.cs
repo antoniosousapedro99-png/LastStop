@@ -41,12 +41,12 @@ public static partial class LookTestBuilder
         Kit("Props/Trash/TrashBagA.fbx", null, "Props/Trash/TrashBagBlack.png", g, new Vector3(-16.2f, 0f, z + 9.3f), 75f, 0.5f);
 
         // ---- "out of service" cones and barriers, kicked aside
-        // Escalator 1 foot (the escalator runs x 40+, z 308.3..311.7).
+        // Stairs 1 foot (the stairs run x 40+, z 308..312).
         Kit(BarrierDir + "/BarrierType3.fbx", null, BarrierDir + "/TypeBarriers.png", g, new Vector3(36.6f, 0f, z + 7.1f), 35f, 1.2f, true);   // shoved crooked against the wall
         Kit(BarrierDir + "/TrafficCone.fbx", null, BarrierDir + "/Cones.png", g, new Vector3(38.3f, 0f, z + 12.5f), 0f, 0.7f);
         Toppled(Kit(BarrierDir + "/TrafficCone.fbx", null, BarrierDir + "/Cones.png", g, Vector3.zero, 0f, 0.7f), new Vector3(36.4f, 0f, z + 9.6f), 120f);
         Toppled(Kit(BarrierDir + "/TrafficCone.fbx", null, BarrierDir + "/Cones.png", g, Vector3.zero, 0f, 0.7f), new Vector3(37.6f, 0f, z + 11.2f), 250f);
-        // Escalator 2 foot (mezzanine, x 79.8+).
+        // Stairs 2 foot (mezzanine, x 79.8+).
         Toppled(Kit(BarrierDir + "/BarrierType2.fbx", null, BarrierDir + "/TypeBarriers.png", g, Vector3.zero, 80f, 1f), new Vector3(77.4f, mezz, z + 13f), 80f);
         Toppled(Kit(BarrierDir + "/TrafficCone.fbx", null, BarrierDir + "/Cones.png", g, Vector3.zero, 0f, 0.7f), new Vector3(78.1f, mezz, z + 8.4f), 30f);
         Kit(BarrierDir + "/TrafficCone.fbx", null, BarrierDir + "/Cones.png", g, new Vector3(76.8f, mezz, z + 7.9f), 0f, 0.7f);
@@ -61,8 +61,6 @@ public static partial class LookTestBuilder
         // ---- Line 4 notices (readable by looking at them)
         Notice(g, "Notice_Suspended", new Vector3(-5f, 1.5f, z + 9f), Vector3.forward,
                "LINE 4 - SERVICE SUSPENDED\nDue to a power failure, all Line 4 services are suspended until further notice.\nPassengers must leave the station by the nearest exit.\n- MTA");
-        Notice(g, "Notice_Escalators", new Vector3(38f, 1.6f, z + 6.8f), Vector3.right,
-               "ESCALATORS OUT OF SERVICE\nPlease use the stairs.\nWe apologise for any inconvenience.");
         Notice(g, "Notice_NightClosure", new Vector3(61f, mezz + 1.6f, z + 5f), Vector3.back,
                "NIGHT CLOSURE\nCanal St Junction closes at 1:00 AM.\nStaff will clear the platforms. Do not remain in the station after closing.\n- Line 4 Station Management");
         Notice(g, "Notice_Unattended", new Vector3(63.5f, mezz + 1.6f, z + 16f), Vector3.forward,
@@ -71,7 +69,7 @@ public static partial class LookTestBuilder
         // ---- graffiti
         Spray(g, "Tag_Goru", 1.4f, new Vector3(-62f, 0.6f, z + 2.75f), Vector3.back);       // arrival tunnel, by the red lamp
         Spray(g, "Tag_Drips", 2f, new Vector3(-22f, 1f, z + 16f), Vector3.forward);        // across the south track
-        Spray(g, "Tag_Scrawl", 1.2f, new Vector3(44f, 4.2f, z + 10f), Vector3.back);        // escalator 1's side wall
+        Spray(g, "Tag_Scrawl", 1.2f, new Vector3(44f, 4.2f, z + 10f), Vector3.back);        // stairs 1's side wall
         Spray(g, "Tag_Peso", 1.2f, new Vector3(70f, mezz + 1.6f, z + 15f), Vector3.forward); // mezzanine, above the seats
 
         // ---- a little blood: a spatter by the staff steps, a drag trail into the south tunnel, drops by the booth

@@ -18,7 +18,7 @@ public class AreaBoundary : MonoBehaviour
         Vector3 p = player.position;
         if (p.y < aboveHeight) return;
         float edge = Mathf.Min(p.x - min.x, max.x - p.x, p.z - min.y, max.y - p.z);
-        // Well outside the rectangle means somewhere else entirely (the Canal St escalators are high up
+        // Well outside the rectangle means somewhere else entirely (the Canal St stairs are high up
         // too): not this edge.
         if (edge < -3f) return;
         if (edge < warnDistance && Time.time > nextMessage)

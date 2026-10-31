@@ -27,7 +27,7 @@ public static partial class LookTestBuilder
         WallVent(g, "Vent_SquatterCamp", new Vector3(-37f, -8f, 47f), Vector3.right, 0.5f, grid);
 
         // ---- Canal St (its own grid, from the generator)
-        CeilingDuct(g, "Duct_CanalPlatform", new Vector3(0f, 2f, cz + 6.75f), Vector3.right, 0.5f, canalGrid);   // centred on the east wall's section beside the escalator opening (z+5.5..8)
+        CeilingDuct(g, "Duct_CanalPlatform", new Vector3(0f, 2f, cz + 6.75f), Vector3.right, 0.5f, canalGrid);   // centred on the east wall's section beside the stairs opening (z+5.5..8)
         CeilingDuct(g, "Duct_CanalMezzanine", new Vector3(64f, 8f, cz + 3f), Vector3.right, 0.5f, canalGrid);
         CeilingDuct(g, "Duct_CanalGenerator", new Vector3(68f, 7.5f, cz - 5.5f), Vector3.right, 0.5f, canalGrid);
         WallVent(g, "Vent_CanalOffice", new Vector3(58f, 7.5f, cz + 25f), Vector3.right, 0.5f, canalGrid);

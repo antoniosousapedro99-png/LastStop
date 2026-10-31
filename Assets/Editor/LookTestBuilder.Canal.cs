@@ -12,12 +12,12 @@ using UnityEngine.AI;
 //   A rusted maintenance door in the south track's west tunnel leads down to the lower level
 //   (LookTestBuilder.CanalLower.cs): service corridors, a machinery hall, and the emergency latch.
 //   Fuel cans: one in the cab of the train parked in the north-east tunnel (CanalTrain.cs), one in a cage in the lower level's machinery hall.
-// - Escalator 1 climbs from the island's east end to the mezzanine (y 6): ticket gates, a ticket booth
+// - Stairs 1 climb from the island's east end to the mezzanine (y 6): ticket gates, a ticket booth
 //   (the office key lies on its back counter), ticket machines, the generator room (north) and the locked
 //   station master's office (south: the spark plug and a save PC).
-// - The backup generator (GeneratorPuzzle) brings Canal St's own power back: lights come on in a wave, the
-//   escalators start, and the emergency latch on the lower level opens: the way on (the end card for now).
-//   The street shutter at the top of escalator 2 stays jammed.
+// - The backup generator (GeneratorPuzzle) brings Canal St's own power back: lights come on in a wave and the
+//   emergency latch on the lower level opens: the way on (the end card for now).
+//   The street shutter at the top of stairs 2 stays jammed.
 public static partial class LookTestBuilder
 {
     const float CanalZ = 300f;              // the station's north wall; everything here is offset from Hollis St
@@ -51,7 +51,7 @@ public static partial class LookTestBuilder
         canalGrid.hum = hum;
 
         CanalPlatformLevel(canal, wallTile, blueTile, floorTile, tactile, concrete, tunnelConcrete, ceiling, gravel, trackBed, housing, tubeLit);
-        CanalEscalators(canal, wallTile, concrete, ceiling, floorTile, housing, tubeLit);
+        CanalStairs(canal, wallTile, concrete, ceiling, floorTile, housing, tubeLit);
         CanalMezzanine(canal, wallTile, blueTile, floorTile, concrete, ceiling, housing, tubeLit);
         CanalGeneratorRoom(canal, concrete, ceiling, housing, tubeLit);
         CanalOffice(canal, wallTile, floorTile, ceiling);
@@ -111,7 +111,7 @@ public static partial class LookTestBuilder
         Span("EastEndB", g, new Vector3(40f, -1.5f, z + 12f), new Vector3(40.3f, 5.2f, z + 15.5f), wallTile);
         Span("EastLintelN", g, new Vector3(40f, 3.2f, z), new Vector3(40.3f, 5.2f, z + 5.5f), concrete);
         Span("EastLintelS", g, new Vector3(40f, 3.2f, z + 15.5f), new Vector3(40.3f, 5.2f, z + 21f), concrete);
-        Span("EastLintelEscalator", g, new Vector3(40f, 5f, z + 8f), new Vector3(40.3f, 9.4f, z + 12f), wallTile);
+        Span("EastLintelStairs", g, new Vector3(40f, 5f, z + 8f), new Vector3(40.3f, 9.4f, z + 12f), wallTile);
         Span("EastHeaderN", g, new Vector3(40f, 5.2f, z + 7.7f), new Vector3(40.3f, 9.4f, z + 8f), wallTile);
         Span("EastHeaderS", g, new Vector3(40f, 5.2f, z + 12f), new Vector3(40.3f, 9.4f, z + 12.3f), wallTile);
 
@@ -148,7 +148,7 @@ public static partial class LookTestBuilder
         EmergencyLight(g, new Vector3(-60f, 2.7f, z + 0.25f), 2f, 6f);
         EmergencyLight(g, new Vector3(CanalServiceDoorX + 0.5f, 1.4f, z + 20.75f), 1.5f, 5f);   // over the maintenance door
 
-        // Benches, bins, a vending machine, and the notice at the escalator.
+        // Benches, bins, a vending machine, and the notice at the stairs.
         foreach (float bx in new[] { -27f, -7f, 13f })
         {
             Prop("seats", g, new Vector3(bx, 0f, z + 7.2f), 90f);
@@ -158,7 +158,7 @@ public static partial class LookTestBuilder
         Prop("trash_can", g, new Vector3(25f, 0f, z + 11.4f), 0f);
         BackToWall(Prop("Vending_machine", g, new Vector3(-38.8f, 0f, z + 13.5f), -90f), Vector3.left, -40f);
         Note(g, "CanalNotice", new Vector3(37.5f, 0.01f, z + 9.2f), 80f,
-             "NOTICE - Canal St Junction\nStation power failure. Escalators out of service.\nBackup generator: mezzanine service room.\n- MTA Line 4");
+             "NOTICE - Canal St Junction\nStation power failure.\nBackup generator: mezzanine service room.\n- MTA Line 4");
         HidingLockerAt(g, "HidingLocker_CanalWest", new Vector3(-39.68f, 0f, z + 7.5f), 90f);
         // (The fuel cans are in the parked train's cab and on the lower level.)
     }
@@ -212,27 +212,28 @@ public static partial class LookTestBuilder
         MakePickup(can, global::Pickup.Kind.FuelCan, floorPoint, yaw, "PlasticBox1");
     }
 
-    // ---------------------------------------------------------------- escalators
-    static void CanalEscalators(Transform canal, Material wallTile, Material concrete, Material ceiling, Material floorTile, Material housing, Material tubeLit)
+    // ---------------------------------------------------------------- stairs up to the mezzanine and the street exit
+    static void CanalStairs(Transform canal, Material wallTile, Material concrete, Material ceiling, Material floorTile, Material housing, Material tubeLit)
     {
-        var g = new GameObject("Escalators").transform;
+        var g = new GameObject("Stairs").transform;
         g.SetParent(canal);
         float z = CanalZ;
-        // Escalator 1: island (x 40, y 0) up to the mezzanine (x 49.5, y 6), in a passage z 308..312.
+        // Stairs 1: island (x 40, y 0) up to the mezzanine (x 49.5, y 6), in a passage z 308..312.
+        // (Escalators until 2026-10-31: the director swapped both for plain stairs.)
         Span("Passage1_WallN", g, new Vector3(40.3f, -1.5f, z + 7.7f), new Vector3(49.2f, 9.4f, z + 8f), wallTile);
         Span("Passage1_WallS", g, new Vector3(40.3f, -1.5f, z + 12f), new Vector3(49.2f, 9.4f, z + 12.3f), wallTile);
         Span("Passage1_Ceiling", g, new Vector3(40.3f, 9.2f, z + 8f), new Vector3(49.2f, 9.4f, z + 12f), ceiling);
-        Escalator(g, "Escalator1", new Vector3(40f, 0f, z + 10f), new Vector3(49.5f, 6f, z + 10f), housing);
-        CanalLamp(g, "CanalEscalatorLamp1", new Vector3(45f, 9.18f, z + 10f), tubeLit, housing);
+        StairFlight(g, "Stairs1", new Vector3(40f, 0f, z + 10f), new Vector3(49.5f, 6f, z + 10f), concrete);
+        CanalLamp(g, "CanalStairsLamp1", new Vector3(45f, 9.18f, z + 10f), tubeLit, housing);
 
-        // Escalator 2: mezzanine (x 79.8, y 6) up to the street exit (x 89.3, y 12), then the shutter at x 95.
+        // Stairs 2: mezzanine (x 79.8, y 6) up to the street exit (x 89.3, y 12), then the shutter at x 95.
         Span("Passage2_WallN", g, new Vector3(79.8f, 5.8f, z + 7.7f), new Vector3(100f, 15.2f, z + 8f), wallTile);
         Span("Passage2_WallS", g, new Vector3(79.8f, 5.8f, z + 12f), new Vector3(100f, 15.2f, z + 12.3f), wallTile);
         Span("Passage2_Ceiling", g, new Vector3(79.8f, 15f, z + 8f), new Vector3(100f, 15.2f, z + 12f), ceiling);
         Span("ExitLanding", g, new Vector3(89.3f, 11.8f, z + 8f), new Vector3(100f, 12f, z + 12f), floorTile);
         Span("ExitEnd", g, new Vector3(100f, 11.8f, z + 7.7f), new Vector3(100.3f, 15.2f, z + 12.3f), concrete);
-        Escalator(g, "Escalator2", new Vector3(79.8f, 6f, z + 10f), new Vector3(89.3f, 12f, z + 10f), housing);
-        CanalLamp(g, "CanalEscalatorLamp2", new Vector3(85f, 14.98f, z + 10f), tubeLit, housing);
+        StairFlight(g, "Stairs2", new Vector3(79.8f, 6f, z + 10f), new Vector3(89.3f, 12f, z + 10f), concrete);
+        CanalLamp(g, "CanalStairsLamp2", new Vector3(85f, 14.98f, z + 10f), tubeLit, housing);
         CanalLamp(g, "CanalExitLamp", new Vector3(92f, 14.98f, z + 10f), tubeLit, housing);
 
         // The roller shutter over the street exit: jammed for good (the way on is the emergency latch below).
@@ -241,60 +242,34 @@ public static partial class LookTestBuilder
         EmergencyLight(g, new Vector3(94.6f, 14.6f, z + 10f), 1.5f, 5f);
     }
 
-    // One escalator from 'bottom' to 'top' (both on the walking surface, along x): a ramp of steps with
-    // balustrades, carrying the player up once Canal St has power.
-    static void Escalator(Transform parent, string name, Vector3 bottom, Vector3 top, Material housing)
+    // A straight flight of concrete stairs from 'bottom' to 'top' (both on the walking surface, along x), 4 m wide
+    // between the passage walls: 20 cm steps as at Hollis St's street stairs, a yellow safety strip along each
+    // step's edge, and one steel handrail down the middle (the director's choices, 2026-10-31).
+    static void StairFlight(Transform parent, string name, Vector3 bottom, Vector3 top, Material concrete)
     {
-        Vector3 along = top - bottom;
-        float length = along.magnitude, angle = Mathf.Atan2(along.y, along.x) * Mathf.Rad2Deg;
-        Vector3 normal = new Vector3(-Mathf.Sin(angle * Mathf.Deg2Rad), Mathf.Cos(angle * Mathf.Deg2Rad), 0f);
-        Quaternion tilt = Quaternion.Euler(0f, 0f, angle);
-        Vector3 mid = (bottom + top) * 0.5f;
-
-        var stepsMat = Mat(name + "Steps", EscalatorStepsTexture(), new Color(0.6f, 0.6f, 0.62f), 1f, 0.5f, 0.6f);
-        stepsMat.SetTextureScale("_BaseMap", new Vector2(28f, 1f));
-        var ramp = Prim(PrimitiveType.Cube, name + "_Steps", parent, mid - normal * 0.1f, new Vector3(length, 0.2f, 3.4f), stepsMat);
-        ramp.transform.rotation = tilt;
-        var steel = Mat("EscalatorSteel", null, new Color(0.3f, 0.31f, 0.33f), 1f, 0.5f, 0.7f);
-        foreach (float side in new[] { -1.85f, 1.85f })
+        int steps = Mathf.RoundToInt((top.y - bottom.y) / 0.2f);
+        float rise = (top.y - bottom.y) / steps, run = (top.x - bottom.x) / steps;
+        float z0 = bottom.z - 2f, z1 = bottom.z + 2f;
+        var nosing = Mat("StairNosing", null, new Color(0.9f, 0.72f, 0.12f), 1f, 0.3f);
+        for (int i = 1; i <= steps; i++)
         {
-            var balustrade = Prim(PrimitiveType.Cube, name + "_Balustrade", parent, mid + normal * 0.45f + Vector3.forward * side, new Vector3(length + 0.6f, 1.1f, 0.25f), steel);
-            balustrade.transform.rotation = tilt;
-            var handrail = Prim(PrimitiveType.Cube, name + "_Handrail", parent, mid + normal * 1.05f + Vector3.forward * side, new Vector3(length + 0.8f, 0.08f, 0.12f), housing);
-            handrail.transform.rotation = tilt;
+            float x0 = bottom.x + run * (i - 1), x1 = bottom.x + run * i, y = bottom.y + rise * i;
+            Span(name + "_Step" + i, parent, new Vector3(x0, bottom.y, z0), new Vector3(x1, y, z1), concrete);
+            Span(name + "_Nosing" + i, parent, new Vector3(x0, y, z0 + 0.05f), new Vector3(x0 + 0.06f, y + 0.005f, z1 - 0.05f), nosing, false);
         }
-        // The carrying zone just above the steps.
-        var zone = new GameObject(name + "_Zone");
-        zone.transform.SetParent(parent);
-        zone.transform.SetPositionAndRotation(mid + normal * 1f, tilt);
-        zone.layer = 2;
-        var box = zone.AddComponent<BoxCollider>(); box.isTrigger = true; box.size = new Vector3(length, 2f, 3.4f);
-        var escalator = zone.AddComponent<Escalator>();
-        escalator.grid = canalGrid;
-        escalator.carry = along.normalized * 0.6f;
-        escalator.steps = ramp.GetComponent<Renderer>();
-        escalator.length = length;
-        var motor = zone.AddComponent<AudioSource>();
-        motor.clip = Load<AudioClip>(SfxDir + "/Scares/MachineHum.wav");
-        motor.loop = true; motor.playOnAwake = false; motor.volume = 0.25f; motor.pitch = 1.6f;
-        motor.spatialBlend = 1f; motor.rolloffMode = AudioRolloffMode.Linear; motor.minDistance = 2f; motor.maxDistance = 14f;
-        escalator.hum = motor;
-    }
 
-    // Grooved steps: light bands with dark grooves, repeated along the escalator (made once, saved as a PNG).
-    static Texture2D EscalatorStepsTexture()
-    {
-        const string path = "Assets/Art/Textures/Generated/EscalatorSteps.png";
-        var existing = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-        System.IO.Directory.CreateDirectory("Assets/Art/Textures/Generated");
-        if (existing) return existing;
-        var tex = new Texture2D(16, 4, TextureFormat.RGB24, false);
-        for (int x = 0; x < 16; x++)
-            for (int y = 0; y < 4; y++)
-                tex.SetPixel(x, y, x % 4 == 0 ? new Color(0.15f, 0.15f, 0.16f) : x == 15 ? new Color(0.9f, 0.75f, 0.2f) : new Color(0.62f, 0.62f, 0.64f));
-        System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
-        AssetDatabase.ImportAsset(path);
-        return Load<Texture2D>(path);
+        // The handrail: posts on every fifth tread, a bar along the slope 0.9 m above the step edges.
+        var steel = Mat("StairRailSteel", null, new Color(0.3f, 0.31f, 0.33f), 1f, 0.5f, 0.7f);
+        const float railHeight = 0.9f;
+        for (int i = 1; i <= steps; i += 5)
+        {
+            float x = bottom.x + run * (i - 0.5f), foot = bottom.y + rise * i, head = bottom.y + rise * (i - 0.5f) + railHeight;
+            Prim(PrimitiveType.Cylinder, name + "_RailPost", parent, new Vector3(x, (foot + head) * 0.5f, bottom.z), new Vector3(0.05f, (head - foot) * 0.5f, 0.05f), steel);
+        }
+        Vector3 along = top - bottom;
+        float length = along.magnitude - run, angle = Mathf.Atan2(along.y, along.x) * Mathf.Rad2Deg;
+        var rail = Prim(PrimitiveType.Cube, name + "_Rail", parent, (bottom + top) * 0.5f + Vector3.up * railHeight, new Vector3(length, 0.05f, 0.05f), steel);
+        rail.transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     // ---------------------------------------------------------------- mezzanine
@@ -311,7 +286,7 @@ public static partial class LookTestBuilder
         Span("MezzWallE_N", g, new Vector3(79.5f, 5.8f, z), new Vector3(79.8f, 10.7f, z + 8f), wallTile);
         Span("MezzWallE_S", g, new Vector3(79.5f, 5.8f, z + 12f), new Vector3(79.8f, 10.7f, z + 21f), wallTile);
         Span("MezzWallE_Lintel", g, new Vector3(79.5f, 9.4f, z + 8f), new Vector3(79.8f, 10.7f, z + 12f), wallTile);
-        Span("MezzWallE_Header", g, new Vector3(79.5f, 10.7f, z + 7.7f), new Vector3(79.8f, 15.2f, z + 12.3f), wallTile);   // above the ceiling, up to escalator 2's roof
+        Span("MezzWallE_Header", g, new Vector3(79.5f, 10.7f, z + 7.7f), new Vector3(79.8f, 15.2f, z + 12.3f), wallTile);   // above the ceiling, up to stairs 2's roof
         // North wall with the generator room door (x 67..68.2), south wall with the office door (x 57..58.2).
         Span("MezzWallN_W", g, new Vector3(49.2f, 5.8f, z - 0.3f), new Vector3(67f, 10.7f, z), wallTile);
         Span("MezzWallN_E", g, new Vector3(68.2f, 5.8f, z - 0.3f), new Vector3(79.8f, 10.7f, z), wallTile);

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Passes a scare spot's trigger on to a scare that lives somewhere else (e.g. the ticket booth phone,
-// set off by a spot at the top of the escalator).
+// set off by a spot at the top of the stairs).
 public class ScareRelay : MonoBehaviour, IScare
 {
     public MonoBehaviour target;           // anything that is an IScare

@@ -4,7 +4,7 @@ using UnityEngine;
 // Canal St Junction's backup generator: the way to bring the station's power back.
 // It needs two cans of fuel and a new spark plug. Then the player pulls the starter cord: the first pull
 // only sputters, the second catches. It roars into life, loud enough to bring Frankie, and the station's
-// power comes back (PowerGrid): lights, escalators, the street shutter.
+// power comes back (PowerGrid): lights, the street shutter.
 public class GeneratorPuzzle : MonoBehaviour, IInteractable
 {
     public PowerGrid grid;
