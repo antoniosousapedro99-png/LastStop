@@ -11,7 +11,7 @@ public class SluiceGate : MonoBehaviour
     public float lift = 1.5f;
     public GameObject torrent;             // the falling water, shown while it pours
     public AudioSource roar;               // loops while it pours
-    public float pourSeconds = 14f;
+    public float pourSeconds = 20f;        // as long as the cistern takes to drop a step
 
     public void Open(bool loud)
     {

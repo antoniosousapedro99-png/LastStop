@@ -305,12 +305,13 @@ public static partial class LookTestBuilder
     }
 
     // Steps from a landing's edge down to a sunken room's floor: 'from' is the middle of the top step's
-    // edge on the landing, 'down' the way they descend, 'width' across. Each step rises no more than a
-    // stride can (Sousa steps up 35 cm), so the pit can be walked out of once it's drained.
-    static void Steps(Transform g, string name, float floor, Vector3 from, Vector3 down, float width)
+    // edge on the landing, 'down' the way they descend, 'width' across, 'tread' deep (0.25 m makes a steep
+    // service stair). Each step rises no more than a stride can (Sousa steps up 35 cm), so the pit can be
+    // walked out of once it's drained.
+    static void Steps(Transform g, string name, float floor, Vector3 from, Vector3 down, float width, float tread = 0.32f)
     {
         int count = Mathf.CeilToInt(-floor / 0.33f) - 1;   // the floor itself is the last step
-        float rise = -floor / (count + 1), tread = 0.32f;
+        float rise = -floor / (count + 1);
         Vector3 across = Vector3.Cross(Vector3.up, down) * (width * 0.5f);
         for (int k = 0; k < count; k++)
         {
@@ -342,8 +343,9 @@ public static partial class LookTestBuilder
         Vector3 o = SewerOrigin;
         const float floor = -6.5f, culvertTop = -4.3f;
         // Shaft A: the tunnel's doorway on its top side, the culvert's opening at the foot of its bottom side.
-        SewerRoom(g, "SiphonShaftA", -3f, 3f, 80f, 86f, floor, 3.6f, (0, -2.2f, 2.2f, 3.6f - floor), (2, -1.5f, 1.5f, culvertTop - floor));
-        WallPiece(g, "SiphonShaftA_Threshold", 0, -2.2f, 2.2f, -3f, 3f, 80f, 86f, floor, 0f);
+        // (Each shaft's tunnel doorway is its whole width, so both of the tunnel's walkways lead onto its lip.)
+        SewerRoom(g, "SiphonShaftA", -3f, 3f, 80f, 86f, floor, 3.6f, (0, -3f, 3f, 3.6f - floor), (2, -1.5f, 1.5f, culvertTop - floor));
+        WallPiece(g, "SiphonShaftA_Threshold", 0, -3f, 3f, -3f, 3f, 80f, 86f, floor, 0f);
         Span("SiphonShaftA_Lip", g, o + new Vector3(-3f, floor, 80f), o + new Vector3(3f, 0f, 81.2f), sewerFloor);
         // The culvert between the shafts' feet.
         Span("SiphonCulvert_Floor", g, o + new Vector3(-1.5f, floor - 0.2f, 86.3f), o + new Vector3(1.5f, floor, 91.7f), sewerFloor);   // between the shafts' sills
@@ -351,9 +353,14 @@ public static partial class LookTestBuilder
         Span("SiphonCulvert_WallL", g, o + new Vector3(-1.8f, floor - 0.2f, 86.55f), o + new Vector3(-1.5f, culvertTop + 0.2f, 91.45f), sewerBrick);
         Span("SiphonCulvert_WallR", g, o + new Vector3(1.5f, floor - 0.2f, 86.55f), o + new Vector3(1.8f, culvertTop + 0.2f, 91.45f), sewerBrick);
         // Shaft B: the culvert's opening at the foot of its top side, the doorway on to valve 3 on its bottom side.
-        SewerRoom(g, "SiphonShaftB", -3f, 3f, 92f, 98f, floor, 3.6f, (0, -1.5f, 1.5f, culvertTop - floor), (2, -2.2f, 2.2f, 3.6f - floor));
-        WallPiece(g, "SiphonShaftB_Threshold", 2, -2.2f, 2.2f, -3f, 3f, 92f, 98f, floor, 0f);
+        SewerRoom(g, "SiphonShaftB", -3f, 3f, 92f, 98f, floor, 3.6f, (0, -1.5f, 1.5f, culvertTop - floor), (2, -3f, 3f, 3.6f - floor));
+        WallPiece(g, "SiphonShaftB_Threshold", 2, -3f, 3f, -3f, 3f, 92f, 98f, floor, 0f);
         Span("SiphonShaftB_Lip", g, o + new Vector3(-3f, floor, 96.8f), o + new Vector3(3f, 0f, 98f), sewerFloor);
+        // Steep service stairs in each shaft, along the lip's edge from the east wall down toward the west, ending
+        // on open floor: once valve 3 has drained the siphon it can be walked through (full, they're under water,
+        // and the dive is still the way).
+        Steps(g, "SiphonShaftA", floor, new Vector3(3f, 0f, 81.8f), Vector3.left, 1.2f, 0.25f);
+        Steps(g, "SiphonShaftB", floor, new Vector3(3f, 0f, 96.2f), Vector3.left, 1.2f, 0.25f);
         CagedBulb(g, "SiphonBulbA", o + new Vector3(0f, 3.3f, 83.5f), 1.2f, 7f, flicker: true, cable: 0.2f);
         CagedBulb(g, "SiphonBulbB", o + new Vector3(0f, 3.3f, 94.5f), 1.2f, 7f, cable: 0.2f);
     }
@@ -562,19 +569,21 @@ public static partial class LookTestBuilder
     }
 
     // The end of the overflow tunnel: a wall with a barred opening onto the night and the river (the way
-    // out once the water is purged).
+    // out once the water is purged). The grate spans the whole tunnel and reaches down to the canal's floor,
+    // so there's no slipping round or under it.
     static Transform RiverOutlet(Transform g, Vector3 at, Material bars, float side = 1f)
     {
         // 'side': +1 when the tunnel comes from +x (the outlet faces -x), -1 when it comes from -x.
-        Span("RiverOutletWall", g, at + new Vector3(Mathf.Min(-0.3f * side, 0f), -1.5f, -4f), at + new Vector3(Mathf.Max(-0.3f * side, 0f), 5.8f, 4f), sewerBrick);
-        var night = Prim(PrimitiveType.Quad, "RiverNight", g, at + new Vector3(0.02f * side, 1.6f, 0f), new Vector3(3.6f, 3.2f, 1f), EmissiveMat("RiverNight", new Color(0.12f, 0.16f, 0.24f)));
+        Span("RiverOutletWall", g, at + new Vector3(Mathf.Min(-0.3f * side, 0f), -SewerWalkwayRise - 0.3f, -4.8f), at + new Vector3(Mathf.Max(-0.3f * side, 0f), 7.5f, 4.8f), sewerBrick);
+        var night = Prim(PrimitiveType.Quad, "RiverNight", g, at + new Vector3(0.02f * side, 1.9f, 0f), new Vector3(8f, 3.8f, 1f), EmissiveMat("RiverNight", new Color(0.12f, 0.16f, 0.24f)));
         night.transform.rotation = Quaternion.LookRotation(Vector3.left * side);   // its picture faces back up the tunnel
         Object.DestroyImmediate(night.GetComponent<Collider>());
         var grate = new GameObject("RiverGrate").transform;   // lifted as one by RiverExit
         grate.SetParent(g);
-        for (float z = -1.7f; z <= 1.71f; z += 0.3f)
-            Prim(PrimitiveType.Cylinder, "GrateBar", grate, at + new Vector3(0.4f * side, 1.6f, z), new Vector3(0.06f, 1.6f, 0.06f), bars);
-        Span("GrateRail", grate, at + new Vector3(Mathf.Min(0.35f * side, 0.45f * side), 3.1f, -1.8f), at + new Vector3(Mathf.Max(0.35f * side, 0.45f * side), 3.25f, 1.8f), bars);
+        float barLow = -SewerWalkwayRise, barHigh = 3.8f;   // from the canal's floor to above head height
+        for (float z = -4.2f; z <= 4.21f; z += 0.3f)
+            Prim(PrimitiveType.Cylinder, "GrateBar", grate, at + new Vector3(0.4f * side, (barLow + barHigh) * 0.5f, z), new Vector3(0.06f, (barHigh - barLow) * 0.5f, 0.06f), bars);
+        Span("GrateRail", grate, at + new Vector3(Mathf.Min(0.35f * side, 0.45f * side), 3.6f, -4.3f), at + new Vector3(Mathf.Max(0.35f * side, 0.45f * side), 3.75f, 4.3f), bars);
         var moon = new GameObject("RiverMoonlight").AddComponent<Light>();
         moon.transform.SetParent(g);
         moon.transform.position = at + new Vector3(1.5f * side, 2f, 0f);

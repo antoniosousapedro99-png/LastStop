@@ -20,6 +20,7 @@ public class SewerValve : MonoBehaviour, IInteractable
     public bool final;
     public RiverExit exit;                 // the final valve opens it
     public float turnSeconds = 4f;
+    public float drainSeconds = 20f;       // how long the water takes to sink (the roar lasts as long)
     public AudioSource squeal;             // loops while turning
     public AudioClip clunk, groan;
 
@@ -72,11 +73,11 @@ public class SewerValve : MonoBehaviour, IInteractable
             if (groan) AudioSource.PlayClipAtPoint(groan, transform.position, 1f);
         }
         if (gate) gate.Open(loud);
-        if (zone) { if (loud) zone.DrainTo(drainTo, 12f); else zone.SetLevel(drainTo); }
+        if (zone) { if (loud) zone.DrainTo(drainTo, drainSeconds); else zone.SetLevel(drainTo); }
         if (cistern)
         {
             float to = final ? cisternPurged : cisternStart - cisternStep * Opened();
-            if (loud) cistern.DrainTo(to, final ? 14f : 10f); else cistern.SetLevel(Mathf.Min(cistern.level, to));
+            if (loud) cistern.DrainTo(to, drainSeconds); else cistern.SetLevel(Mathf.Min(cistern.level, to));
         }
         if (final && exit) exit.Open(loud);
     }

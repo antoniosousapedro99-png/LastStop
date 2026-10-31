@@ -20,19 +20,24 @@ public static partial class LookTestBuilder
 {
     static readonly Dictionary<string, GameObject> valveWheels = new Dictionary<string, GameObject>();
     static readonly Dictionary<string, SluiceGate> reliefGates = new Dictionary<string, SluiceGate>();
-    const float CisternStart = -0.5f, CisternStep = 0.75f, CisternPurged = -8.6f;   // four steps: -0.5 -> -3.5 (the walkway, at -3, is clear)
+    // The cistern: 6 m down at the start; each of the four valves lowers it a quarter of the way to an ankle-deep
+    // puddle on its floor (about 6.5 m a time), and the final valve purges the rest.
+    const float CisternStart = -6f, CisternPuddle = CisternFloor + 0.15f, CisternPurged = CisternFloor - 0.4f;
+    const float CisternStep = (CisternStart - CisternPuddle) / 4f;
+    const float DrainSeconds = 20f;
 
-    // STAGE 1 (the layout): still water in the low places only, so the deep parts are swum, not fallen into.
-    // The valves are placeholders until stage 2 wires them (relief gates, the shaft draining, the purge, the exit).
+    // Still water in the low places (the cistern, valve 2's pit, the siphon, the spillway), the canals, and the
+    // valves: each valve room's valve lifts its relief gate and lowers the cistern a step (valve 2 drains its
+    // pit, valve 3 the siphon); the final valve on the cistern's floor purges it and opens the river grate.
     static void Flooding(Transform parent, Transform grate)
     {
         var g = new GameObject("Flooding").transform;
         g.SetParent(parent);
         Vector3 o = SewerOrigin;
-        // The cistern starts 6 m down, so the canals pour a long way into it (the valves will lower it further).
-        var cistern = Zone(g, "Cistern", -6f, CisternCentre.x - CisternRadius, CisternCentre.x + CisternRadius, CisternCentre.z - CisternRadius, CisternCentre.z + CisternRadius, CisternFloor - 0.4f, true);
-        Zone(g, "Siphon", -0.4f, -3f, 3f, 80f, 98f, -0.4f);
-        Zone(g, "Pit2", -0.4f, 71f, 89f, 21f, 39f, -2.4f);
+        // The cistern starts 6 m down, so the canals pour a long way into it; the valves lower it further.
+        var cistern = Zone(g, "Cistern", CisternStart, CisternCentre.x - CisternRadius, CisternCentre.x + CisternRadius, CisternCentre.z - CisternRadius, CisternCentre.z + CisternRadius, CisternPurged, true);
+        var siphon = Zone(g, "Siphon", -0.4f, -3f, 3f, 80f, 98f, -6.9f);   // drains to below its shafts' floors
+        var pit2 = Zone(g, "Pit2", -0.4f, 71f, 89f, 21f, 39f, -2.4f);
         var spillway = Zone(g, "Spillway", -0.6f, 43f, 67f, 129f, 132f, -0.6f);
         // The spillway drags a swimmer along to the culvert grate and under.
         var current = new GameObject("SpillwayCurrent").AddComponent<WaterCurrent>();
@@ -42,6 +47,42 @@ public static partial class LookTestBuilder
         current.zone = spillway;
 
         Canals(g, cistern);
+
+        // Each valve room's relief gate, on a wall clear of its doorways and its valve.
+        foreach (var (name, wallFloor, inward) in new[] { ("Gate1", new Vector3(-7f, 0f, 25f), Vector3.right), ("Gate2", new Vector3(89f, -2.2f, 24.5f), Vector3.left),
+                                                         ("Gate3", new Vector3(0f, 0f, 119f), Vector3.back), ("Gate4", new Vector3(80f, 0f, 117f), Vector3.back) })
+        {
+            ClearPillars(o + wallFloor + inward * 0.2f + Vector3.up * 1.5f, 1.3f);
+            ReliefGate(g, name, o + wallFloor, inward);
+        }
+
+        // The valves, and the way out they lead to.
+        var squealClip = Load<AudioClip>(SfxDir + "/OldDoorCreak.wav");
+        var clunk = Load<AudioClip>(SfxDir + "/MetalCabinet1.wav");
+        var groan = Load<AudioClip>(SfxDir + "/DesignedPunch2.wav");
+        var exit = grate.gameObject.AddComponent<RiverExit>();
+        exit.grate = grate;
+        exit.lift = SewerWalkwayRise + 2.4f;   // its bars' feet come up clear of your head
+        exit.exitArea = new Bounds(o + new Vector3(98.6f, 1f, 137f), new Vector3(2f, 4f, 8.6f));
+        exit.grind = squealClip;
+        exit.endCard = Object.FindAnyObjectByType<EndCard>(FindObjectsInactive.Include);
+        foreach (var (name, gate, zone) in new[] { ("Valve1", "Gate1", (FloodZone)null), ("Valve2", "Gate2", pit2), ("Valve3", "Gate3", siphon),
+                                                   ("Valve4", "Gate4", (FloodZone)null), ("FinalValve", null, (FloodZone)null) })
+        {
+            var wheel = valveWheels[name];
+            var valve = wheel.AddComponent<SewerValve>();
+            valve.id = name; valve.wheel = wheel.transform;
+            valve.zone = zone; valve.drainTo = zone ? zone.surfaceRest[0] : 0f;
+            valve.gate = gate != null ? reliefGates[gate] : null;
+            valve.cistern = cistern; valve.cisternStart = o.y + CisternStart; valve.cisternStep = CisternStep; valve.cisternPurged = o.y + CisternPurged;
+            valve.drainSeconds = DrainSeconds;
+            valve.final = name == "FinalValve";
+            if (valve.final) valve.exit = exit;
+            valve.squeal = wheel.AddComponent<AudioSource>();
+            valve.squeal.clip = squealClip; valve.squeal.loop = true; valve.squeal.playOnAwake = false; valve.squeal.pitch = 0.55f;
+            valve.squeal.spatialBlend = 1f; valve.squeal.minDistance = 2f; valve.squeal.maxDistance = 25f; valve.squeal.volume = 0.8f;
+            valve.clunk = clunk; valve.groan = groan;
+        }
 
         // The player: swimming, and holding his breath.
         var player = Object.FindAnyObjectByType<PlayerMovement>(FindObjectsInactive.Include).gameObject;
@@ -106,15 +147,7 @@ public static partial class LookTestBuilder
         zone.areas = areas.ToArray();
         fluid.AddComponent<Fluid>();
 
-        // The cistern floats things too (its box reaches up to its water, wherever that stands at the start).
-        var tank = new GameObject("CisternFluid");
-        tank.transform.SetParent(g);
-        tank.layer = 2;
-        var tankBox = tank.AddComponent<BoxCollider>();
-        tankBox.isTrigger = true;
-        tankBox.center = new Vector3(o.x + CisternCentre.x, (o.y + CisternFloor + cistern.level) * 0.5f, o.z + CisternCentre.z);
-        tankBox.size = new Vector3(CisternRadius * 2f, cistern.level - (o.y + CisternFloor), CisternRadius * 2f);
-        tank.AddComponent<Fluid>();
+        // (Rubbish that goes over the falls just drops into the cistern and turns up upstream again: RubbishDrift.)
 
         // The waterfalls: each canal pouring off its lip under the gallery, down to the cistern's water.
         var fallMat = FallMat();
