@@ -62,6 +62,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - **Shotgun blast:** silent until a real shotgun sound is found.
 - **Character sounds (2026-10-26):** Frankie's **scream when he spots you** (start of every chase) is now a real monster scream: the strongest 3 s of one of two close screams, with a quick fade. His **far-away echoing scream** plays when he wakes deep in Hollis St's west tunnel, and at Canal St from far back down the arrival tunnel about **6 s before** the thud on the train roof. The **player breathes**: heavy breathing builds up as sprint stamina drains (since 2026-10-27; it was a separate 4 s timer) and dies away as it refills; in a **locker** a slow, held breath plays, louder the closer Frankie is (from 10 m in). His breaths, footsteps and joint cracks are still the reshaped Darkworld sounds.
 - **Still missing:** a shotgun blast, footsteps on metal grates, and real breathing/footstep sounds for Frankie.
+- **Swimming and hurt sounds (2026-10-31, the director's choices):** swim strokes are now **real arm strokes** (eight cut from the director's swimming recording, Dragon Studio on Pixabay), one at random with a slight pitch change; the old splashes stay for jumping in and climbing out. While **hurt**, the constant panting loop is gone: instead a **quiet pained groan** (the pack's two unused "injured" takes) now and then, every **8-14 s**. The cry of pain on a hit is unchanged.
 
 ## Built so far
 

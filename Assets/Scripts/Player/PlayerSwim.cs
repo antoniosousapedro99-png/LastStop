@@ -14,7 +14,8 @@ public class PlayerSwim : MonoBehaviour
     public float swimSpeed = 1.9f, diveSpeed = 1.3f, riseSpeed = 1.5f, floatSpeed = 1f;
     public float floatDepth = 1.45f;       // floating: the feet this far under the surface (eyes just above it)
     public AudioSource source;             // strokes and splashes (2D: they're his own)
-    public AudioClip[] strokes;
+    public AudioClip[] strokes;            // arm strokes while swimming, one picked at random
+    public AudioClip[] splashes;           // going in and climbing out
 
     public static PlayerSwim Current { get; private set; }
     public bool Swimming { get; private set; }
@@ -73,7 +74,7 @@ public class PlayerSwim : MonoBehaviour
         if (v.y > 0f && y + v.y * Time.deltaTime > floatY) v.y = Mathf.Max(0f, (floatY - y) / Time.deltaTime);   // never out of the water
         controller.Move(v * Time.deltaTime);
 
-        // Strokes: a soft splash every metre and a half at the surface, muffled bubbling strokes below it.
+        // Strokes: an arm stroke every metre and a half at the surface, muffled and deeper below it.
         Vector3 flat = controller.velocity; flat.y = 0f;
         strokeDistance += flat.magnitude * Time.deltaTime;
         if (strokeDistance > 1.5f && strokes != null && strokes.Length > 0)
@@ -81,7 +82,7 @@ public class PlayerSwim : MonoBehaviour
             strokeDistance = 0f;
             bool atSurface = y > floatY - 0.3f;
             source.pitch = Random.Range(atSurface ? 0.95f : 0.6f, atSurface ? 1.1f : 0.7f);
-            source.PlayOneShot(strokes[Random.Range(0, strokes.Length)], atSurface ? 0.25f : 0.12f);
+            source.PlayOneShot(strokes[Random.Range(0, strokes.Length)], atSurface ? 0.5f : 0.2f);
             if (atSurface) Noise.Make(transform.position, 6f);
         }
 
@@ -97,7 +98,7 @@ public class PlayerSwim : MonoBehaviour
             movement.enabled = false;
             if (crouch) { crouch.StandUp(); crouch.enabled = false; }
             if (vault) vault.enabled = false;
-            if (strokes != null && strokes.Length > 0) source.PlayOneShot(strokes[0], 0.4f);   // the splash going in
+            if (splashes != null && splashes.Length > 0) { source.pitch = 1f; source.PlayOneShot(splashes[0], 0.4f); }   // the splash going in
         }
         else
         {
@@ -121,7 +122,7 @@ public class PlayerSwim : MonoBehaviour
         Vector3 feet = top.point + Vector3.up * 0.05f;
         if (Physics.CheckCapsule(feet + Vector3.up * 0.4f, feet + Vector3.up * 1.6f, 0.3f, ~0, QueryTriggerInteraction.Ignore)) return;
         climbFrom = transform.position; climbTo = feet; climbT = 0f;
-        if (strokes != null && strokes.Length > 1) source.PlayOneShot(strokes[1], 0.4f);
+        if (splashes != null && splashes.Length > 1) { source.pitch = 1f; source.PlayOneShot(splashes[1], 0.4f); }
     }
 
     void Climb()

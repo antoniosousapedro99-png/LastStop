@@ -3,14 +3,16 @@ using UnityEngine;
 
 // The player can take two hits; the second one kills. Painkillers (taken from the inventory) heal one.
 // - A hit flashes the screen red, jolts the view and plays a cry of pain; while hurt, the edges of the
-//   screen stay faintly red and the player breathes heavily.
+//   screen stay faintly red and now and then he lets out a quiet pained groan (every 8-14 s).
 // - Death: control stops, the view drops to the floor, the screen fades to black with "YOU DIED", and
 //   the game goes back to the title (load a save from there).
 public class PlayerHealth : MonoBehaviour
 {
     public int maxHits = 2;
     public AudioClip[] painSounds;
-    public AudioClip hurtBreathing;            // loops quietly while hurt
+    public AudioClip[] hurtSounds;             // a quiet groan now and then while hurt
+    public float hurtEveryMin = 8f, hurtEveryMax = 14f;   // seconds between groans
+    public float hurtVolume = 0.45f;
     public AudioSource voice;
 
     public int Hits { get; private set; }
@@ -19,20 +21,14 @@ public class PlayerHealth : MonoBehaviour
 
     float flash;                               // red flash after a hit, 1 -> 0
     float deathFade;
-    AudioSource breathing;
-
-    void Awake()
-    {
-        breathing = gameObject.AddComponent<AudioSource>();
-        breathing.clip = hurtBreathing; breathing.loop = true; breathing.volume = 0f; breathing.spatialBlend = 0f;
-        if (hurtBreathing) breathing.Play();
-    }
+    float nextGroan;                           // when the next groan is due while hurt
 
     public void Hit(Vector3 from)
     {
         if (Dead) return;
         Hits++;
         flash = 1f;
+        nextGroan = Time.time + Random.Range(hurtEveryMin, hurtEveryMax);   // the cry first, then the groans
         if (painSounds.Length > 0) voice.PlayOneShot(painSounds[Random.Range(0, painSounds.Length)], 1f);
         var look = GetComponent<PlayerLook>();
         if (look) look.AddRecoil(-8f, Random.Range(-6f, 6f));   // the view jolts down and sideways
@@ -83,7 +79,11 @@ public class PlayerHealth : MonoBehaviour
     void Update()
     {
         flash = Mathf.MoveTowards(flash, 0f, Time.deltaTime * 1.5f);
-        if (breathing) breathing.volume = Mathf.MoveTowards(breathing.volume, Hurt && !Dead ? 0.35f : 0f, Time.deltaTime * 0.5f);
+        if (Hurt && !Dead && hurtSounds != null && hurtSounds.Length > 0 && Time.time >= nextGroan)
+        {
+            if (nextGroan > 0f) voice.PlayOneShot(hurtSounds[Random.Range(0, hurtSounds.Length)], hurtVolume);
+            nextGroan = Time.time + Random.Range(hurtEveryMin, hurtEveryMax);   // (just loaded hurt: wait a while first)
+        }
     }
 
     void OnGUI()

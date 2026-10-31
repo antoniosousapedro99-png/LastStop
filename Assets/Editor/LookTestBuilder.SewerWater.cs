@@ -90,11 +90,14 @@ public static partial class LookTestBuilder
 
         // The player: swimming, and holding his breath.
         var player = Object.FindAnyObjectByType<PlayerMovement>(FindObjectsInactive.Include).gameObject;
-        var splashes = new[] { Load<AudioClip>(SfxDir + "/WaterSplash1.wav"), Load<AudioClip>(SfxDir + "/WaterSplash2.wav") };
+        // Swim strokes: eight cut from the director's swimming recording (Dragon Studio, Pixabay).
+        var strokes = new AudioClip[8];
+        for (int i = 0; i < strokes.Length; i++) strokes[i] = Load<AudioClip>("Assets/Art/Audio/SFX/Swimming/SwimStroke" + (i + 1) + ".ogg");
         var swim = player.AddComponent<PlayerSwim>();
         swim.source = player.AddComponent<AudioSource>();
         swim.source.spatialBlend = 0f; swim.source.playOnAwake = false;
-        swim.strokes = splashes;
+        swim.strokes = strokes;
+        swim.splashes = new[] { Load<AudioClip>(SfxDir + "/WaterSplash1.wav"), Load<AudioClip>(SfxDir + "/WaterSplash2.wav") };
         var breath = player.AddComponent<BreathHold>();
         breath.eyes = player.transform.Find("Main Camera");
         breath.health = player.GetComponent<PlayerHealth>();

@@ -152,7 +152,7 @@ public static partial class LookTestBuilder
         playerVoice.playOnAwake = false; playerVoice.spatialBlend = 0f;
         health.voice = playerVoice;
         health.painSounds = Clips("HumanInjured1", "HumanInjured2", "HumanInjured3");
-        health.hurtBreathing = Load<AudioClip>(SfxDir + "/HumanExhausted1.wav");
+        health.hurtSounds = Clips("HumanInjured4", "HumanInjured5");   // the panting loop was too much (2026-10-31)
         var screen = player.GetComponent<InventoryScreen>();
         screen.health = health;
         screen.pillSound = Load<AudioClip>(SfxDir + "/PillsBox1.wav");
