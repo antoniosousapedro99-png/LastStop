@@ -134,12 +134,18 @@ public static partial class LookTestBuilder
                 float gapX = cb.max.x + 0.1f;
                 WalkLink(g, "TrainGapRoute_" + i, null, new Vector3(gapX - 1.2f, floorY, z), new Vector3(gapX, floorY, z), new Vector3(gapX + 1.2f, floorY, z));
             }
-            var strip = Prim(PrimitiveType.Cube, "EmergencyStrip", g, new Vector3(cb.center.x, floorY + 2.15f, cb.center.z), new Vector3(2f, 0.03f, 0.08f), glow);
-            Object.DestroyImmediate(strip.GetComponent<Collider>());
-            var lamp = new GameObject("EmergencyLight").AddComponent<Light>();
-            lamp.transform.SetParent(g);
-            lamp.transform.position = new Vector3(cb.center.x, floorY + 2f, cb.center.z);
-            lamp.type = LightType.Point; lamp.color = new Color(1f, 0.5f, 0.2f); lamp.intensity = 1.1f; lamp.range = 7f; lamp.shadows = LightShadows.None;
+            // Three emergency strips along each car's ceiling (one in the middle left most of the car pitch dark;
+            // the director asked for every car to be lit, still dim, 2026-10-31).
+            for (int k = -1; k <= 1; k++)
+            {
+                float sx = cb.center.x + k * cb.size.x / 3.2f;
+                var strip = Prim(PrimitiveType.Cube, "EmergencyStrip", g, new Vector3(sx, floorY + 2.15f, cb.center.z), new Vector3(2f, 0.03f, 0.08f), glow);
+                Object.DestroyImmediate(strip.GetComponent<Collider>());
+                var lamp = new GameObject("EmergencyLight").AddComponent<Light>();
+                lamp.transform.SetParent(g);
+                lamp.transform.position = new Vector3(sx, floorY + 2f, cb.center.z);
+                lamp.type = LightType.Point; lamp.color = new Color(1f, 0.5f, 0.2f); lamp.intensity = 0.8f; lamp.range = 6.5f; lamp.shadows = LightShadows.None;
+            }
         }
         return cars;
     }

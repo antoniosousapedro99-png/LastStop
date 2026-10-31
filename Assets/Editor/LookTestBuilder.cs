@@ -59,7 +59,9 @@ public static partial class LookTestBuilder
         var railMetal = Mat("RailMetal", Tex("metal_02.png"), new Color(0.55f, 0.52f, 0.5f), 1f, 0.6f, 0.8f);
         var housing = Mat("LampHousing", null, new Color(0.12f, 0.12f, 0.12f), 1f, 0.3f, 0.5f);
         var doorMetal = Mat("DoorMetal", Tex("Door_01.jpg"), new Color(0.7f, 0.7f, 0.7f), 1f, 0.3f, 0.3f);
-        var puddle = TransparentMat("Puddle", new Color(0.01f, 0.012f, 0.012f, 0.6f), 0.98f);
+        // Underground puddles: dark, wet water with the sewers' slow ripples (FoxTex water frames, 2026-10-31).
+        var puddle = TransparentMat("Puddle", new Color(0.32f, 0.35f, 0.36f, 0.72f), 0.95f);
+        puddle.SetTexture("_BaseMap", PuddleFrames()[0]);
         var tubeLit = EmissiveMat("TubeLit", Fluorescent * 2.2f);
 
         // Layout rule (see GeometryCheck.cs): pieces meet edge to edge and never overlap along a face,
@@ -225,6 +227,7 @@ public static partial class LookTestBuilder
         BuildServiceLevel();      // the service tunnels under the west tunnel
         BuildVoicemails();        // family messages on phones (the street payphone, the squatter camp)
         BuildDeathTraces();       // Station 1's fear, death: Eddie Russo's memorial, Ray's jacket and shoes
+        FurnishHollis();          // a couch and fridge in the staff room (LookTestBuilder.Furnish.cs), before the bake
         BuildMonster();           // bakes the walkable area, so after everything solid is built
         BuildScares();            // one-time scares (after the lamps and the monster model exist)
         BuildCanal();             // Station 2, Canal St Junction, far beyond z 300 (needs the monster)
@@ -515,6 +518,20 @@ public static partial class LookTestBuilder
         // Footsteps check this oval (the big one) to splash.
         var water = group.gameObject.AddComponent<WaterPuddle>();
         water.halfLength = length * 0.4f; water.halfWidth = width * 0.5f;
+        // Rippling water pictures where the puddle uses an animated material (the street's puddles don't).
+        if (mat.GetTexture("_BaseMap"))
+        {
+            var ripples = group.gameObject.AddComponent<WaterFrames>();
+            ripples.material = mat; ripples.frames = PuddleFrames(); ripples.framesPerSecond = 5f; ripples.metresPerTile = 1.5f;
+        }
+    }
+
+    // FoxTex's 20 rippling-water pictures (also used by the sewers' water).
+    static Texture2D[] PuddleFrames()
+    {
+        var frames = new Texture2D[20];
+        for (int i = 0; i < 20; i++) frames[i] = Load<Texture2D>(FoxTexDir + "Water/WaterSurface_" + (i + 1).ToString("00") + ".png");
+        return frames;
     }
 
     static void Oval(Transform parent, string name, Vector3 localPos, Vector3 scale, float yaw, Material mat)

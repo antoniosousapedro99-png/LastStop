@@ -16,7 +16,7 @@ public static class LightLevel
         if (Time.time - refreshedAt > 3f || Time.time < refreshedAt)
         {
             lights.Clear();
-            lights.AddRange(Object.FindObjectsByType<Light>(FindObjectsSortMode.None));
+            lights.AddRange(Object.FindObjectsByType<Light>());
             refreshedAt = Time.time;
         }
         float level = 0f;

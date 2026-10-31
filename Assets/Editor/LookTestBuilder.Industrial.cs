@@ -304,6 +304,7 @@ public static partial class LookTestBuilder
             var f = light.gameObject.AddComponent<FlickeringLight>();
             f.lamp = light; f.tube = bulb.GetComponent<Renderer>(); f.tubeGlow = new Color(1f, 0.75f, 0.45f) * 2f;
             f.minCalm = 3f; f.maxCalm = 9f;
+            FlickerBuzz(f);
         }
         return light;
     }

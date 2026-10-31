@@ -16,7 +16,7 @@ public class PhotoFade : MonoBehaviour
     public static float Amount(float perCall, float max)
     {
         int ignored = 0;
-        foreach (var phone in FindObjectsByType<VoicemailPhone>(FindObjectsSortMode.None))
+        foreach (var phone in FindObjectsByType<VoicemailPhone>())
             if (phone.Ignored && !phone.Heard) ignored++;
         return Mathf.Min(max, ignored * perCall);
     }

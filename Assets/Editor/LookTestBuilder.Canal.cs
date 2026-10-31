@@ -61,6 +61,7 @@ public static partial class LookTestBuilder
         CanalScares(canal);       // one-time scares (LookTestBuilder.CanalScares.cs)
         CanalParkedTrain(canal);  // three intact cars in the north-east tunnel, the fuel can in the cab (CanalTrain.cs)
         CanalSupplies(canal);     // flares, batteries and painkillers, two of each (LookTestBuilder.CanalSupplies.cs)
+        FurnishCanal(canal);      // office, generator room and mezzanine furniture (LookTestBuilder.Furnish.cs)
         BakeCanal(canal);
     }
 

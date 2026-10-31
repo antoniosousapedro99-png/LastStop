@@ -106,6 +106,7 @@ public static partial class LookTestBuilder
         light.type = LightType.Point; light.color = new Color(1f, 0.8f, 0.5f); light.intensity = 2f; light.range = 7f; light.shadows = LightShadows.Soft;
         var flicker = light.gameObject.AddComponent<FlickeringLight>();
         flicker.lamp = light; flicker.minCalm = 2f; flicker.maxCalm = 7f;
+        FlickerBuzz(flicker);
 
         // Frankie's way down: through the maintenance door (he opens it if it's shut), then down the flights.
         // His walkable area can't fit through the 1 m doorway or along the narrow flights by itself.

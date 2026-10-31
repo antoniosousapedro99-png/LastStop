@@ -469,7 +469,7 @@ public static partial class LookTestBuilder
             var l = go.AddComponent<Light>();
             l.type = LightType.Spot; l.color = colour; l.intensity = intensity; l.range = range;
             l.spotAngle = 140f; l.innerSpotAngle = 60f; l.shadows = LightShadows.Soft;
-            if (flicker) { var f = go.AddComponent<FlickeringLight>(); f.lamp = l; f.minCalm = 1f; f.maxCalm = 4f; }
+            if (flicker) { var f = go.AddComponent<FlickeringLight>(); f.lamp = l; f.minCalm = 1f; f.maxCalm = 4f; FlickerBuzz(f, 0.2f); }
             return;
         }
     }
@@ -502,6 +502,7 @@ public static partial class LookTestBuilder
             var f = head.AddComponent<FlickeringLight>();
             f.lamp = light;
             f.tube = lens.GetComponent<Renderer>(); f.tubeGlow = glow;   // the lens dims with the light
+            FlickerBuzz(f, 0.2f);
             f.minCalm = 2f; f.maxCalm = 7f;
         }
     }

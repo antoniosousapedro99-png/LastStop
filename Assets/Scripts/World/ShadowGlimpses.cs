@@ -114,7 +114,7 @@ public class ShadowGlimpses : MonoBehaviour
             Vector3 fromTorch = back.point - beam.position;
             if (fromTorch.magnitude < 16f && Vector3.Angle(beam.forward, fromTorch) < 42f) return true;
         }
-        foreach (var lamp in FindObjectsByType<Light>(FindObjectsSortMode.None))
+        foreach (var lamp in FindObjectsByType<Light>())
         {
             if (!lamp.isActiveAndEnabled || lamp.type == LightType.Directional || lamp.intensity <= 0f) continue;
             if (lamp.transform.IsChildOf(player)) continue;

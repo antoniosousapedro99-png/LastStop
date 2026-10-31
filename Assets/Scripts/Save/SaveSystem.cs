@@ -172,7 +172,7 @@ public static class SaveSystem
         foreach (var pair in doors) if (pair.Value != null && pair.Value.IsOpen) d.openDoors.Add(pair.Key);
         foreach (var pair in drawers) if (pair.Value != null && pair.Value.IsOpen) d.openDrawers.Add(pair.Key);
         foreach (var pair in scares) if (pair.Value != null && pair.Value.Fired) d.firedScares.Add(pair.Key);
-        foreach (var phone in UnityEngine.Object.FindObjectsByType<VoicemailPhone>(FindObjectsSortMode.None))
+        foreach (var phone in UnityEngine.Object.FindObjectsByType<VoicemailPhone>())
         {
             if (phone.Heard) d.heardVoicemails.Add(phone.id);
             if (phone.Ignored) d.ignoredVoicemails.Add(phone.id);
@@ -211,7 +211,7 @@ public static class SaveSystem
             if (drawers.TryGetValue(path, out var drawer) && drawer) drawer.OpenNow();
         foreach (string path in d.firedScares)
             if (scares.TryGetValue(path, out var scare) && scare) scare.MarkFired();
-        foreach (var phone in UnityEngine.Object.FindObjectsByType<VoicemailPhone>(FindObjectsSortMode.None))
+        foreach (var phone in UnityEngine.Object.FindObjectsByType<VoicemailPhone>())
         {
             if (d.heardVoicemails.Contains(phone.id)) phone.SetHeard();
             if (d.ignoredVoicemails.Contains(phone.id)) phone.SetIgnored();

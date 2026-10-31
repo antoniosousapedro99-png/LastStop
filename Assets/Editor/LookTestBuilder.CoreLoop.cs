@@ -199,6 +199,7 @@ public static partial class LookTestBuilder
         light.intensity = 2.5f; light.range = 6f; light.shadows = LightShadows.Soft;
         var flicker = cab.AddComponent<FlickeringLight>();
         flicker.lamp = light; flicker.minCalm = 3f; flicker.maxCalm = 9f;
+        FlickerBuzz(flicker);
     }
 
     // A rusty key ("PSX Tower Key", Sketchfab) lying flat, its bow toward -X, with a paper tag on the bow.

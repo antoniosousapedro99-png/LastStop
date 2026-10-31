@@ -27,7 +27,7 @@ public class JournalDirector : MonoBehaviour
         generator = FindAnyObjectByType<GeneratorPuzzle>();
         trainConsole = FindAnyObjectByType<TrainConsole>();
         latch = FindAnyObjectByType<EmergencyLatch>();
-        foreach (var d in FindObjectsByType<HingedDoor>(FindObjectsSortMode.None))
+        foreach (var d in FindObjectsByType<HingedDoor>())
         {
             if (d.needsCabinetKey) cabinetDoor = d;
             if (d.needsOfficeKey) officeDoor = d;
