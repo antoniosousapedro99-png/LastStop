@@ -37,10 +37,10 @@ public static partial class LookTestBuilder
         point = default;
         if (!Physics.Raycast(from, Vector3.down, out var hit, 4f, ~0, QueryTriggerInteraction.Ignore))
         {
-            Debug.LogWarning("Canal supplies: nothing under the " + what + " at " + from);
+            Debug.LogWarning("Supplies: nothing under the " + what + " at " + from);
             return false;
         }
-        Debug.Log("Canal supplies: " + what + " on " + hit.collider.name + " at " + hit.point.ToString("F2"));
+        Debug.Log("Supplies: " + what + " on " + hit.collider.name + " at " + hit.point.ToString("F2"));
         point = hit.point + Vector3.up * 0.003f;
         return true;
     }
