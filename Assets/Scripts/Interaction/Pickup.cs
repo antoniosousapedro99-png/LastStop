@@ -4,7 +4,7 @@ using UnityEngine;
 // switched off for now). Left click to take it.
 public class Pickup : MonoBehaviour, IInteractable
 {
-    public enum Kind { Fuse, Battery, Shotgun, Shell, Key, Flare, Painkillers, ReverserKey, FuelCan, SparkPlug, OfficeKey }   // new kinds go at the end
+    public enum Kind { Fuse, Battery, Shotgun, Shell, Key, Flare, Painkillers, ReverserKey, FuelCan, SparkPlug, OfficeKey, BreakerHandle }   // new kinds go at the end
     public Kind kind;
     public AudioClip pickupSound;
 
@@ -20,6 +20,7 @@ public class Pickup : MonoBehaviour, IInteractable
         Kind.FuelCan => "Take fuel can",
         Kind.SparkPlug => "Take spark plug",
         Kind.OfficeKey => "Take key",
+        Kind.BreakerHandle => "Take breaker handle",
         _ => "Take shotgun shell",
     };
 
@@ -67,6 +68,10 @@ public class Pickup : MonoBehaviour, IInteractable
             case Kind.OfficeKey:
                 inv.hasOfficeKey = true;
                 Hud.Notice("A key. Its tag reads 'STATION MASTER'.", 3.5f);
+                break;
+            case Kind.BreakerHandle:
+                inv.hasBreakerHandle = true;
+                Hud.Notice("A breaker handle. Pulled off a switch and left here.", 3.5f);
                 break;
             case Kind.Shell:
                 inv.shells++;

@@ -162,6 +162,7 @@ public static class SaveSystem
         d.painkillers = inv.painkillers; d.shells = inv.shells;
         d.hasCabinetKey = inv.hasCabinetKey; d.hasShotgun = inv.hasShotgun; d.hasReverserKey = inv.hasReverserKey;
         d.fuelCans = inv.fuelCans; d.hasSparkPlug = inv.hasSparkPlug; d.hasOfficeKey = inv.hasOfficeKey;
+        d.hasBreakerHandle = inv.hasBreakerHandle;
         var generator = UnityEngine.Object.FindAnyObjectByType<GeneratorPuzzle>();
         if (generator) { d.generatorFuel = generator.FuelPoured; d.generatorPlug = generator.PlugFitted; d.generatorRunning = generator.Running; }
 
@@ -180,6 +181,10 @@ public static class SaveSystem
         if (journal) journal.Save(d.journalIds, d.journalTexts);
 
         foreach (var valve in SewerValve.All) if (valve.Done) d.sewerValves.Add(valve.id);
+        var breaker = UnityEngine.Object.FindAnyObjectByType<SewerBreaker>();
+        if (breaker) { d.sewerHandleFitted = breaker.HandleFitted; d.sewerPowerOn = breaker.grid.IsOn; }
+        var shortcut = UnityEngine.Object.FindAnyObjectByType<BoltedGate>();
+        if (shortcut) d.sewerShortcutOpen = shortcut.IsOpen;
 
         var monster = UnityEngine.Object.FindAnyObjectByType<FrankieAI>();   // only found while he's awake
         if (monster)
@@ -219,6 +224,7 @@ public static class SaveSystem
         inv.painkillers = d.painkillers; inv.shells = d.shells;
         inv.hasCabinetKey = d.hasCabinetKey; inv.hasShotgun = d.hasShotgun; inv.hasReverserKey = d.hasReverserKey;
         inv.fuelCans = d.fuelCans; inv.hasSparkPlug = d.hasSparkPlug; inv.hasOfficeKey = d.hasOfficeKey;
+        inv.hasBreakerHandle = d.hasBreakerHandle;
         var generator = UnityEngine.Object.FindAnyObjectByType<GeneratorPuzzle>();
         if (generator) generator.LoadState(d.generatorFuel, d.generatorPlug, d.generatorRunning);
         // The sewer valves already open: the four first (they set the cistern's level), the final one last.
@@ -228,6 +234,8 @@ public static class SaveSystem
                 var valve = SewerValve.Find(id);
                 if (valve && valve.final == finalOne) valve.SetDone();
             }
+        UnityEngine.Object.FindAnyObjectByType<SewerBreaker>()?.LoadState(d.sewerHandleFitted, d.sewerPowerOn);
+        if (d.sewerShortcutOpen) UnityEngine.Object.FindAnyObjectByType<BoltedGate>()?.OpenNow();
 
         var player = inv.transform;
         var battery = player.GetComponentInChildren<FlashlightBattery>(true);

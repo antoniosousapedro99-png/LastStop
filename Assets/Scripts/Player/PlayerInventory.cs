@@ -14,6 +14,7 @@ public class PlayerInventory : MonoBehaviour
     public int fuelCans;          // Canal St's generator needs two
     public bool hasSparkPlug;     // ...and a spark plug
     public bool hasOfficeKey;     // opens Canal St's station master's office
+    public bool hasBreakerHandle; // the sewers' main breaker won't throw without it
     public int flares;
     public int painkillers;    // collected only for now: they will heal once the player has health
 }

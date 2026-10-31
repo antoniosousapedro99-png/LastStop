@@ -117,6 +117,7 @@ public class InventoryScreen : MonoBehaviour
         Add("FuelCan", "Fuel can", inventory.fuelCans, "A can of petrol. The backup generator runs dry without it.");
         if (inventory.hasSparkPlug) Add("SparkPlug", "Spark plug", 1, "A new spark plug, still in its wrapper. The generator won't fire without one.");
         if (inventory.hasOfficeKey) Add("OfficeKey", "Office key", 1, "A small key. Its tag reads 'STATION MASTER'.");
+        if (inventory.hasBreakerHandle) Add("BreakerHandle", "Breaker handle", 1, "A steel lever with a red rubber grip, snapped off a big switch. The main breaker in the electrical room is missing one.");
         if (entries.Count > 0) selected = Mathf.Clamp(selected, 0, entries.Count - 1);
     }
 

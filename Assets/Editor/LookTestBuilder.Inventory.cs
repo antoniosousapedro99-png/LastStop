@@ -31,6 +31,7 @@ public static partial class LookTestBuilder
         PreviewModel(turntable, "FuelCan", ModelPiece(ArtDir + "/Props/Mine/Mines.fbx", "Petrol_Can", turntable, Tex2("Props/Mine/Petrol_Can.png"), 1f));
         PreviewModel(turntable, "SparkPlug", SparkPlugModel(turntable), 0.24f);
         PreviewModel(turntable, "OfficeKey", BuildKey(turntable), 0.24f);
+        PreviewModel(turntable, "BreakerHandle", BreakerHandleModel(turntable), 0.26f);
         PreviewModel(turntable, "Photo", FamilyPhotoModel(turntable), 0.27f);
 
         // A warm key light from the front left and a dim red rim from behind; far from anything else.

@@ -25,6 +25,7 @@ public class SaveData
     public bool hasCabinetKey, hasShotgun, hasReverserKey;
     public int fuelCans;
     public bool hasSparkPlug, hasOfficeKey;
+    public bool hasBreakerHandle;
 
     // The level
     public int fusesInstalled;
@@ -43,6 +44,8 @@ public class SaveData
 
     // The sewers
     public List<string> sewerValves = new List<string>();   // valves turned open (SewerValve ids, the final one too)
+    public bool sewerHandleFitted, sewerPowerOn;            // the main breaker's handle on, and thrown
+    public bool sewerShortcutOpen;                          // Valve 4's bolted gate opened
 
     // Frankie
     public bool monsterAwake;

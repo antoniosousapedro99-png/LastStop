@@ -235,7 +235,7 @@ public static partial class LookTestBuilder
         SettleLitter();           // the scattered rubbish drops and comes to rest on the floor (LookTestBuilder.CanalDressing.cs)
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
-        // (doors, lockers, the inventory's turntable, floating rubbish, water that rises and falls, waterfalls)
+        // (doors, lockers, the inventory's turntable, floating rubbish, water that rises and falls, waterfalls, gates, levers)
         // must NOT be static, or its merged copy stays frozen.
         foreach (var t in root.GetComponentsInChildren<Transform>())
             t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
@@ -244,7 +244,8 @@ public static partial class LookTestBuilder
                                 && t.GetComponentInParent<EmergencyLatch>(true) == null && t.GetComponentInParent<ShadowGlimpses>(true) == null
                                 && t.GetComponentInParent<SlidingTrainDoor>(true) == null && t.GetComponentInParent<Rigidbody>(true) == null
                                 && t.GetComponentInParent<FloodZone>(true) == null && t.GetComponentInParent<SluiceGate>(true) == null
-                                && t.GetComponentInParent<Waterfall>(true) == null;
+                                && t.GetComponentInParent<Waterfall>(true) == null && t.GetComponentInParent<PoweredGate>(true) == null
+                                && t.GetComponentInParent<BoltedGate>(true) == null && t.GetComponentInParent<SewerBreaker>(true) == null;
 
         GeometryCheck.Find(root); // warns in the Console about any overlapping surfaces
 

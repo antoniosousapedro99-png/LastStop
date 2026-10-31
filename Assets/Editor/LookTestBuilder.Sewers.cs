@@ -156,6 +156,7 @@ public static partial class LookTestBuilder
         var grate = RiverOutlet(g, o + new Vector3(100f, 0f, 137f), ladderSteel, -1f);
         Flooding(g, grate);
         SewerDressing(g);   // signs, colours, the schematic, props and rubbish (LookTestBuilder.SewerDressing.cs)
+        SewerPower(g);      // the breaker, floodlights and Valve 4's gates (LookTestBuilder.SewerPower.cs)
 
         // ---- sound: running water in the cistern and down the tunnels
         foreach (var (name, at, range) in new[] { ("CisternFlow", CisternCentre + Vector3.down * 12f, 45f), ("RingFlowTop", new Vector3(40f, 0f, 30f), 30f), ("SpillwayFlow", new Vector3(55f, 0f, 130.5f), 35f) })
@@ -387,8 +388,8 @@ public static partial class LookTestBuilder
         Span("PumpRoom_FloorTop", g, o + new Vector3(55f + ChannelHalf, -3f, 125f), o + new Vector3(67f, 0f, 129f), sewerFloor);
         Span("PumpRoom_FloorBottom", g, o + new Vector3(43f, -3f, 132f), o + new Vector3(67f, 0f, 141f), sewerFloor);
         Span("SpillwayBed", g, o + new Vector3(43f, -3.2f, 129f), o + new Vector3(67f, -3f, 132f), sewerMud);
-        Span("SpillwayEndL", g, o + new Vector3(42.7f, -3.2f, 129f), o + new Vector3(43f, -2.2f, 132f), sewerBrick);   // the room's walls stop 2.2 m down
-        Span("SpillwayEndR", g, o + new Vector3(67f, -3.2f, 129f), o + new Vector3(67.3f, -2.2f, 132f), sewerBrick);
+        Span("SpillwayEndL", g, o + new Vector3(42.7f, -3.2f, 129f), o + new Vector3(43f, -2.8f, 132f), sewerBrick);   // the room's walls stop 2.8 m down
+        Span("SpillwayEndR", g, o + new Vector3(67f, -3.2f, 129f), o + new Vector3(67.3f, -2.8f, 132f), sewerBrick);
         for (float z = 129.2f; z < 131.9f; z += 0.3f)   // the culvert grate the spillway drains through (and pins you against)
             Prim(PrimitiveType.Cylinder, "CulvertBar", g, o + new Vector3(66.85f, -1.8f, z), new Vector3(0.06f, 1.2f, 0.06f), pipeRust);
         Span("SpillwayBeam", g, o + new Vector3(49.8f, -0.15f, 129f), o + new Vector3(50.2f, 0f, 132f), sewerGrate);   // no rails

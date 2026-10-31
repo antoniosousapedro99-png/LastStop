@@ -15,14 +15,17 @@ public class PoweredLight : MonoBehaviour
     public PowerGrid grid;                 // which station's power it runs on (empty = Hollis St's)
     public float poweredReach = 1.5f;      // with the grid back on, lamps throw light further (range x this)
     public float poweredWiden = 15f;       // ...and spot lamps open wider by this many degrees
+    public float warmUp;                   // above 0: a sodium lamp, glowing deep red at first and warming to full over this many seconds
+    public string glowProperty = "_BaseColor";   // "_EmissionColor" for lit lamp models whose glass glows by emission
 
     float[] baseIntensity;
     MaterialPropertyBlock block;
-    static readonly int ColourId = Shader.PropertyToID("_BaseColor");
+    int colourId;
 
     void Awake()
     {
         block = new MaterialPropertyBlock();
+        colourId = Shader.PropertyToID(glowProperty);
         baseIntensity = new float[lights.Length];
         for (int i = 0; i < lights.Length; i++) baseIntensity[i] = lights[i].intensity;
         if (!worksWithoutPower) SetLevel(0f);
@@ -36,7 +39,26 @@ public class PoweredLight : MonoBehaviour
             l.range *= poweredReach;
             if (l.type == LightType.Spot) { l.spotAngle = Mathf.Min(170f, l.spotAngle + poweredWiden); l.innerSpotAngle = Mathf.Min(l.spotAngle - 5f, l.innerSpotAngle + poweredWiden); }
         }
-        StartCoroutine(worksWithoutPower ? Steady() : StutterOn());
+        StartCoroutine(worksWithoutPower ? Steady() : warmUp > 0f ? WarmUp() : StutterOn());
+    }
+
+    // A sodium lamp: one blink as it strikes, then a dull red glow brightening to its full orange.
+    IEnumerator WarmUp()
+    {
+        var colours = new Color[lights.Length];
+        for (int i = 0; i < lights.Length; i++) colours[i] = lights[i].color;
+        SetLevel(0.5f);
+        yield return new WaitForSeconds(0.06f);
+        SetLevel(0f);
+        yield return new WaitForSeconds(Random.Range(0.2f, 0.6f));
+        for (float t = 0f; t < 1f; t += Time.deltaTime / warmUp)
+        {
+            for (int i = 0; i < lights.Length; i++) lights[i].color = Color.Lerp(new Color(0.85f, 0.18f, 0.05f), colours[i], t);
+            SetLevel(Mathf.Lerp(0.08f, 1f, t * t));
+            yield return null;
+        }
+        for (int i = 0; i < lights.Length; i++) lights[i].color = colours[i];
+        SetLevel(1f);
     }
 
     IEnumerator StutterOn()
@@ -105,7 +127,7 @@ public class PoweredLight : MonoBehaviour
         foreach (var r in glowParts)
         {
             r.GetPropertyBlock(block);
-            block.SetColor(ColourId, level > 0f ? glowColour * level : offColour);
+            block.SetColor(colourId, level > 0f ? glowColour * level : offColour);
             r.SetPropertyBlock(block);
         }
     }
