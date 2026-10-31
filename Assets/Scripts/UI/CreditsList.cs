@@ -30,6 +30,7 @@ PSX Derelict Furniture, PSX Old Stuff Pack
 Trash and Debris, Retro PSX Trash bag, Sewer pack
 Shotgun PS1, PSX First Person Arms
 Blood and graffiti textures, FoxTex textures, PSX Industrial Pack
+PSX Low Poly Shopping Cart
 
 EFFECTS
 Rain Particles - Game Seed Assets
