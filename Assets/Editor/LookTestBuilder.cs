@@ -233,9 +233,10 @@ public static partial class LookTestBuilder
         PipeSupports();           // hangers and wall straps for every pipe (needs all the walls and ceilings)
         BuildMenus();             // last: the menus switch the player off until "New game"
         SettleLitter();           // the scattered rubbish drops and comes to rest on the floor (LookTestBuilder.CanalDressing.cs)
+        KickableClutter();        // then loose clutter gets physics, for Sousa and Frankie to kick about (LookTestBuilder.Clutter.cs)
 
         // Static = never moves, so Unity merges these meshes to draw them faster. Anything that moves
-        // (doors, lockers, the inventory's turntable, floating rubbish, water that rises and falls, waterfalls, gates, levers)
+        // (doors, lockers, the inventory's turntable, floating rubbish, kickable clutter, water that rises and falls, waterfalls, gates, levers)
         // must NOT be static, or its merged copy stays frozen.
         foreach (var t in root.GetComponentsInChildren<Transform>())
             t.gameObject.isStatic = t.GetComponentInParent<HingedDoor>(true) == null && t.GetComponentInParent<ItemTurntable>(true) == null
