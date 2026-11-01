@@ -30,11 +30,9 @@ note only adds what those files don't say.
 
 Put them back at the same paths under `Documents\PSX horror\`.
 
-**The asset library, the private notes, the Builds folder and the logos are on GitHub** in the private repo
+**Everything in the table above is on GitHub** in the private repo
 `antoniosousapedro99-png/LastStop-Backup`, attached to its release `backup-2026-11-01`. Its README has the exact
 restore commands (`gh release download`, then 7-Zip on the `.001` part). Do this right after cloning LastStop.
-Only the `Backups` folder (old project copies) is not on GitHub.
-
 **Witchbrew**, the director's other game, is in the private repo `antoniosousapedro99-png/Witchbrew` (24
 branches, Git LFS). Clone it to `Documents\Witchbrew\Witchbrew` if the director asks.
 
