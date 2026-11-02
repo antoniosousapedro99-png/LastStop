@@ -178,14 +178,15 @@ public static partial class LookTestBuilder
             Place(u + "street_light.fbx", f, new Vector3(x, StreetY, -14.5f), -90f).name = "StreetLight_S_" + i;   // arm out over the road
             Place(u + "street_light_clean.fbx", f, new Vector3(x + 8f, StreetY, -27.5f), 90f).name = "StreetLight_N_" + i;
         }
-        // Trees and hedges.
+        // Trees and hedges. The trees are elbolilloduro's Vegetation pack (CC0), cut out and sized for the street by
+        // Tools/Blender/street_trees.py (7-9 m; the "bare" ones have their leaves removed: dead trees).
         string t = StreetDir + "/Trees/";
-        string[] trees = { "tree_rt_2", "dead_tree_rt_1", "tree_rt_4", "tree_rt_3", "dead_tree_rt_2", "tree_rt_2_1" };
+        string[] trees = { "street_tree_1", "street_tree_bare_1", "street_tree_4", "street_tree_3", "street_tree_bare_2", "street_tree_2" };
         var soil = Mat("TreeSoil", Load<Texture2D>("Assets/Art/Models/Environment/Sewer/soil_mud.jpg"), new Color(0.6f, 0.52f, 0.45f), 1.5f, 0.2f);
         for (int i = 0; i < 6; i++)
-            TreePit(f, TrunkOnly(Place(t + trees[i] + ".fbx", f, new Vector3(-44f + i * 17f, StreetY, -3.5f), i * 47f, 1.5f)), soil);
+            TreePit(f, TrunkOnly(Place(t + trees[i] + ".fbx", f, new Vector3(-44f + i * 17f, StreetY, -3.5f), i * 47f, 1f)), soil);
         for (int i = 0; i < 5; i++)
-            TreePit(f, TrunkOnly(Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 1.4f)), soil);
+            TreePit(f, TrunkOnly(Place(t + trees[(i + 2) % 6] + ".fbx", f, new Vector3(-36f + i * 17f, StreetY, -29f), i * 31f, 0.95f)), soil);
         // Bus stop by the entrance, with the newspaper (see BuildLore).
         var stop = StreetDir + "/BusStop/BusStop.fbx";
         // 1.2 m west of where it first stood, so its end clears the lamp post at x -8 (StreetLight_S_2).

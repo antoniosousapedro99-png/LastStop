@@ -123,6 +123,7 @@ Short (5–6 hours) first-person psychological / survival horror game. **This fi
 - Lore text appears on screen when you look at a poster, newspaper or note.
 - The street is boxed in by invisible walls; walking up to one shows "I should turn around...". Beyond them the road, buildings, dead lamps and cars carry on for two blocks each way, plus a skyline, drawn only when big enough on screen (LOD).
 - Lit: four sodium street lamps (two stuttering), a failing tube under the gas station canopy, a light left on in the laundromat, the subway globes.
+- **New street trees (2026-11-02, the director's choice):** the Retro Tree Pack is gone from the game; the eleven pavement trees are now elbolilloduro's leafy Vegetation trees (7-9 m, scruffy and thin) with two of them **stripped bare** for the dead trees, keeping the bleak mix.
 
 ## Station 2: Canal St Junction (built 2026-10-25)
 
