@@ -47,9 +47,12 @@ rain). To be thorough, search each number on pixabay.com once (numbers in `CREDI
   credit.
 - **FoxTex textures** (sewer floor, water frames): check foxtex.com's terms.
 - **VCR OSD Mono font:** dafont lists it "100% Free"; glance at the readme in its download.
-- **No source found** (their library paths are in `CREDITS.md`): Trash and Debris, Retro PSX Trash bag, PSX
-  First Person Arms, The Man Who Never Clocked Out, Industrial exterior v1, NEUROZAM-9 Pill Bottle. If one turns
-  up on an itch.io page later, send the link.
+- **The Man Who Never Clocked Out** (imaginais): its page states no terms; ask the author.
+- **NEUROZAM-9 Pill Bottle**: no source found yet (`assets/clutter/NEUROZAM-9_PSX_PillBottle.zip`).
+
+Found by the director (2026-11-02): Trash and Debris (MCSTEEG: commercial use, don't redistribute), Retro PSX
+Trash bag (RETROVOIR: commercial use, don't redistribute), PSX First Person Arms (Drillimpact: CC0), Industrial
+exterior (probably godgoldfear's PSX Industrial Environment pack: CC BY 4.0, **credit "godgoldfear"**).
 
 ## Not used any more
 
