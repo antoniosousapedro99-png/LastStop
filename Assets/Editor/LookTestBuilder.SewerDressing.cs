@@ -33,7 +33,9 @@ public static partial class LookTestBuilder
         JunctionSigns(g, new Vector3(55f, 0f, 110f), (down, "PUMP ROOM · RIVER"), (left, "CISTERN · VALVE 3"), (right, "VALVE 4"));
 
         // ---- door signs (room x0, x1, z0, z1; the door's side and middle; where it leads)
-        DoorSign(g, -3f, 3f, 0f, 8f, 2, 0f, "VALVE 1\nTHE RING");
+        // The arrival's north doorway spans its whole wall, so its sign hangs on the west wall by the north corner,
+        // pointing right toward the doorway.
+        WallSign(g, SewerOrigin + new Vector3(-2f, 1.9f, 7f), Vector3.left, Coloured("VALVE 1 ►\nTHE RING   "), SignPaint, 1.1f);
         DoorSign(g, -3f, 3f, 0f, 8f, 1, 5f, "CONTROL\nROOM");
         DoorSign(g, 18f, 32f, 0f, 10f, 3, 5f, "ACCESS\nSHAFT");
         DoorSign(g, 18f, 32f, 0f, 10f, 1, 5f, "ELECTRICAL\nROOM");
