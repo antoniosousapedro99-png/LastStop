@@ -3,6 +3,8 @@
 // ('_Clarity' metres of water hide about two thirds). How much water is in the way comes from the camera's
 // depth picture (URP's depth texture). The rippling surface pictures (WaterFrames sets _BaseMap) brighten it
 // a little and tilt its surface, so lamps and the torch catch small moving glints instead of one flat shine.
+// The picture is laid in world space twice, at two sizes and angles, each drifting slowly its own way, and
+// the two are blended: no square grid shows, and neighbouring surfaces join without a seam.
 Shader "LastStop/MurkyWater"
 {
     Properties
@@ -15,6 +17,8 @@ Shader "LastStop/MurkyWater"
         _Bumpiness ("Ripple tilt", Range(0, 3)) = 1
         _SpecColor ("Glint colour", Color) = (0.35, 0.35, 0.3, 1)
         _Smoothness ("Smoothness", Range(0, 1)) = 0.78
+        _RippleSize ("Ripple picture size (metres)", Float) = 4.7
+        _Drift ("Drift (metres per second)", Float) = 0.035
     }
     SubShader
     {
@@ -47,6 +51,7 @@ Shader "LastStop/MurkyWater"
                 float4 _BaseMap_ST;
                 half4 _ShallowColor, _DeepColor, _SpecColor;
                 half _Clarity, _RippleStrength, _Bumpiness, _Smoothness;
+                float _RippleSize, _Drift;
             CBUFFER_END
 
             struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
@@ -71,7 +76,17 @@ Shader "LastStop/MurkyWater"
                 return o;
             }
 
-            half Ripple(float2 uv) { return dot(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb, half3(0.3, 0.59, 0.11)); }
+            half Picture(float2 uv) { return dot(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb, half3(0.3, 0.59, 0.11)); }
+
+            // The ripple height at a world spot (x, z): the picture at two sizes and angles, drifting apart, blended.
+            half Ripple(float2 xz)
+            {
+                float t = _Time.y * _Drift;
+                float2 a = xz / _RippleSize + t * float2(0.8, 0.45);
+                float2 r = float2(xz.x * 0.799 - xz.y * 0.602, xz.x * 0.602 + xz.y * 0.799);   // turned 37 degrees
+                float2 b = r / (_RippleSize * 1.68) - t * float2(0.5, -0.7);
+                return (Picture(a) + Picture(b + 0.37)) * 0.5;
+            }
 
             half4 frag(Varyings i, bool front : SV_IsFrontFace) : SV_Target
             {
@@ -84,8 +99,9 @@ Shader "LastStop/MurkyWater"
                 if (!front) murk = 1;   // seen from under the water: just the murk overhead
 
                 // The ripple picture: a little brightness, and a tilt from its slope for the glints.
-                float2 d = float2(0.004, 0);   // a small step across the picture
-                half h = Ripple(i.uv), hx = Ripple(i.uv + d.xy), hz = Ripple(i.uv + d.yx);
+                float2 d = float2(0.02, 0);   // a small step across the water (metres)
+                float2 xz = i.positionWS.xz;
+                half h = Ripple(xz), hx = Ripple(xz + d.xy), hz = Ripple(xz + d.yx);
                 float3 normal = normalize(float3((h - hx) * _Bumpiness * 6, 1, (h - hz) * _Bumpiness * 6));
                 if (!front) normal = -normal;
 

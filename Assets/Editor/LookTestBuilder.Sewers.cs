@@ -159,6 +159,7 @@ public static partial class LookTestBuilder
         SewerPower(g);      // the breaker, floodlights and Valve 4's gates (LookTestBuilder.SewerPower.cs)
         SewerDetail(g);     // depth gauges, tide lines, ladders, cables, pipes, junk (LookTestBuilder.SewerDetail.cs)
         SewerSupplies(g);   // flares, batteries and painkillers, two of each (LookTestBuilder.SewerSupplies.cs)
+        SewerClutter(g);    // room equipment, the crew's leftovers, high pipes (after the supplies, to keep clear of them)
 
         // ---- sound: running water in the cistern and down the tunnels
         foreach (var (name, at, range) in new[] { ("CisternFlow", CisternCentre + Vector3.down * 12f, 45f), ("RingFlowTop", new Vector3(40f, 0f, 30f), 30f), ("SpillwayFlow", new Vector3(55f, 0f, 130.5f), 35f) })

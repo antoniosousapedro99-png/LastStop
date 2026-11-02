@@ -30,6 +30,12 @@ public static partial class LookTestBuilder
             TunnelCable(g, start, dir, across, length);
             TunnelPipe(g, start, dir, -across, length, rng);
             WashedUpJunk(g, start, dir, length, rng, stretch);
+            // More (LookTestBuilder.SewerClutter.cs): pipes lower on the same wall, a fat pipe under the vault
+            // of every other tunnel, a junction box on the other wall of the rest, and odd bits of junk.
+            PipeBundle(g, start, dir, -across, length, rng);
+            if (stretch % 2 == 0) CeilingPipe(g, start, dir, across, length);
+            else TunnelWallBox(g, start, dir, across, length, rng);
+            WalkwayJunk(g, start, dir, length, rng);
             stretch++;
         }
 
@@ -200,7 +206,6 @@ public static partial class LookTestBuilder
     // ---- junk washed up against the tunnel walls: a bag or two, cans, a crate or bricks
     static void WashedUpJunk(Transform g, Vector3 start, Vector3 dir, float length, System.Random rng, int stretch)
     {
-        string[] brands = { "generic_cola", "pepso", "sprit", "fantom_orange", "dr_piper", "red_bullet" };
         int piles = length > 25f ? 2 : 1;
         for (int p = 0; p < piles; p++)
         {
@@ -215,9 +220,9 @@ public static partial class LookTestBuilder
                 else if (i == 3) { item = Model(SewerKitFbx, rng.Next(2) == 0 ? "Bricks" : "Box_T_01", g, null, 1f, yaw, sewerKitTextures); Fit(item, 0.75f); }
                 else
                 {
-                    item = Model(ArtDir + "/Props/SodaCans/Can_Standard330.fbx", null, g, Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, yaw);
-                    item.transform.localScale *= 0.12f / Mathf.Max(0.001f, Bounds(item).size.y);
-                    item.transform.rotation = Quaternion.Euler(90f, 0f, 0f) * item.transform.rotation;   // lying on its side
+                    // Crushed cans from the trash pack (the soda can pack's licence is still to confirm).
+                    item = TrashPiece(g, rng.Next(2) == 0 ? "Can_1_Crushed" : "Can_5_Crushed", 0.13f);
+                    item.transform.rotation = Quaternion.Euler(0f, yaw, 0f) * item.transform.rotation;
                 }
                 item.name = "WashedUpJunk";
                 StandOn(item, spot);
