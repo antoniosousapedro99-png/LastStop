@@ -77,7 +77,7 @@ public class FrankieAI : MonoBehaviour
     Vector3 lastSeenAt, walkOffTo;
     HidingLocker breakingInto;
     int bangsDone;
-    bool hitDone, landed, leaping, seesPlayer, stingPlayed;
+    bool hitDone, landed, leaping, seesPlayer, stingPlayed, facingPlayer;
     float searchArrivedAt = -1f;               // when a search reached its spot (moodTime), or -1
     string playing;
 
@@ -272,6 +272,10 @@ public class FrankieAI : MonoBehaviour
             target += (transform.position - target).normalized * (flareKeepAway + 0.5f);
         agent.SetDestination(target);
         float distance = Vector3.Distance(transform.position, senses.Player.position);
+        // Close in, he turns his whole body to the player himself: left to the walking, he could stall a step
+        // away still facing past them (the agent stops turning once it stops moving) and lose them at arm's length.
+        facingPlayer = distance < 3f;
+        if (facingPlayer) FaceTowards(senses.Player.position, 8f);
         if (seesPlayer && distance < AttackRange && !(flare && Vector3.Distance(flare.position, transform.position) < flareKeepAway + 1f))
         {
             SetMood(Mood.Attack);
@@ -557,7 +561,8 @@ public class FrankieAI : MonoBehaviour
     // feet match the ground.
     void Animate()
     {
-        if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal && Current != Mood.Retreat && Current != Mood.BreakIn) agent.updateRotation = true;
+        if (Current != Mood.Repelled && Current != Mood.Attack && Current != Mood.Reveal && Current != Mood.Retreat && Current != Mood.BreakIn
+            && !(Current == Mood.Chase && facingPlayer)) agent.updateRotation = true;
         if (Current == Mood.Attack || Current == Mood.BreakIn) return;
         smoothedSpeed = Mathf.Lerp(smoothedSpeed, agent.velocity.magnitude, 1f - Mathf.Exp(-8f * Time.deltaTime));
         float speed = smoothedSpeed;

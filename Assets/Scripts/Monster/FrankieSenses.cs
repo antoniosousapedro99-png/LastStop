@@ -5,7 +5,8 @@ using UnityEngine;
 // - Sight: depends on light. In pitch black he only sees the player within 'darkSightRange' metres; the
 //   better lit they are (lamps, candles, flares: see LightLevel) the further, up to 'sightRange'; with the
 //   torch on they give themselves away from 'torchSightRange'. Always inside a wide cone in front of him,
-//   with nothing solid in between.
+//   with nothing solid in between, except right next to him: within 'closeRange' he notices the player
+//   whichever way he faces (breath, footsteps, the smell of them), unless they're crouched.
 // - Hearing: any Noise made close enough (running carries far, walking less, crouching makes none).
 public class FrankieSenses : MonoBehaviour
 {
@@ -15,12 +16,14 @@ public class FrankieSenses : MonoBehaviour
     public float fullyLit = 1f;             // LightLevel that counts as well lit
     public float torchSightRange = 25f;
     public float sightAngle = 120f;         // degrees, the whole cone
+    public float closeRange = 2f;           // metres: this close he notices a standing player in any direction
 
     public Transform Player { get; private set; }
     public bool HasHeard { get; private set; }
     public Vector3 HeardAt { get; private set; }
 
     Flashlight torch;
+    PlayerMovement movement;
     readonly List<Light> torchLights = new List<Light>();
 
     void OnEnable() => Noise.Made += OnNoise;
@@ -33,6 +36,7 @@ public class FrankieSenses : MonoBehaviour
         if (!go) return;
         Player = go.transform;
         torch = go.GetComponentInChildren<Flashlight>(true);
+        movement = go.GetComponent<PlayerMovement>();
         torchLights.Clear();
         if (torch) foreach (var l in new[] { torch.beam, torch.spill, torch.viewmodelFill }) if (l) torchLights.Add(l);
     }
@@ -48,7 +52,9 @@ public class FrankieSenses : MonoBehaviour
         Vector3 to = PlayerHead - eyes.position;
         float range = SightRange();
         if (to.magnitude > range) return false;
-        if (Vector3.Angle(transform.forward, new Vector3(to.x, 0f, to.z)) > sightAngle * 0.5f) return false;
+        Vector3 flat = new Vector3(to.x, 0f, to.z);
+        bool rightBesideHim = flat.magnitude < closeRange && !(movement && movement.IsCrouched);
+        if (!rightBesideHim && Vector3.Angle(transform.forward, flat) > sightAngle * 0.5f) return false;
         // Walls, the train, crates... anything solid that isn't the player blocks the view.
         if (Physics.Raycast(eyes.position, to.normalized, out var hit, to.magnitude, ~0, QueryTriggerInteraction.Ignore))
             return hit.collider.transform.IsChildOf(Player);
