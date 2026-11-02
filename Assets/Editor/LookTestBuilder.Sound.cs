@@ -39,15 +39,14 @@ public static partial class LookTestBuilder
         pipe.minDistance = 2f; pipe.maxDistance = 14f;
 
         // Water dripping in the dark: faint 3D loops of the cave-drip recording, each a little different in
-        // pitch so neighbours never sound alike. Only heard within a few metres.
+        // pitch so neighbours never sound alike. Only heard within a few metres. None in the metro tunnels
+        // since 2026-11-02 (the director's call; one also carried to the title screen).
         var drips = new GameObject("Drips").transform;
         drips.SetParent(sound);
         Vector3[] dripSpots =
         {
-            new Vector3(-40f, 0f, 23f), new Vector3(-95f, 0f, 23f), new Vector3(45f, 0f, 23f), new Vector3(100f, 0f, 23f),   // Hollis St's tunnels
-            new Vector3(-45f, -7.5f, 45f), new Vector3(-72f, -7.5f, 44f),                                                        // its service level
-            new Vector3(-75f, 0f, 302f), new Vector3(-125f, 0f, 302f), new Vector3(-60f, 0f, 318.5f), new Vector3(110f, 0f, 318.5f), // Canal St's tunnels
-            new Vector3(-30f, -7.5f, 345f), new Vector3(-80f, -7.5f, 350f), new Vector3(-20f, -7.5f, 330f),                     // its lower level
+            new Vector3(-45f, -7.5f, 45f), new Vector3(-72f, -7.5f, 44f),                       // Hollis St's service level
+            new Vector3(-30f, -7.5f, 345f), new Vector3(-80f, -7.5f, 350f), new Vector3(-20f, -7.5f, 330f),   // Canal St's lower level
         };
         var rng = new System.Random(5);
         for (int i = 0; i < dripSpots.Length; i++)
