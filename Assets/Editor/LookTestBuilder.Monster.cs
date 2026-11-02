@@ -8,10 +8,8 @@ using UnityEngine.AI;
 // Frankie, the monster: since 2026-10-28 he has the Ridgeback's body (the worker who feared death, pale
 // skin) and its own idle, walk, chase, notice and attack; his AI, senses and sounds are unchanged. Also his
 // walkable area, his arrival, the chase music, and the player's health.
-// (The old Big Frankie model is still in Characters/Frankie, used by nothing but ShadowFigureModel.)
 public static partial class LookTestBuilder
 {
-    const string FrankieDir = ArtDir + "/Characters/Frankie";
     const string MonsterFbx = ArtDir + "/Characters/Ridgeback/Ridgeback.fbx";
     static readonly System.Collections.Generic.Dictionary<string, string> MonsterTextures = new System.Collections.Generic.Dictionary<string, string>
     {
@@ -22,13 +20,6 @@ public static partial class LookTestBuilder
     static readonly System.Collections.Generic.Dictionary<string, string> MonsterClips = new System.Collections.Generic.Dictionary<string, string>
     {
         { "Idle", "_IDLE" }, { "Walk", "_WALK" }, { "Run", "_CHASE" }, { "Attack", "_ATTACK" }, { "Scream", "_NOTICE" },
-    };
-    // His three textures, by material name. Every copy of his model must pass these (the materials are
-    // shared files, so a copy made without them would wipe them for him too).
-    static readonly System.Collections.Generic.Dictionary<string, string> FrankieTextures = new System.Collections.Generic.Dictionary<string, string>
-    {
-        { "Frankie_Body", "Characters/Frankie/Frankie_Body.png" }, { "Frankie_Bones", "Characters/Frankie/Frankie_Bones.png" },
-        { "Frankie_Face", "Characters/Frankie/Frankie_Face.png" },
     };
     static readonly Vector3 FrankieSpawn = new Vector3(-70f, -1.3f, 22.7f);   // on the tracks, deep in the west tunnel
 

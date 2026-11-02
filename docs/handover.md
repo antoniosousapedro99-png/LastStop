@@ -41,6 +41,8 @@ Put them back at the same paths under `Documents\PSX horror\`.
 **Everything in the table above is on GitHub** in the private repo
 `antoniosousapedro99-png/LastStop-Backup`, attached to its release `backup-2026-11-01`. Its README has the exact
 restore commands (`gh release download`, then 7-Zip on the `.001` part). Do this right after cloning LastStop.
+Added on 2026-11-02: `PSX-horror-additions-2026-11-02.7z` (the two PSX Soda packs and the 0.2.7-0.2.9 tester
+builds); unpack it into `Documents\PSX horror` after the others. `sousa-notes.md` there is the 2026-11-02 copy.
 **Witchbrew**, the director's other game, is in the private repo `antoniosousapedro99-png/Witchbrew` (24
 branches, Git LFS). Clone it to `Documents\Witchbrew\Witchbrew` if the director asks.
 
@@ -65,15 +67,18 @@ branches, Git LFS). Clone it to `Documents\Witchbrew\Witchbrew` if the director 
 - Tests: `editor_play`, then a guarded eval that sets `runInBackground = true` and starts a New game. When done,
   run `editor_stop`, set `PlayerSettings.runInBackground = false`, and check `ProjectSettings.asset` has no diff.
 
-## Where the game stands (2026-11-01)
+## Where the game stands (2026-11-02)
 
 - **Station 1, Hollis St:** done and polished (furniture, drips, lamp buzz, distant trains, rippling puddles).
 - **Station 2, Canal St Junction:** done and polished (lit stalled train, concrete stairs instead of escalators,
   kickable clutter, 2 flares / 2 batteries / 2 painkillers).
-- **Station 3, the sewers:** playable to the end (water, swimming, valves, power, gates, supplies).
+- **Station 3, the sewers:** playable to the end (water, swimming, valves, power, gates, supplies), polished on
+  2026-11-02 (murky water without tiling, smooth cistern, pipes and clutter, signs no longer show through walls).
   **Stage 5 (sewer voicemails and journal lines) is postponed until much later:** don't start it unless asked.
-- **Station 4 and the ending:** planned in the blueprint, not built.
-- Last tester build: `LastStop - V.0.2.6.zip`.
+- **Station 4 and the ending:** planned in the blueprint, not built. Don't start it unless asked.
+- **Licences:** checked on 2026-11-02 (`docs/licence-check.md`); Pizza Doggy's trees and the unused monster
+  packs (TheWrapper, the Pale Man, Big Frankie) are gone from the project.
+- Last tester build: `LastStop - V.0.2.9.zip` (on LastStop-Playtest).
 - Open questions are at the bottom of the blueprint. Ask before building anything they touch, especially the
   **content note** (the game deals with suicide and self-harm; the director writes that wording).
 

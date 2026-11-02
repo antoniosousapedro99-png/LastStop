@@ -31,8 +31,8 @@ public static partial class LookTestBuilder
         LampDies(group, "Scare_LampPlatform", new Vector3(9.5f, 1.5f, 17f), new Vector3(1f, 3f, 6f), new Vector3(6f, 4.48f, 18.6f), pop);
         LampDies(group, "Scare_LampTunnel", new Vector3(52f, 0.75f, 22.75f), new Vector3(1f, 4.5f, 5.5f), new Vector3(48f, 1.4f, 20f), pop);
 
-        // (The shadow figure on the east tunnel's tracks was removed on 2026-10-27; ShadowFigure and
-        // ShadowFigureModel are kept in case it comes back.)
+        // (The shadow figure on the east tunnel's tracks was removed on 2026-10-27; its script, ShadowFigure,
+        // is kept in case it comes back. Its old Big Frankie model was deleted on 2026-11-02.)
 
         // ---- the entity: random glimpses of a black human shape at the corner of your eye (both stations)
         var glimpses = new GameObject("ShadowGlimpses");
@@ -131,30 +131,5 @@ public static partial class LookTestBuilder
         var cut = go.AddComponent<LampCutOut>();
         cut.lamp = Object.FindObjectsByType<PoweredLight>().OrderBy(l => Vector3.Distance(l.transform.position, lampPoint)).First();
         cut.pop = pop;
-    }
-
-    // Frankie's silhouette, near black, frozen in his idle pose (no Animator, so the pose stays).
-    static GameObject ShadowFigureModel(Transform parent, Vector3 floorPoint)
-    {
-        var holder = new GameObject("ShadowFigure");
-        holder.transform.SetParent(parent);
-        holder.transform.position = floorPoint;
-        var model = Model(FrankieDir + "/Frankie.fbx", null, holder.transform, null, 1f, 0f, FrankieTextures);
-        model.transform.localRotation = Load<GameObject>(FrankieDir + "/Frankie.fbx").transform.localRotation;
-        model.transform.localScale *= 2.1f / Bounds(model).size.y;
-        model.transform.localPosition = Vector3.zero;
-        float soleBelowBones = LowestFootBone(model) - Bounds(model).min.y;
-        AssetDatabase.LoadAllAssetsAtPath(FrankieDir + "/Frankie.fbx").OfType<AnimationClip>().First(c => c.name.EndsWith("Idle")).SampleAnimation(model, 0.6f);
-        model.transform.localPosition = new Vector3(0f, floorPoint.y - (LowestFootBone(model) - soleBelowBones), 0f);
-        var black = Mat("ShadowBlack", null, new Color(0.035f, 0.035f, 0.035f), 1f, 0f);   // near black: the lamp just catches his shape
-        foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>())
-        {
-            r.sharedMaterials = Enumerable.Repeat(black, r.sharedMaterials.Length).ToArray();
-            r.updateWhenOffscreen = true;
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        }
-        var animator = model.GetComponent<Animator>();
-        if (animator) Object.DestroyImmediate(animator);
-        return holder;
     }
 }

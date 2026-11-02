@@ -42,9 +42,7 @@ rain). To be thorough, search each number on pixabay.com once (numbers in `CREDI
 ## Still open
 
 - ~~PSX Soda Can Pack~~: replaced on 2026-11-02 by Mcnuty's PSX Soda Packs 1 and 2 (use in games allowed, no redistribution; their logos are Freepik images).
-- **PSX Industrial Pack** (Sketchfab): two models share the name, Tomitos_ (CC BY) or domi236 (Free Standard);
-  open both and see which has the TransformerBox, rocks, crates and pipes. Either is fine; only Tomitos_ needs
-  credit.
+- ~~PSX Industrial Pack~~: identified by the director as Tomitos_'s (CC BY 4.0), credited.
 - **FoxTex textures** (sewer floor, water frames): check foxtex.com's terms.
 - **VCR OSD Mono font:** dafont lists it "100% Free"; glance at the readme in its download.
 - ~~The Man Who Never Clocked Out~~: replaced on 2026-11-02 by elbolilloduro's Character_02 (Characters PSX:
@@ -57,6 +55,5 @@ exterior (probably godgoldfear's PSX Industrial Environment pack: CC BY 4.0, **c
 
 ## Not used any more
 
-TheWrapper V2, Characters PSX 1.2 (the Pale Man; probably elbolilloduro, free commercial use anyway) and Big
-Frankie aren't in the game since October. Unity only puts files into a build when the game uses them;
-removing them from the project before release would make that certain.
+TheWrapper V2, Characters PSX 1.2's Pale Man and Big Frankie (out of the game since October) were deleted from
+the project on 2026-11-02, so they can't end up in a build. Their originals are still in the asset library.

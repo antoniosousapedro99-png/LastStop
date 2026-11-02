@@ -32,18 +32,9 @@ public class ImportRules : AssetPostprocessor
     void OnPreprocessModel()
     {
         var importer = (ModelImporter)assetImporter;
-        // The Pale Man and TheWrapper are "Humanoid": Unity maps both skeletons to one standard human body,
-        // so TheWrapper's walk, run, idle, scream and attack can play on the Pale Man (who has none).
-        if (assetPath.Contains("/Characters/PaleMan/") || assetPath.Contains("/Characters/TheWrapper/"))
-        {
-            importer.animationType = ModelImporterAnimationType.Human;
-            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-            importer.importAnimation = assetPath.Contains("/TheWrapper/");
-            return;
-        }
         // The monster (Frankie; since 2026-10-28 the Ridgeback's body) plays his own animations on his own
         // skeleton: "Generic", no retargeting.
-        if (assetPath.Contains("/Characters/Frankie/") || assetPath.Contains("/Characters/Ridgeback/"))
+        if (assetPath.Contains("/Characters/Ridgeback/"))
         {
             importer.animationType = ModelImporterAnimationType.Generic;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
@@ -55,11 +46,10 @@ public class ImportRules : AssetPostprocessor
         importer.importAnimation = true;
     }
 
-    // TheWrapper's, Frankie's and the Ridgeback's walk, run (CHASE) and idle repeat; the attack, scream
-    // (NOTICE) and wall slam play once.
+    // The Ridgeback's walk, run (CHASE) and idle repeat; the attack and scream (NOTICE) play once.
     void OnPreprocessAnimation()
     {
-        if (!assetPath.Contains("/Characters/TheWrapper/") && !assetPath.Contains("/Characters/Frankie/") && !assetPath.Contains("/Characters/Ridgeback/")) return;
+        if (!assetPath.Contains("/Characters/Ridgeback/")) return;
         var importer = (ModelImporter)assetImporter;
         var clips = importer.defaultClipAnimations;
         foreach (var clip in clips)
