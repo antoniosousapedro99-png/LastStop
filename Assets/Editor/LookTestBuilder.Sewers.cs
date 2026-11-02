@@ -45,11 +45,11 @@ public static partial class LookTestBuilder
         sewerCeiling = Mat("SewerCeiling", Tex2(SewerTex + "concrete_base_03.jpg"), new Color(0.75f, 0.73f, 0.7f), 3f, 0.1f);
         sewerConcrete = Mat("SewerConcrete", Tex2(SewerTex + "concrete_dirty.jpg"), new Color(0.8f, 0.78f, 0.74f), 2f, 0.15f);
         sewerMud = Mat("SewerMud", Tex2(SewerTex + "soil_mud.jpg"), new Color(0.5f, 0.46f, 0.38f), 2f, 0.3f);
-        // Murky green water whose rippling surface pictures play as a loop (WaterFrames, set up below).
+        // Murky but see-through water (LastStop/MurkyWater) whose rippling surface pictures play as a loop
+        // (WaterFrames, set up below).
         var waterFrames = new Texture2D[20];
         for (int i = 0; i < 20; i++) waterFrames[i] = Load<Texture2D>(FoxTexDir + "Water/WaterSurface_" + (i + 1).ToString("00") + ".png");
-        sewerWater = TransparentMat("SewerWater", new Color(0.26f, 0.32f, 0.22f, 0.86f), 0.9f);
-        sewerWater.SetTexture("_BaseMap", waterFrames[0]);
+        sewerWater = MurkyWaterMat("SewerWater", waterFrames[0]);
         sewerGrate = Mat("SewerGrate", Tex2(SewerTex + "Metal.jpg"), new Color(0.45f, 0.43f, 0.4f), 1f, 0.35f, 0.6f);
         Vector3 o = SewerOrigin;
 
@@ -440,33 +440,33 @@ public static partial class LookTestBuilder
         Vector3 c = SewerOrigin + CisternCentre;
         const float R = CisternRadius, top = 9f, floor = CisternFloor, bottom = CisternFloor - 0.5f, galleryIn = 12f, stairIn = 10.25f;
         float half = Mathf.Tan(11.25f * Mathf.Deg2Rad);
-        float side = 2f * (R + 0.4f) * half + 0.05f;   // one wall section's width
-        float doorHalf = side * 0.5f - 0.12f;          // a spoke's doorway takes its whole section but for slim posts
+        float doorHalf = (R + 0.4f) * half - 0.095f;   // a spoke's doorway takes its whole section but for slim posts
         const float stairStart = 196f;                 // where the stairs leave the gallery (just past the top doorway)
         for (int i = 0; i < 16; i++)
         {
             float a = i * 22.5f;
             var rot = Quaternion.Euler(0f, a, 0f);
-            Vector3 d = rot * Vector3.forward, across = rot * Vector3.right;
-            Vector3 wallMid = c + d * (R + 0.2f);
+            Vector3 d = rot * Vector3.forward;
+            // Each section is a wedge whose ends lie on lines from the shaft's centre, so neighbours meet in a clean
+            // mitre instead of flat box ends jutting past each other at every corner.
+            float edge = R * half;   // half a section's width at the wall's inner face
             if (i % 4 == 0)
             {
                 foreach (float s in new[] { -1f, 1f })
-                    Turned(Box("CisternWall_" + i, g, wallMid + across * s * (doorHalf + 0.06f) + Vector3.up * (top + bottom) * 0.5f, new Vector3(0.12f, top - bottom, 0.4f), sewerBrick), rot);
-                Turned(Box("CisternLintel_" + i, g, wallMid + Vector3.up * (3.6f + (top - 3.6f) * 0.5f), new Vector3(doorHalf * 2f, top - 3.6f, 0.4f), sewerBrick), rot);
+                    ShaftPiece("CisternWall_" + i, g, c, a, s < 0 ? -edge : doorHalf, s < 0 ? -doorHalf : edge, R, R + 0.4f, bottom, top, sewerBrick);
+                ShaftPiece("CisternLintel_" + i, g, c, a, -doorHalf, doorHalf, R, R + 0.4f, 3.6f, top, sewerBrick);
                 // The sill below the doorway, with the canal's mouth in it (1 cm under the tunnel's walkway).
                 float mouth = -SewerWalkwayRise;
-                Turned(Box("CisternSill_" + i, g, wallMid + Vector3.up * (bottom + mouth) * 0.5f, new Vector3(doorHalf * 2f, mouth - bottom, 0.4f), sewerBrick), rot);
-                float cheek = doorHalf - ChannelHalf;
+                ShaftPiece("CisternSill_" + i, g, c, a, -doorHalf, doorHalf, R, R + 0.4f, bottom, mouth, sewerBrick);
                 foreach (float s in new[] { -1f, 1f })
-                    Turned(Box("CisternSill_" + i, g, wallMid + across * s * (ChannelHalf + cheek * 0.5f) + Vector3.up * (mouth - 0.01f) * 0.5f, new Vector3(cheek, -0.01f - mouth, 0.4f), sewerBrick), rot);
+                    ShaftPiece("CisternSill_" + i, g, c, a, s < 0 ? -doorHalf : ChannelHalf, s < 0 ? -ChannelHalf : doorHalf, R, R + 0.4f, mouth, -0.01f, sewerBrick);
                 // A short concrete lip under the gallery that the canal spills off.
                 Turned(Box("CisternSpout_" + i, g, c + d * (R - 0.3f) + Vector3.up * (mouth - 0.1f), new Vector3(ChannelHalf * 2f, 0.2f, 0.6f), sewerConcrete), rot);
                 cisternSpouts.Add((c + d * (R - 0.6f) + Vector3.up * ChannelWater, -d));
             }
-            else Turned(Box("CisternWall_" + i, g, wallMid + Vector3.up * (top + bottom) * 0.5f, new Vector3(side, top - bottom, 0.4f), sewerBrick), rot);
-            // The gallery (every other slab 4 mm lower: no flicker).
-            Turned(Box("CisternGallery_" + i, g, c + d * ((R + galleryIn) * 0.5f) + Vector3.up * (-0.15f - (i % 2) * 0.004f), new Vector3(2f * R * half + 0.05f, 0.3f, R - galleryIn), sewerFloor), rot);
+            else ShaftPiece("CisternWall_" + i, g, c, a, -edge, edge, R, R + 0.4f, bottom, top, sewerBrick);
+            // The gallery: a wedge from its inner edge out to the wall, meeting its neighbours edge to edge.
+            ShaftPiece("CisternGallery_" + i, g, c, a, -galleryIn * half, galleryIn * half, galleryIn, R, -0.3f, 0f, sewerFloor);
         }
         // The gallery's mesh guard all the way round, open only at the head of the stairs.
         const float headWidth = 4f;   // degrees: about 0.8 m at the guard
@@ -504,8 +504,10 @@ public static partial class LookTestBuilder
         const float stepAngle = 1.96f, landingAngle = 8f;
         float rise = -floor / steps, angle = startAngle;
         float[] rails = { rIn + 0.04f, rOut - 0.04f };
-        var last = new Vector3[2, 3];                 // the previous step's points: [side, stringer/mid rail/handrail]
-        bool first = true;
+        // Every step's point on each stringer and rail ([side, stringer/mid rail/handrail]); each becomes one smooth
+        // curved member at the end (SweptBeam), instead of a straight piece between every pair of steps.
+        var runs = new List<Vector3>[2, 3];
+        for (int sd = 0; sd < 2; sd++) for (int r = 0; r < 3; r++) runs[sd, r] = new List<Vector3>();
         for (int k = 0; k < steps - 1; k++)
         {
             float stepTop = -rise * (k + 1);
@@ -515,19 +517,16 @@ public static partial class LookTestBuilder
             Vector3 fwd = rot * Vector3.forward;
             float midR = (rIn + rOut) * 0.5f, width = 2f * midR * Mathf.Tan(span * 0.5f * Mathf.Deg2Rad) + 0.04f;
             Turned(Box(landing ? "CatwalkLanding" : "CatwalkTread", g, c + fwd * midR + Vector3.up * (stepTop - 0.025f), new Vector3(width, 0.05f, rOut - rIn), tread), rot);
-            // Stringers under both edges, and the rails above them, joined from the last step to this one.
+            // Stringers under both edges, and the rails above them (on the open shaft side only).
             for (int sd = 0; sd < 2; sd++)
             {
                 Vector3 edge = c + fwd * rails[sd];
-                var now = new[] { edge + Vector3.up * (stepTop - 0.13f), edge + Vector3.up * (stepTop + 0.5f), edge + Vector3.up * (stepTop + 1.0f) };
-                if (!first)
-                    for (int r = 0; r < (sd == 0 ? 3 : 1); r++)
-                        Beam(g, r == 0 ? "CatwalkStringer" : "CatwalkRail", last[sd, r], now[r], r == 0 ? new Vector2(0.06f, 0.2f) : new Vector2(0.045f, 0.045f), steel);
-                for (int r = 0; r < 3; r++) last[sd, r] = now[r];
+                runs[sd, 0].Add(edge + Vector3.up * (stepTop - 0.13f));
+                runs[sd, 1].Add(edge + Vector3.up * (stepTop + 0.5f));
+                runs[sd, 2].Add(edge + Vector3.up * (stepTop + 1.0f));
                 if (sd == 0 && (k % 3 == 0 || landing))   // a post
                     Box("CatwalkPost", g, edge + Vector3.up * (stepTop + 0.5f), new Vector3(0.05f, 1f, 0.05f), steel).transform.rotation = rot;
             }
-            first = false;
             // A bracket back to the wall under this step: an arm under the tread and a strut below it.
             float spoutGap = Mathf.Abs(Mathf.DeltaAngle(angle, Mathf.Round(angle / 90f) * 90f));
             if (k % 4 == 1 && spoutGap > 12f)
@@ -540,6 +539,131 @@ public static partial class LookTestBuilder
                 EmergencyLight(g, c + fwd * (wallR - 0.3f) + Vector3.up * (stepTop + 2.2f), 1.4f, 10f);
             angle += span;
         }
+        for (int sd = 0; sd < 2; sd++)
+            for (int r = 0; r < (sd == 0 ? 3 : 1); r++)
+                SweptBeam(g, r == 0 ? "CatwalkStringer" : "CatwalkRail", runs[sd, r], r == 0 ? new Vector2(0.06f, 0.2f) : new Vector2(0.045f, 0.045f), steel);
+    }
+
+    // One steel member of 'section' (width, height) swept smoothly through 'points' (a curve, no joints), solid.
+    static void SweptBeam(Transform g, string name, List<Vector3> points, Vector2 section, Material mat)
+    {
+        if (points.Count < 2) return;
+        var go = new GameObject(name);
+        go.transform.SetParent(g, false);
+        var verts = new List<Vector3>(); var norms = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
+        int n = points.Count;
+        var sides = new Vector3[n]; var ups = new Vector3[n];
+        float[] along = new float[n];
+        for (int i = 0; i < n; i++)
+        {
+            Vector3 tangent = (points[Mathf.Min(i + 1, n - 1)] - points[Mathf.Max(i - 1, 0)]).normalized;
+            sides[i] = Vector3.Cross(Vector3.up, tangent).normalized;
+            ups[i] = Vector3.Cross(tangent, sides[i]).normalized;
+            along[i] = i == 0 ? 0f : along[i - 1] + Vector3.Distance(points[i - 1], points[i]);
+        }
+        float w = section.x * 0.5f, h = section.y * 0.5f;
+        // Four long faces, each a strip with its own normals so the edges stay crisp.
+        var faces = new (float s, float u, int normal)[][] {
+            new[] { (1f, 1f, 0), (1f, -1f, 0) },     // the outer side (+side)
+            new[] { (-1f, -1f, 1), (-1f, 1f, 1) },   // the inner side (-side)
+            new[] { (-1f, 1f, 2), (1f, 1f, 2) },     // the top (+up)
+            new[] { (1f, -1f, 3), (-1f, -1f, 3) } }; // the bottom (-up)
+        foreach (var face in faces)
+        {
+            int start = verts.Count;
+            for (int i = 0; i < n; i++)
+                for (int e = 0; e < 2; e++)
+                {
+                    verts.Add(points[i] + sides[i] * face[e].s * w + ups[i] * face[e].u * h);
+                    int f = face[e].normal;
+                    norms.Add(f == 0 ? sides[i] : f == 1 ? -sides[i] : f == 2 ? ups[i] : -ups[i]);
+                    uvs.Add(new Vector2(along[i], e * section.y));
+                }
+            for (int i = 0; i < n - 1; i++)
+            {
+                int a = start + i * 2;
+                tris.AddRange(new[] { a, a + 2, a + 1, a + 1, a + 2, a + 3 });
+            }
+        }
+        // End caps.
+        foreach (int i in new[] { 0, n - 1 })
+        {
+            int start = verts.Count;
+            Vector3 outward = (i == 0 ? points[0] - points[1] : points[n - 1] - points[n - 2]).normalized;
+            foreach (var (s, u) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) })
+            {
+                verts.Add(points[i] + sides[i] * s * w + ups[i] * u * h);
+                norms.Add(outward); uvs.Add(new Vector2(s, u));
+            }
+            tris.AddRange(new[] { start, start + 1, start + 2, start, start + 2, start + 3 });
+        }
+        // Make every triangle face the way its normal says (the winding above depends on the direction of travel).
+        for (int t = 0; t < tris.Count; t += 3)
+        {
+            Vector3 a = verts[tris[t]], b = verts[tris[t + 1]], cc = verts[tris[t + 2]];
+            if (Vector3.Dot(Vector3.Cross(b - a, cc - a), norms[tris[t]]) < 0f) { int k = tris[t + 1]; tris[t + 1] = tris[t + 2]; tris[t + 2] = k; }
+        }
+        var mesh = new Mesh { name = name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+        mesh.SetVertices(verts); mesh.SetNormals(norms); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0);
+        mesh.RecalculateTangents(); mesh.RecalculateBounds();
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+        go.AddComponent<MeshCollider>().sharedMesh = mesh;
+    }
+
+    // A piece of the cistern's round wall (or its gallery): the part of the wall section facing 'angle' (degrees,
+    // 0 = +z) between 'u0' and 'u1' across it (measured on its inner face, 'dIn' from the centre 'c') and from
+    // 'dIn' out to 'dOut', 'y0' to 'y1' above the tunnels. Its ends lie on lines from the centre, so pieces of
+    // neighbouring sections meet in a clean mitre. The brick runs on round the shaft without a seam.
+    static void ShaftPiece(string name, Transform g, Vector3 c, float angle, float u0, float u1, float dIn, float dOut, float y0, float y1, Material mat)
+    {
+        var rot = Quaternion.Euler(0f, angle, 0f);
+        Vector3 d = rot * Vector3.forward, across = rot * Vector3.right;
+        float halfTan = Mathf.Tan(11.25f * Mathf.Deg2Rad);
+        Vector3 Corner(float u, float dist, float y) => c + (d * dIn + across * u) * (dist / dIn) + Vector3.up * (SewerOrigin.y - c.y + y);
+        float tile = tileSize.TryGetValue(mat, out var t) ? t : 1f;
+        // Along the wall: where this point is on the unrolled ring of sections (each section 2 * dist * tan(11.25) wide).
+        float Round(float u, float dist) => ((angle / 22.5f) * 2f * dist * halfTan + u * (dist / dIn) + dist * halfTan) / tile;
+        var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>(); var norms = new List<Vector3>();
+        void Quad(Vector3 a, Vector3 b, Vector3 cc, Vector3 e, Vector3 normal, Vector2 ua, Vector2 ub, Vector2 uc, Vector2 ue)
+        {
+            int s = verts.Count;
+            verts.AddRange(new[] { a, b, cc, e }); uvs.AddRange(new[] { ua, ub, uc, ue });
+            for (int k = 0; k < 4; k++) norms.Add(normal);
+            bool flip = Vector3.Dot(Vector3.Cross(b - a, cc - a), normal) < 0f;
+            tris.AddRange(flip ? new[] { s, s + 2, s + 1, s, s + 3, s + 2 } : new[] { s, s + 1, s + 2, s, s + 2, s + 3 });
+        }
+        Vector2 W(Vector3 p, bool xz) => xz ? new Vector2(p.x, p.z) / tile : new Vector2(0f, p.y) / tile;
+        // The inner face (toward the centre) and the outer face.
+        foreach (var (dist, normal) in new[] { (dIn, -d), (dOut, d) })
+        {
+            Vector3 a = Corner(u0, dist, y0), b = Corner(u1, dist, y0), cc = Corner(u1, dist, y1), e = Corner(u0, dist, y1);
+            Quad(a, b, cc, e, normal,
+                 new Vector2(Round(u0, dist), a.y / tile), new Vector2(Round(u1, dist), b.y / tile),
+                 new Vector2(Round(u1, dist), cc.y / tile), new Vector2(Round(u0, dist), e.y / tile));
+        }
+        // Top and bottom (the gallery's walking surface is the top), textured flat in world space.
+        foreach (var (y, normal) in new[] { (y1, Vector3.up), (y0, Vector3.down) })
+        {
+            Vector3 a = Corner(u0, dIn, y), b = Corner(u1, dIn, y), cc = Corner(u1, dOut, y), e = Corner(u0, dOut, y);
+            Quad(a, b, cc, e, normal, W(a, true), W(b, true), W(cc, true), W(e, true));
+        }
+        // The two ends, on lines from the centre.
+        foreach (float u in new[] { u0, u1 })
+        {
+            Vector3 a = Corner(u, dIn, y0), b = Corner(u, dOut, y0), cc = Corner(u, dOut, y1), e = Corner(u, dIn, y1);
+            Vector3 normal = Vector3.Cross(Vector3.up, (b - a).normalized) * (u == u0 ? -1f : 1f);   // up x outward = +across
+            Quad(a, b, cc, e, normal, new Vector2(0f, a.y / tile), new Vector2((dOut - dIn) / tile, b.y / tile),
+                 new Vector2((dOut - dIn) / tile, cc.y / tile), new Vector2(0f, e.y / tile));
+        }
+        var mesh = new Mesh { name = name };
+        mesh.SetVertices(verts); mesh.SetUVs(0, uvs); mesh.SetNormals(norms); mesh.SetTriangles(tris, 0);
+        mesh.RecalculateTangents(); mesh.RecalculateBounds();
+        var go = new GameObject(name);
+        go.transform.SetParent(g, false);
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+        go.AddComponent<MeshCollider>().sharedMesh = mesh;
     }
 
     // A straight steel member from 'a' to 'b' with a 'section' (width, height) cross-section.
@@ -550,6 +674,23 @@ public static partial class LookTestBuilder
     }
 
     static GameObject Turned(GameObject go, Quaternion rot) { go.transform.rotation = rot; return go; }
+
+    // The sewers' water material: green and see-through where it's thin, opaque murk where it's deep.
+    static Material MurkyWaterMat(string name, Texture2D ripple)
+    {
+        string path = MatDir + "/M_" + name + ".mat";
+        var mat = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (mat == null) { mat = new Material(Shader.Find("LastStop/MurkyWater")); UnityEditor.AssetDatabase.CreateAsset(mat, path); }
+        mat.shader = Shader.Find("LastStop/MurkyWater");
+        mat.shaderKeywords = new string[0];
+        mat.SetTexture("_BaseMap", ripple);
+        mat.SetColor("_ShallowColor", new Color(0.32f, 0.38f, 0.22f, 0.35f));
+        mat.SetColor("_DeepColor", new Color(0.07f, 0.09f, 0.05f, 1f));
+        mat.SetFloat("_Clarity", 1.2f);
+        mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        UnityEditor.EditorUtility.SetDirty(mat);
+        return mat;
+    }
 
     // A 1.1 m mesh guard on a circle of radius 'r' round 'c', standing on 'floor', from angle a0 to a1 (degrees,
     // 0 = +z, turning toward +x), in short straight pieces so it follows the curve.

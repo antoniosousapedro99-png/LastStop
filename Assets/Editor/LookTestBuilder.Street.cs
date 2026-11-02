@@ -710,7 +710,21 @@ public static partial class LookTestBuilder
         tm.alignment = TextAlignment.Center;
         tm.color = colour;
         tm.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        go.GetComponent<MeshRenderer>().sharedMaterial = tm.font.material;
+        // Painted on: lit like the plate, hidden behind walls (the font's own material draws through everything).
+        go.GetComponent<MeshRenderer>().sharedMaterial = PaintedTextMat();
+        go.AddComponent<PaintedText>();
+    }
+
+    static Material PaintedTextMat()
+    {
+        string path = MatDir + "/M_PaintedText.mat";
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (mat == null)
+        {
+            mat = new Material(Shader.Find("LastStop/PaintedText"));
+            AssetDatabase.CreateAsset(mat, path);
+        }
+        return mat;
     }
 
     // Moves a placed model up or down so its named main piece (the shop building) sits on the ground,

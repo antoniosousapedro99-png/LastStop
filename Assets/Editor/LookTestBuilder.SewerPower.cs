@@ -57,13 +57,16 @@ public static partial class LookTestBuilder
         loose.name = "BreakerHandle";
         MakePickup(loose, global::Pickup.Kind.BreakerHandle, o + new Vector3(-4.6f, Bounds(crate).max.y - o.y, 35.1f), 70f, "MetalCabinet1", lieDown: true);
 
-        // ---- sodium floodlights: eight round the cistern above the gallery, aimed down across the shaft
+        // ---- sodium floodlights: eight round the cistern above the gallery, each washing the opposite wall (every
+        // other one the upper shaft, the rest further down), so the round brick shaft, its stairs and gauges read
+        // from the gallery instead of the light pooling on the water in the middle
         Vector3 c = o + CisternCentre;
         for (int i = 0; i < 8; i++)
         {
             Vector3 d = Quaternion.Euler(0f, 22.5f + i * 45f, 0f) * Vector3.forward;
+            float depth = i % 2 == 0 ? -5f : -17f;
             SodiumFlood(g, "CisternFlood_" + i, c + d * (CisternRadius - 0.5f) + Vector3.up * 5.5f, -d,
-                        c - d * 5f + Vector3.up * (CisternFloor * 0.55f), 1500f, 60f, 70f, grid);
+                        c - d * CisternRadius + Vector3.up * depth, 6000f, 60f, 55f, grid);   // strong: it's 27 m across
         }
         // ...two in each valve room (on the wall facing the valve), one in the electrical room.
         foreach (var (name, a, b, valve) in new[] {

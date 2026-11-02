@@ -25,7 +25,7 @@ public static class GeometryCheck
         var boxes = new List<Renderer>();
         foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
             if (r.transform.rotation == Quaternion.identity && r.GetComponent<MeshFilter>()
-                && r.GetComponent<MeshFilter>().sharedMesh && r.GetComponent<MeshFilter>().sharedMesh.vertexCount == 24)
+                && r.GetComponent<MeshFilter>().sharedMesh && IsBox(r.GetComponent<MeshFilter>().sharedMesh))
                 boxes.Add(r); // only our axis-aligned boxes (24 corners = 6 faces x 4)
 
         var problems = new List<string>();
@@ -54,4 +54,17 @@ public static class GeometryCheck
     }
 
     static string Path(Transform t) => t.parent ? t.parent.name + "/" + t.name : t.name;
+
+    // 24 corners, every one on a corner of the mesh's bounds: a real upright box. (Other 24-corner shapes, like
+    // the cistern's wedge-shaped wall pieces, would be judged by their bounds and flagged wrongly.)
+    static bool IsBox(Mesh mesh)
+    {
+        if (mesh.vertexCount != 24) return false;
+        if (!mesh.isReadable) return true;
+        Vector3 lo = mesh.bounds.min, hi = mesh.bounds.max;
+        foreach (var v in mesh.vertices)
+            for (int axis = 0; axis < 3; axis++)
+                if (Mathf.Abs(v[axis] - lo[axis]) > 0.0005f && Mathf.Abs(v[axis] - hi[axis]) > 0.0005f) return false;
+        return true;
+    }
 }
