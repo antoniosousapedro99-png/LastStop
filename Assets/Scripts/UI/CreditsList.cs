@@ -1,42 +1,55 @@
 // The credits shown in the menus. Keep this list in step with Assets/Art/CREDITS.md
-// (every pack the game uses; "to confirm" packs are listed by name until their authors are confirmed).
+// (every pack the game uses; CC BY packs must be credited here, with "modified" where we changed them).
 public static class CreditsList
 {
     public const string Text =
 @"LAST STOP
 
 MUSIC
-Svirls - PSX Horror Music
+Svirls - PSX Horror Music (CC BY)
 
 SOUND
-Helton Yan - Surreal Drones
+Helton Yan - Surreal Drones (CC BY)
 Darkworld Audio - Survival Effects
 SoundReality (Pixabay) - rain
 Dragon Studio (Pixabay) - swimming
 Solarmusic (Pixabay) - dripping water
-freesound_community (Pixabay) - breathing, air conditioner
+freesound_community, universfield,
+u_ak0pt95kqu (Pixabay) - breathing, phones, air
 
 ART
-Metro PSX
-PSX Kitchen Props Pack - Nicowlas
-PSX Style Cars - GGBot
-PSX Horror Skyboxes - LESED
-Gas Station, 6twelve, VHS Shop, Laundry, Pizzeria,
-Buildings, Bus Stop and URBAN packs
-Retro Tree Pack, All Bushes pack
-OFFICE pack, Survival pack, 3D Retro Plumbing & Wiring
-Industrial exterior, NEUROZAM-9 Pill Bottle, Mine pack
-Cones & Barriers, PSX Soda Can Pack
-The Ridgeback - Codyanka (the monster), The Man Who Never Clocked Out
-PSX Derelict Furniture, PSX Old Stuff Pack
-Trash and Debris, Retro PSX Trash bag, Sewer pack
-Shotgun PS1, PSX First Person Arms
-Blood and graffiti textures, FoxTex textures, PSX Industrial Pack
-PSX Low Poly Shopping Cart
+elbolilloduro - Metro, Sewers, Gas Station, 6twelve,
+VHS Shop, Laundry, Pizzeria, Buildings, Bus Stop,
+Survival, Mine, Vegetation, Characters PSX
+valsekamerplant - Urban Stacked, Opulent Office,
+Barriers, Hedges, Modular Vents
+Codyanka - The Ridgeback (the monster), Pill Bottle
+chilly_durango - 3D Retro Plumbing & Wiring
+daniel-jurys - PSX Derelict Furniture
+Drillimpact - PSX First Person Arms
+MCSTEEG - Trash and Debris
+RETROVOIR - Retro PSX Trash Bag
+Nicowlas - PSX Kitchen Props Pack
+GGBot - PSX Style Cars
+LESED - PSX Horror Skyboxes
+godgoldfear - PSX Industrial Environment (CC BY)
+Sakepella - PSX Soda Can Pack
+PSX Old Stuff Pack
+Texture Ninja - blood and graffiti, FoxTex textures
+
+SKETCHFAB (CC BY 4.0)
+Tomitos_ - PSX Industrial Pack (modified)
+xylvnking - Dirty Locker (modified)
+ZwiebelGames - PSX Public Payphone, PSX Tower Key
+keywizzz - Soviet Subway Metro Props (modified)
+kayaaku - Dry flower (modified)
+rhv8 - 90's Radio PSX
+SaukrDev - Low poly PSX Wall Lamp
+korkskrew2000 - PSX Low-poly Shopping Cart (CC BY-SA)
 
 EFFECTS
 Rain Particles - Game Seed Assets
-FusionWater - nailuj05 (floating)
+FusionWater - nailuj05 (MIT, floating)
 
 INTERFACE
 FREE PSX UI - rohhsa

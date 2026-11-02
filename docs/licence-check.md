@@ -47,7 +47,8 @@ rain). To be thorough, search each number on pixabay.com once (numbers in `CREDI
   credit.
 - **FoxTex textures** (sewer floor, water frames): check foxtex.com's terms.
 - **VCR OSD Mono font:** dafont lists it "100% Free"; glance at the readme in its download.
-- **The Man Who Never Clocked Out** (imaginais): its page states no terms; ask the author.
+- ~~The Man Who Never Clocked Out~~: replaced on 2026-11-02 by elbolilloduro's Character_02 (Characters PSX:
+  commercial use, no attribution needed), posed with `Tools/Blender/pose_figure.py`.
 - **NEUROZAM-9 Pill Bottle**: no source found yet (`assets/clutter/NEUROZAM-9_PSX_PillBottle.zip`).
 
 Found by the director (2026-11-02): Trash and Debris (MCSTEEG: commercial use, don't redistribute), Retro PSX
