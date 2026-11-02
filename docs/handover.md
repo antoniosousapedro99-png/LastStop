@@ -15,13 +15,13 @@ note only adds what those files don't say.
 - When asked to "pack it for my testers", build to `Builds/LastStop - V.x`. Then rename the
   `..._BackUpThisFolder_ButDontShipItWithYourGame` folder to `..._DebugInfo_KeepPrivate`, add a
   `READ ME FIRST.txt` (controls and what's new), and zip the build with `Compress-Archive`. Bump `bundleVersion`
-  in ProjectSettings first (last build: **0.2.7**). The build eval often reports "errors=1": that's the eval's
+  in ProjectSettings first (last build: **0.2.8**). The build eval often reports "errors=1": that's the eval's
   5 s timeout, not a game error. Check the log. The build can leave `InputSystem_Actions` in
   `preloadedAssets`: empty it again (`PlayerSettings.SetPreloadedAssets`) before committing the version bump.
 - **Then publish it for testers** as a release in the private repo `antoniosousapedro99-png/LastStop-Playtest`
   (downloads only, no code): `gh release create v0.2.x "<zip>" --repo antoniosousapedro99-png/LastStop-Playtest
   --title "Last Stop V.0.2.x (<date>)" --notes-file <notes> --latest`, with the READ ME's "new since" list
-  and tester questions as the notes. GitHub turns spaces into dots, so rename the asset to
+  and tester questions as the notes, written in the first person singular ("I'd like to know", never "we"). GitHub turns spaces into dots, so rename the asset to
   `LastStop-V.0.2.x.zip` (`gh api -X PATCH repos/.../releases/assets/<id> -f name=...`). Testers use
   https://github.com/antoniosousapedro99-png/LastStop-Playtest/releases/latest and must be invited as
   collaborators (free GitHub account). Older releases stay on the Releases page.
