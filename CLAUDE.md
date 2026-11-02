@@ -15,7 +15,7 @@ Unity 6 (6000.6.5f1, URP, Forward+) first-person horror game. Current scene: `As
 
 ## Assets
 
-- The asset library is `C:\Users\Joao.Pedro\Documents\PSX horror\assets`, mostly `.zip`/`.rar` packs.
+- The asset library is `C:\Users\anton\Documents\PSX horror\assets`, mostly `.zip`/`.rar` packs.
   - Read them with `C:\Program Files\7-Zip\7z.exe`.
   - **Folder names contain `[Free]`**: in PowerShell, always use `-LiteralPath`, because square brackets otherwise act as wildcards. `-Include` is ignored with `-LiteralPath`, so copy files one by one by exact name. Don't name a PowerShell function `R` (it's the built-in alias for Invoke-History).
 - **Copy in only the files that are used.** Put them in `Assets/Art`:

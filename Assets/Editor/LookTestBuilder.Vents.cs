@@ -76,7 +76,7 @@ public static partial class LookTestBuilder
             var grille = Grille(run, "Grille", p, Vector3.down, size * 0.65f);
             if (i == grilles / 2) Airflow(grille, power, size);
         }
-        CheckClear(name, run);
+        CheckClear(name, run, axis, a, b);
     }
 
     // A grille high on the nearest wall along 'toWall' from 'inside', 25 cm under the ceiling: the air
@@ -167,12 +167,22 @@ public static partial class LookTestBuilder
     }
 
     // Warns in the Console about anything already built that a duct runs through (pipes, lamps, beams).
-    static void CheckClear(string name, Transform run)
+    // The last 20 cm at each end ('a' and 'b' along 'axis') are left out: the duct is meant to end inside its walls.
+    static void CheckClear(string name, Transform run, Vector3 axis, Vector3 a, Vector3 b)
     {
+        int k = Mathf.Abs(axis.x) > 0.5f ? 0 : Mathf.Abs(axis.y) > 0.5f ? 1 : 2;
+        float lo = Mathf.Min(a[k], b[k]) + 0.2f, hi = Mathf.Max(a[k], b[k]) - 0.2f;
         var mine = new HashSet<Renderer>(run.GetComponentsInChildren<Renderer>());
         var parts = new List<Bounds>();
-        foreach (var r in mine) if (r.name != "Hanger") { var b = r.bounds; b.Expand(-0.04f); parts.Add(b); }
-        foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+        foreach (var r in mine)
+        {
+            if (r.name == "Hanger") continue;
+            var box = r.bounds; box.Expand(-0.04f);
+            Vector3 min = box.min, max = box.max;
+            min[k] = Mathf.Max(min[k], lo); max[k] = Mathf.Min(max[k], hi);
+            if (min[k] < max[k]) { box.SetMinMax(min, max); parts.Add(box); }
+        }
+        foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude))
         {
             if (mine.Contains(r) || r.transform.IsChildOf(run.parent)) continue;
             var s = r.bounds.size;

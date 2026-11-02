@@ -605,6 +605,7 @@ public static partial class LookTestBuilder
     {
         Vector3 o = SewerOrigin;
         const float t = 0.3f;
+        var headwalls = new List<Bounds>();   // headwall pieces placed so far, so two doorways near a corner don't both fill it
         if (floor) Span(name + "_Floor", g, o + new Vector3(x0, y0 - 0.2f, z0), o + new Vector3(x1, y0, z1), sewerFloor);
         Span(name + "_Ceiling", g, o + new Vector3(x0, y1, z0), o + new Vector3(x1, y1 + 0.2f, z1), sewerCeiling);
         for (int side = 0; side < 4; side++)
@@ -628,7 +629,7 @@ public static partial class LookTestBuilder
                     Culvert(g, name + "_Culvert" + side + "_" + n++, side, (c.from + c.to) * 0.5f, x0, x1, z0, z1);
                 }
                 else WallPiece(g, name + "_Sill" + side + "_" + n++, side, c.from, c.to, x0, x1, z0, z1, y0 - 2.8f, y0);
-                Headwall(g, name + "_Headwall" + side + "_" + n++, side, c.from, c.to, c.top, x0, x1, z0, z1, y0);
+                Headwall(g, name + "_Headwall" + side + "_" + n++, side, c.from, c.to, c.top, x0, x1, z0, z1, y0, headwalls);
                 at = c.to;
             }
             if (at < a1) WallPiece(g, name + "_Wall" + side + "_" + n, side, at, a1, x0, x1, z0, z1, y0 - 2.8f, y1 + 0.2f);
@@ -637,12 +638,14 @@ public static partial class LookTestBuilder
 
     // A brick end-wall just outside a doorway, across the whole round tunnel that meets it (out to 2.6 m past
     // the doorway each side, up to 7.5 m above the floor), with the doorway left open: it closes the tunnel's
-    // end where the room is lower or narrower than the tunnel.
-    static void Headwall(Transform g, string name, int side, float from, float to, float top, float x0, float x1, float z0, float z1, float y0)
+    // end where the room is lower or narrower than the tunnel. Stretches already filled by an earlier headwall
+    // ('placed', e.g. the other doorway's near a corner) are left out, so the two meet edge to edge.
+    static void Headwall(Transform g, string name, int side, float from, float to, float top, float x0, float x1, float z0, float z1, float y0, List<Bounds> placed)
     {
         Vector3 o = SewerOrigin;
         const float inner = 0.3f, outer = 0.55f, reach = 2.6f;   // 25 cm thick, just beyond the room's own wall
         float lo = y0 - 2.8f, hi = Mathf.Max(y0, 0f) + 7.5f;   // up past the tunnel's crown, even for a sunken room
+        int run = side == 0 || side == 2 ? 0 : 2;   // the axis the headwall runs along (x or z)
         foreach (var (a, b, y1, y2) in new[] { (from - reach, from, lo, hi), (to, to + reach, lo, hi), (from, to, y0 + top, hi) })
         {
             Vector3 min, max;
@@ -653,8 +656,32 @@ public static partial class LookTestBuilder
                 case 1: min = new Vector3(x1 + inner, y1, a); max = new Vector3(x1 + outer, y2, b); break;
                 default: min = new Vector3(x0 - outer, y1, a); max = new Vector3(x0 - inner, y2, b); break;
             }
-            Span(name, g, o + min, o + max, sewerBrick);
+            // Cut out of [min, max] along the run axis every earlier piece that fills its whole cross-section there.
+            var cuts = new List<(float from, float to)>();
+            foreach (var p in placed)
+            {
+                bool covers = true;
+                for (int k = 0; k < 3; k++)
+                    if (k != run && (p.min[k] > min[k] + 0.001f || p.max[k] < max[k] - 0.001f)) covers = false;
+                if (covers && p.max[run] > min[run] && p.min[run] < max[run]) cuts.Add((p.min[run], p.max[run]));
+            }
+            cuts.Sort((p, q) => p.from.CompareTo(q.from));
+            float at = min[run];
+            foreach (var c in cuts)
+            {
+                if (c.from > at) SpanAlong(name, g, o, min, max, run, at, c.from);
+                at = Mathf.Max(at, c.to);
+            }
+            if (at < max[run]) SpanAlong(name, g, o, min, max, run, at, max[run]);
+            placed.Add(new Bounds((min + max) * 0.5f, max - min));
         }
+    }
+
+    // The part of the box [min, max] between 'from' and 'to' along axis 'run'.
+    static void SpanAlong(string name, Transform g, Vector3 o, Vector3 min, Vector3 max, int run, float from, float to)
+    {
+        min[run] = from; max[run] = to;
+        Span(name, g, o + min, o + max, sewerBrick);
     }
 
     // A doorway's sill with a hole in its middle where the tunnel's canal (2.6 m wide, its floor SewerWalkwayRise
