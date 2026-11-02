@@ -15,7 +15,7 @@ note only adds what those files don't say.
 - When asked to "pack it for my testers", build to `Builds/LastStop - V.x`. Then rename the
   `..._BackUpThisFolder_ButDontShipItWithYourGame` folder to `..._DebugInfo_KeepPrivate`, add a
   `READ ME FIRST.txt` (controls and what's new), and zip the build with `Compress-Archive`. Bump `bundleVersion`
-  in ProjectSettings first (last build: **0.2.8**). The build eval often reports "errors=1": that's the eval's
+  in ProjectSettings first (last build: **0.2.9**). The build eval often reports "errors=1": that's the eval's
   5 s timeout, not a game error. Check the log. The build can leave `InputSystem_Actions` in
   `preloadedAssets`: empty it again (`PlayerSettings.SetPreloadedAssets`) before committing the version bump.
 - **Then publish it for testers** as a release in the private repo `antoniosousapedro99-png/LastStop-Playtest`
