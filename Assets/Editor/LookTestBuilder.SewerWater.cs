@@ -258,7 +258,6 @@ public static partial class LookTestBuilder
     // upstream once lost (RubbishDrift).
     static GameObject Floater(Transform parent, Afloat kind, Vector3 at, Quaternion turn, System.Random rng, bool drift)
     {
-        string[] brands = { "generic_cola", "pepso", "sprit", "fantom_orange", "dr_piper", "red_bullet" };
         float yaw = (float)rng.NextDouble() * 360f;
         GameObject item;
         float mass, depth;
@@ -271,8 +270,7 @@ public static partial class LookTestBuilder
                 mass = 0.3f; depth = 0.05f;
                 break;
             case Afloat.Can:
-                item = Model(ArtDir + "/Props/SodaCans/Can_Standard330.fbx", null, parent, Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, yaw);
-                item.transform.localScale *= 0.12f / Mathf.Max(0.001f, Bounds(item).size.y);
+                item = SodaCan(parent, rng, "closed", yaw);
                 item.transform.rotation = Quaternion.Euler(90f, 0f, 0f) * item.transform.rotation;   // floating on its side
                 mass = 0.3f; depth = 0.02f;   // half its 9 cm width under
                 break;

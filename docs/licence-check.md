@@ -41,7 +41,7 @@ rain). To be thorough, search each number on pixabay.com once (numbers in `CREDI
 
 ## Still open
 
-- **PSX Soda Can Pack** (Sakepella): no terms on the page; the director has asked the author.
+- ~~PSX Soda Can Pack~~: replaced on 2026-11-02 by Mcnuty's PSX Soda Packs 1 and 2 (use in games allowed, no redistribution; their logos are Freepik images).
 - **PSX Industrial Pack** (Sketchfab): two models share the name, Tomitos_ (CC BY) or domi236 (Free Standard);
   open both and see which has the TransformerBox, rocks, crates and pipes. Either is fine; only Tomitos_ needs
   credit.

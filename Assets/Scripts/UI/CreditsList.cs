@@ -33,7 +33,8 @@ Nicowlas - PSX Kitchen Props Pack
 GGBot - PSX Style Cars
 LESED - PSX Horror Skyboxes
 godgoldfear - PSX Industrial Environment (CC BY)
-Sakepella - PSX Soda Can Pack
+Mcnuty - PSX Soda Packs 1 and 2
+Freepik - soda can logos
 PSX Old Stuff Pack
 Texture Ninja - blood and graffiti, FoxTex textures
 

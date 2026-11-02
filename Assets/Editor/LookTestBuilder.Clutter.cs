@@ -30,7 +30,7 @@ public static partial class LookTestBuilder
         if (name.Contains("bag")) return (Kickable.Sound.Soft, true, 2.5f, 0.45f);
         if (name.Contains("brick")) return (Kickable.Sound.Stone, true, 2.5f, 0.6f);
         if (name.Contains("cup") || name.Contains("fry_container")) return (Kickable.Sound.Plastic, true, 0.05f, 1.2f);
-        if (name.StartsWith("can_")) return (Kickable.Sound.Tin, true, 0.25f, 1.3f);
+        if (name.StartsWith("can_") || name.Contains("_can_")) return (Kickable.Sound.Tin, true, 0.25f, 1.3f);   // ..._can_closed: the soda packs
         return null;
     }
 

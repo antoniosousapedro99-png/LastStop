@@ -99,8 +99,6 @@ public static partial class LookTestBuilder
     {
         var rng = new System.Random(40 + index);
         if (!chips && index % 2 == 1 && rng.NextDouble() < 0.6) return;
-        string[] brands = { "generic_cola", "pepso", "sprit", "fantom_orange", "dr_piper", "red_bullet" };
-        string[] cans = { "Can_Standard330", "Can_Standard330", "Can_Slim250", "Can_Fat500" };
         var b = Bounds(seats);
         bool alongX = b.size.x > b.size.z;
         int count = (chips ? 1 : 0) + 1 + rng.Next(2);
@@ -121,14 +119,30 @@ public static partial class LookTestBuilder
             }
             else
             {
-                item = Model(ArtDir + "/Props/SodaCans/" + cans[rng.Next(cans.Length)] + ".fbx", null, parent,
-                             Tex2("Props/SodaCans/can_" + brands[rng.Next(brands.Length)] + ".png"), 1f, (float)rng.NextDouble() * 360f);
-                item.transform.localScale *= 0.12f / Mathf.Max(0.001f, Bounds(item).size.y);
+                item = SodaCan(parent, rng, "closed", (float)rng.NextDouble() * 360f);
                 if (rng.NextDouble() < 0.4) item.transform.rotation = OnItsSide(rng) * item.transform.rotation;   // knocked over
             }
             StandOn(item, hit.point + Vector3.up * 0.003f);
             i++;
         }
+    }
+
+    // A soda can from mcnuty's PSX Soda Packs 1 and 2 (8 brands; 'state' closed, open or crushed), each pack's
+    // brands on that pack's own texture sheet: 12 cm tall, or 11 cm across crushed.
+    static readonly (string brand, int pack)[] sodaBrands =
+    {
+        ("flush_grape", 1), ("professor_pop", 1), ("queensland_ginger_ale", 1), ("sprint", 1),
+        ("classic_cola", 2), ("flush_orange", 2), ("pug_root_beer", 2), ("sierra_peak", 2),
+    };
+
+    static GameObject SodaCan(Transform parent, System.Random rng, string state, float yaw)
+    {
+        var (brand, pack) = sodaBrands[rng.Next(sodaBrands.Length)];
+        var go = Model(ArtDir + "/Props/Sodas/" + brand + "_can_" + state + ".fbx", null, parent, Tex2("Props/Sodas/soda_atlas_pack" + pack + ".png"), 1f, yaw);
+        var b = Bounds(go);
+        go.transform.localScale *= state == "crushed" ? 0.11f / Mathf.Max(0.001f, Mathf.Max(b.size.x, b.size.y, b.size.z))
+                                                      : 0.12f / Mathf.Max(0.001f, b.size.y);
+        return go;
     }
 
     // A random turn, tipped up to 'tilt' degrees off level: nothing on the floor lies perfectly square.
